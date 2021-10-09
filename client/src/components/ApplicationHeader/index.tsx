@@ -1,0 +1,14 @@
+import styled, { StyledFC } from "styled-components";
+import Icon from '../Icon';
+
+const ApplicationHeader : StyledFC = ({className}) => {
+  return (
+    <header className={className}><Icon name='menu' /></header>
+  )
+}
+
+export default styled(ApplicationHeader)`
+  background: ${({theme}) => theme.panels.background};
+  padding: ${({theme}) => theme.panels.padding};
+  box-shadow: ${({theme}) => `0px ${theme.panels.shadow.distance} ${theme.panels.shadow.spread} ${theme.panels.shadow.color}`};
+`;
