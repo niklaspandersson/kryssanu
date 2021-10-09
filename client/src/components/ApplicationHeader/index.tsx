@@ -8,7 +8,8 @@ const ApplicationHeader : StyledFC = ({className}) => {
 }
 
 export default styled(ApplicationHeader)`
+  display: flex;
   background: ${({theme}) => theme.panels.background};
-  padding: ${({theme}) => theme.panels.padding};
+  padding: ${({theme}) => theme.header.padding};
   box-shadow: ${({theme}) => `0px ${theme.panels.shadow.distance} ${theme.panels.shadow.spread} ${theme.panels.shadow.color}`};
 `;

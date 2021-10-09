@@ -1,11 +1,16 @@
+import styled, { StyledFC } from "styled-components";
 import ApplicationHeader from "../ApplicationHeader";
+import BirdList from "../BirdList";
 
-const App = () => {
+const App: StyledFC = ({className}) => {
   return (
-    <div>
+    <div className={className}>
       <ApplicationHeader />
+      <BirdList />
     </div>
   );
 }
 
-export default App;
+export default styled(App)`
+  position: relative;
+`;

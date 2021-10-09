@@ -1,19 +1,20 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { createGlobalStyle } from 'styled-components';
+import { ThemeProvider, createGlobalStyle } from 'styled-components';
+import { GlobalIconStyles } from './components/Icon';
 import App from './components/App';
 import defaultTheme from './theme';
 import { store } from './app/store';
 import { Provider } from 'react-redux';
 import * as serviceWorker from './serviceWorker';
-import { ThemeProvider } from 'styled-components';
 
 const GlobalStyles = createGlobalStyle`
 body {
   margin: 0;
   background: ${({theme}) => theme.colors.primaryBackground};
   font-family: ${({theme}) => theme.typography.family};
-  font-weight: ${({theme}) => theme.typography.defaultWeight}
+  font-weight: ${({theme}) => theme.typography.defaultWeight};
+  font-size: ${({theme}) => theme.typography.defaultSize};
 }
 `;
 
@@ -22,6 +23,7 @@ ReactDOM.render(
     <Provider store={store}>
       <ThemeProvider theme={defaultTheme}>
         <GlobalStyles />
+        <GlobalIconStyles />
         <App />
       </ThemeProvider>
     </Provider>
