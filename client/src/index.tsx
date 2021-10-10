@@ -15,6 +15,12 @@ body {
   font-family: ${({theme}) => theme.typography.family};
   font-weight: ${({theme}) => theme.typography.defaultWeight};
   font-size: ${({theme}) => theme.typography.defaultSize};
+
+  #root {
+    width: 100vw;
+    height: 100vh;
+    display: grid;
+  }
 }
 `;
 

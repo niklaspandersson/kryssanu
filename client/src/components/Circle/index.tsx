@@ -12,9 +12,11 @@ const Circle: StyledFC<Props> = ({ className, children }) => (
 const StyledCircle = styled(Circle)`
   width: ${({size}) => size}px;
   height: ${({size}) => size}px;
-  position: relative;
   border: ${({theme}) => theme.circles.border};
   border-radius: ${({size}) => size}px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 `;
 export default StyledCircle;
 

@@ -1,8 +1,13 @@
 export type Bird = {
-  family?: string;
+  family: string;
   name: string;
   image?: string;
   observed?: boolean;
+}
+
+export type Family = {
+  name: string;
+  birds: Bird[];
 }
 
 export interface BirdsState {

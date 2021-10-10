@@ -1,16 +1,10 @@
-import { useEffect } from "react";
 import styled, { StyledFC } from "styled-components";
-import { useAppDispatch, useAppSelector } from "../../app/hooks";
-import { fetchAllAsync  } from "../../features/birds/birdsSlice";
+import { useAppSelector } from "../../app/hooks";
+import { selectBirds } from "../../features/birds";
 import Item from "./ListItem";
 
 const BirdList : StyledFC = ({className}) => {
-  const dispatch = useAppDispatch();
-  useEffect(() => {
-    dispatch(fetchAllAsync());
-  }, [dispatch]);
-
-  const { birds } = useAppSelector(s => s.birds);
+  const birds = useAppSelector(selectBirds);
 
   return (
     <ul className={className}>
@@ -24,4 +18,5 @@ padding: ${({theme}) => theme.panels.padding};
 margin: 0;
 font-size: ${({theme}) => theme.typography.listItem.size};
 font-weight: ${({theme}) => theme.typography.listItem.weight};
+overflow-y: auto;
 `;

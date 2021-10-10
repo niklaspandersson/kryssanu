@@ -2,7 +2,7 @@ const PaddingComponents = 15;
 const theme = {
   panels: {
     padding: `${PaddingComponents}px`,
-    background: '#fff',
+    background: 'rgba(255, 255, 255, .95)',
     shadow: {
       distance: '2px',
       spread: '4px',
@@ -11,6 +11,7 @@ const theme = {
   },
   header: {
     padding: "10px",
+    background: '#fff',
   },
   birdList: {
     paddingBetween: `${PaddingComponents}px`,

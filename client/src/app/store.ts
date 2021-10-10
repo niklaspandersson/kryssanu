@@ -1,9 +1,11 @@
 import { configureStore, ThunkAction, Action } from '@reduxjs/toolkit';
-import birdsReducer from '../features/birds/birdsSlice';
+import birdsReducer from '../features/birds';
+import searchReducer from '../features/search/searchSlice';
 
 export const store = configureStore({
   reducer: {
     birds: birdsReducer,
+    search: searchReducer,
   },
 });
 
