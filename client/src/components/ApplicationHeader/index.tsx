@@ -1,6 +1,7 @@
 import styled, { StyledFC } from "styled-components";
 import Icon from '../Icon';
 
+
 const ApplicationHeader : StyledFC = ({className}) => {
   return (
     <header className={className}><Icon name='menu' /></header>

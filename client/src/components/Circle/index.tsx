@@ -21,7 +21,7 @@ const StyledCircle = styled(Circle)`
 export default StyledCircle;
 
 const RawImageCircle: StyledFC<Props & {url: string, alt: string}> = ({className, url, size, alt}) => (
-  <StyledCircle className={className} size={size}><img width={size} height={size} src={url} alt={alt} /></StyledCircle>
+  <StyledCircle className={`${className} circle`} size={size}><img width={size} height={size} src={url} alt={alt} /></StyledCircle>
 )
 
 export const ImageCircle = styled(RawImageCircle)`

@@ -6,12 +6,23 @@ type IconProps = {
 };
 
 export const GlobalIconStyles = createGlobalStyle`
-  .material-icons { user-select: none; }
-  /* Rules for sizing the icon. */
-  .material-icons.md-18 { font-size: 18px; }
-  .material-icons.md-24 { font-size: 24px; }
-  .material-icons.md-36 { font-size: 36px; }
-  .material-icons.md-48 { font-size: 48px; }
+  .md-icon { 
+    user-select: none; 
+    font-family: 'Material Icons';
+    font-weight: normal;
+    font-style: normal;
+    font-size: 24px;
+    line-height: 1;
+    letter-spacing: normal;
+    text-transform: none;
+    display: inline-block;
+    white-space: nowrap;
+    word-wrap: normal;
+    direction: ltr;
+    -webkit-font-feature-settings: 'liga';
+    font-feature-settings: 'liga';
+    -webkit-font-smoothing: antialiased;
+  }
 
   /* Rules for using icons as black on a light background. */
   .material-icons.md-dark { color: rgba(0, 0, 0, 0.54); }
@@ -23,7 +34,7 @@ export const GlobalIconStyles = createGlobalStyle`
 `;
 
 const Icon: React.FC<IconProps> = ({name: icon, light, inactive}) => 
-  (<span className={`material-icons ${!!light ? 'md-light' : 'md-dark'} ${!!inactive ? 'md-inactive' : ''}`}>{icon}</span>);
+  (<span className={`md-icon ${!!light ? 'md-light' : 'md-dark'} ${!!inactive ? 'md-inactive' : ''}`}>{icon}</span>);
 
 
 export default Icon;
