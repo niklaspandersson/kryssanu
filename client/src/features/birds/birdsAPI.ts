@@ -7,6 +7,6 @@ export async function fetchBirds() {
 
   return list.filter(b => !b.rare).map<Bird>(b => ({
     name: b.swedish,
-    family: b.family,
+    family: b.family?.toLocaleLowerCase(),
   }));
 }

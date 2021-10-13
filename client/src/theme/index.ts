@@ -2,7 +2,7 @@ const PaddingComponents = 15;
 const theme = {
   panels: {
     padding: `${PaddingComponents}px`,
-    background: 'rgba(255, 255, 255, .95)',
+    background: 'rgba(255, 255, 255, .9)',
     shadow: {
       distance: '2px',
       spread: '4px',
@@ -20,7 +20,7 @@ const theme = {
     border: '1px solid rgba(126, 126, 126, .5)',
   },
   colors: {
-    primaryBackground:  '#fefffd',//'#d5e0ca',
+    primaryBackground:  '#fefffd',
     secondaryBackground: '#82AB8B',
   },
   typography: {

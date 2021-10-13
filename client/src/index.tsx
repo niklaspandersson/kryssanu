@@ -21,6 +21,13 @@ body {
     height: 100vh;
     display: grid;
   }
+
+  button {
+    border: none;
+    background: transparent;
+    padding: 0;
+    margin: 0;
+  }
 }
 `;
 

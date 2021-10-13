@@ -1,15 +1,19 @@
+import { useState } from 'react'; 
 import styled, { StyledFC } from "styled-components";
 import { useAppSelector } from "../../app/hooks";
 import { selectBirdsByFamily } from "../../features/birds";
 import { Family } from "../../features/birds";
+import Icon from "../Icon";
 import Item from "./ListItem";
 
 const RawFamilyItemGroup : StyledFC<Family> = ({name, birds, className}) => {
+  const [collapsed, setCollapsed] = useState(false);
+  const toggleCollapsed = () => setCollapsed(prev => !prev);
   return (
     <li className={className}>
-      <h3>{name}</h3>
+      <h3>{name} <button onClick={toggleCollapsed}><Icon name={collapsed ? "arrow_left" : "arrow_drop_down"} /></button></h3>
       <ul>
-        {birds.map(bird => <Item key={bird.name} bird={bird} />)}
+        {!collapsed && birds.map(bird => <Item key={bird.name} bird={bird} />)}
       </ul>
     </li>
   )
@@ -19,6 +23,17 @@ const FamilyItemGroup = styled(RawFamilyItemGroup)`
   ul {
     margin: 0;
     padding: 0;
+  }
+
+  h3 {
+    justify-content: center;
+    display: flex;
+    align-items: center;
+    font-weight: 400;
+    font-size: 1rem;
+    text-transform: lowercase;
+    text-align: center;
+    margin: 0;
   }
 `;
 

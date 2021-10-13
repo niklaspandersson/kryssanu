@@ -1,14 +1,29 @@
-import React from 'react';
+import { useEffect, useState, useRef } from 'react';
 import styled, { StyledFC } from "styled-components";
+import { useAppDispatch } from '../../app/hooks';
+import { useDebounce } from '../../utils';
 import Icon from '../../components/Icon';
+import { endSearch, search } from './searchSlice';
 
 const SearchBar: StyledFC = ({className}) => {
-  const [text, setText] = React.useState("");
+  const dispatch = useAppDispatch();
+  const [immediate, setImmediate] = useState("");
+  const debounced = useDebounce(immediate, 300);
+  const inputRef = useRef<HTMLInputElement>(null);
 
+  useEffect(() => {
+    dispatch(search(debounced));
+  }, [ debounced, dispatch]);
+
+  useEffect(() => {
+    inputRef.current?.focus();
+  }, [inputRef]);
+
+  const onClose = () => dispatch(endSearch());
   return (
     <div className={className}>
-      <input type="text" value={text} onChange={(e) => setText(e.target.value)} placeholder="search" />
-      <Icon name="gps_off" />
+      <input ref={inputRef} type="text" value={immediate} onChange={(e) => setImmediate(e.target.value)} placeholder="search" />
+      <button onClick={onClose}><Icon name="gps_off" /></button>
     </div>
   )
 };
@@ -32,7 +47,7 @@ export default styled(SearchBar)`
     font-weight: 200;
   }
 
-  .material-icons {
+  button {
     position: absolute;
     right: 0;
     margin-right: 25px;
