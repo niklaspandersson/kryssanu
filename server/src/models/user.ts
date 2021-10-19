@@ -1,8 +1,8 @@
 import { ObjectType, Field, ID } from 'type-graphql';
 
 @ObjectType()
-export class User {
-  @Field(_type => ID)
+class User {
+  @Field(() => ID)
   id: string;
 
   @Field()
@@ -14,3 +14,5 @@ export class User {
   @Field()
   updatedAt: Date;
 }
+
+export default User;
