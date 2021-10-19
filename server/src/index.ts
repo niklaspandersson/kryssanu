@@ -1,16 +1,31 @@
-import "reflect-metadata";
-import { ApolloServer } from 'apollo-server';
+import 'reflect-metadata';
+import { ApolloServer } from 'apollo-server-koa';
+import { ApolloServerPluginDrainHttpServer } from 'apollo-server-core';
 import { buildSchema } from 'type-graphql';
+import Koa from 'koa';
+import KoaJWT from 'koa-jwt';
+import http from 'http';
 import ObservationResolver from './resolvers/observations';
 
+const PORT = process.env.POST ? parseInt(process.env.POST, 10) : 4000; 
+
 async function startApolloServer() {
+  const httpServer = http.createServer();
   const schema = await buildSchema({
     resolvers: [ObservationResolver],
+  })
+  const server = new ApolloServer({
+    schema,
+    plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
   });
+  await server.start();
+  const app = new Koa();
+  app.use(server.getMiddleware());
 
-  const server = new ApolloServer({ schema });
-  const { url } = await server.listen();
-  console.log(`🚀 Server ready at ${url}`);
+  httpServer.on('request', app.callback());
+  await new Promise<void>(resolve => httpServer.listen({ port: PORT }, resolve));
+  console.log(`🚀 Server ready at http://localhost:4000${server.graphqlPath}`);
+  return { server, app };
 }
 
-startApolloServer().then(() => console.log('Done!'));
+startApolloServer();
