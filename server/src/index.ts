@@ -7,7 +7,8 @@ import KoaJWT from 'koa-jwt';
 import http from 'http';
 import ObservationResolver from './resolvers/observations';
 
-const PORT = process.env.POST ? parseInt(process.env.POST, 10) : 4000; 
+const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 4000; 
+const HOSTNAME = process.env.HOSTNAME ?? '0.0.0.0';
 
 async function startApolloServer() {
   const httpServer = http.createServer();
@@ -23,8 +24,8 @@ async function startApolloServer() {
   app.use(server.getMiddleware());
 
   httpServer.on('request', app.callback());
-  await new Promise<void>(resolve => httpServer.listen({ port: PORT }, resolve));
-  console.log(`🚀 Server ready at http://localhost:4000${server.graphqlPath}`);
+  await new Promise<void>(resolve => httpServer.listen({ host:HOSTNAME, port: PORT }, resolve));
+  console.log(`🚀 Server ready at http://${HOSTNAME}:${PORT}${server.graphqlPath}`);
   return { server, app };
 }
 

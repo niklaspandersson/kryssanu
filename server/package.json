@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "main": "index.js",
   "license": "MIT",
+  "scripts": {
+    "start": "nodemon -e ts --exec ts-node src/index.ts"
+  },
   "dependencies": {
     "apollo-server-core": "^3.4.0",
     "apollo-server-koa": "^3.4.0",
@@ -17,6 +20,8 @@
     "typegoose": "^5.9.1"
   },
   "devDependencies": {
+    "nodemon": "^2.0.14",
+    "ts-node": "^10.3.0",
     "typescript": "^4.4.4"
   }
 }
