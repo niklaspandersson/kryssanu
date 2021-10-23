@@ -3,12 +3,16 @@ import crypto from "crypto";
 
 import { getEnv, getEnvInt } from "./environment";
 
+export const LISTEN_HOST = getEnv("LISTEN_HOST", "0.0.0.0");
 export const PORT = getEnvInt("PORT", 8000);
+
 export const WWW_ROOT = getEnv("WWW_ROOT", path.resolve("../frontend/build"));
 export const SESSION_SECRET = getEnv(
   "SESSION_SECRET",
   crypto.randomBytes(128).toString("base64")
 );
+
+export const BIRDS_PATH = getEnv("BIRDS_PATH", path.resolve("./data/sweden.json"));
 
 // OAuth2 client / provider config
 export const OAUTH_PROVIDER_URL: string | null = getEnv(

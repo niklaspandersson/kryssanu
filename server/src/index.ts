@@ -1,20 +1,16 @@
 import 'reflect-metadata';
+import Koa from 'koa';
+import http from 'http';
 import { ApolloServer } from 'apollo-server-koa';
 import { ApolloServerPluginDrainHttpServer } from 'apollo-server-core';
-import { buildSchema } from 'type-graphql';
-import Koa from 'koa';
-import KoaJWT from 'koa-jwt';
-import http from 'http';
-import ObservationResolver from './resolvers/observations';
+import { GraphQLSchema } from 'graphql';
 
-const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 4000; 
-const HOSTNAME = process.env.HOSTNAME ?? '0.0.0.0';
+import initModels from './models';
+import * as Config from './config';
 
-async function startApolloServer() {
+async function startApolloServer(schema: GraphQLSchema) {
   const httpServer = http.createServer();
-  const schema = await buildSchema({
-    resolvers: [ObservationResolver],
-  })
+
   const server = new ApolloServer({
     schema,
     plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
@@ -24,9 +20,14 @@ async function startApolloServer() {
   app.use(server.getMiddleware());
 
   httpServer.on('request', app.callback());
-  await new Promise<void>(resolve => httpServer.listen({ host:HOSTNAME, port: PORT }, resolve));
-  console.log(`🚀 Server ready at http://${HOSTNAME}:${PORT}${server.graphqlPath}`);
+  await new Promise<void>(resolve => httpServer.listen({ host: Config.LISTEN_HOST, port: Config.PORT }, resolve));
+  console.log(`🚀 GraphQL endpoint ready at http://${Config.LISTEN_HOST}:${Config.PORT}${server.graphqlPath}`);
   return { server, app };
 }
 
-startApolloServer();
+async function bootstrap() {
+  const { schema } = await initModels();
+  const { server, app } = await startApolloServer(schema);
+}
+
+bootstrap();
