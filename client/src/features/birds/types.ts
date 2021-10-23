@@ -1,8 +1,10 @@
 export type Bird = {
+  id: string;
   family: string;
   name: string;
   image?: string;
   observed?: boolean;
+  rare?: boolean;
 }
 
 export type Family = {
