@@ -2,7 +2,7 @@ import { useState } from "react";
 import styled, { StyledFC } from "styled-components";
 import { Family } from "../../features/birds";
 import Icon from "../Icon";
-import Item from "./ListItem";
+import Bird from "./Bird";
 import { useFilteredBirdByFamilies } from "../../features/birds/hooks";
 
 const RawFamilyItemGroup: StyledFC<Family> = ({ name, birds, className }) => {
@@ -13,12 +13,11 @@ const RawFamilyItemGroup: StyledFC<Family> = ({ name, birds, className }) => {
       <h3>
         {name}{" "}
         <button onClick={toggleCollapsed}>
-          <Icon name={collapsed ? "arrow_left" : "arrow_drop_down"} />
+          <Icon name={collapsed ? "arrow_right" : "arrow_drop_down"} />
         </button>
       </h3>
       <ul>
-        {!collapsed &&
-          birds.map((bird) => <Item key={bird.name} bird={bird} />)}
+        {!collapsed && birds.map((bird) => <Bird key={bird.id} bird={bird} />)}
       </ul>
     </li>
   );

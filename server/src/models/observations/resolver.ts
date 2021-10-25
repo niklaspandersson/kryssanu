@@ -15,7 +15,7 @@ const TestObservations:Observation[] = [
 ];
 
 @InputType()
-class AddObservationInput implements Partial<Observation> {
+class ObservationInput implements Partial<Observation> {
   @Field()
   birdId: string;
 
@@ -31,14 +31,15 @@ class ObservationResolver {
   }
 
   @Mutation(() => Observation)
-  async addObservation(@Arg("data") newObservationData: AddObservationInput) {
+  async addObservation(@Arg("data") data: ObservationInput) {
     // sample implementation
     const observation:Observation = {
-      ...newObservationData,
+      ...data,
       date: new Date(),
       userId: 'testUser',
     };
     TestObservations.push(observation);
+    console.log(TestObservations);
     return observation;
   }
 }

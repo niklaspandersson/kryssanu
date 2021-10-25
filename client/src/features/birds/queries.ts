@@ -11,4 +11,12 @@ query GetBirds {
   }
 `;
 
-export { GET_BIRDS };
+const REGISTER_OBSERVATION = gql`
+  mutation AddObservation($data: ObservationInput!) {
+    addObservation(data: $data) {
+      birdId
+    }
+  }
+`;
+
+export { GET_BIRDS, REGISTER_OBSERVATION };

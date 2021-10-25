@@ -1,13 +1,13 @@
 import styled, { StyledFC } from "styled-components";
 import { useFilteredBirds } from "../../features/birds/hooks";
-import Item from "./ListItem";
+import Bird from "./Bird";
 
 const BirdList: StyledFC = ({ className }) => {
   const birds = useFilteredBirds();
   return (
     <ul className={className}>
       {birds.map((bird) => (
-        <Item key={bird.name} bird={bird} />
+        <Bird key={bird.name} bird={bird} />
       ))}
     </ul>
   );

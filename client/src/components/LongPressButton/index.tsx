@@ -1,35 +1,51 @@
-import { useState } from 'react';
-import styled, { StyledFC } from 'styled-components';
+import { useState } from "react";
+import styled, { StyledFC } from "styled-components";
 import { useLongPress } from "use-long-press";
 
 type Props = {
-  threshold?: number,
-  checked?: boolean,
+  threshold?: number;
+  checked?: boolean;
+  onLongPress: () => void;
 };
 
-const LongPressButton:StyledFC<Props> = ({ className, children, checked, threshold = 1000 }) => {
+const LongPressButton: StyledFC<Props> = ({
+  className,
+  children,
+  checked,
+  onLongPress,
+  threshold = 1000,
+}) => {
   const [isPressed, setIsPressed] = useState(false);
-  const [isToggled, setIsToggled] = useState(!!checked);
-  const binds = useLongPress(() => {
-    setIsPressed(false);
-    setIsToggled(true);
-  }, {
-    onStart: () => { setIsPressed(true); console.log('pressed!') },
-    onCancel: () => setIsPressed(false),
-    threshold,
-  });
+  const binds = useLongPress(
+    () => {
+      setIsPressed(false);
+      onLongPress();
+    },
+    {
+      onStart: () => setIsPressed(true),
+      onCancel: () => setIsPressed(false),
+      threshold,
+    }
+  );
 
   return (
-    <button className={`lp-button ${className} ${isPressed ? 'pressed' : ''} ${isToggled ? 'toggled' : ''}`} {...binds}>{children}</button>
+    <button
+      className={`lp-button ${className} ${isPressed ? "pressed" : ""} ${
+        checked ? "toggled" : ""
+      }`}
+      {...binds}
+    >
+      {children}
+    </button>
   );
-}
+};
 
 export default styled(LongPressButton)`
   transition: color 0s;
   user-select: none;
 
   &.pressed {
-    transition: color 1s cubic-bezier(.61,.35,.94,.63);
+    transition: color 1s cubic-bezier(0.61, 0.35, 0.94, 0.63);
   }
 
   &.toggled {

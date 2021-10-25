@@ -15,28 +15,22 @@ export const SESSION_SECRET = getEnv(
 export const BIRDS_PATH = getEnv("BIRDS_PATH", path.resolve("./data/sweden.json"));
 
 // OAuth2 client / provider config
-export const OAUTH_PROVIDER_URL: string | null = getEnv(
-  "AUTH_PROVIDER_URL",
-  null
+export const GOOGLE_CLIENT_ID = getEnv("GOOGLE_CLIENT_ID", null);
+export const GOOGLE_CLIENT_SECRET = getEnv(
+  "GOOGLE_CLIENT_SECRET",
+  GOOGLE_CLIENT_ID ? undefined : null
 );
-export const OAUTH_CLIENT_URL = getEnv(
-  "OAUTH_CLIENT_URL",
-  OAUTH_PROVIDER_URL ? undefined : null
+export const GOOGLE_OAUTH_REDIRECT_URL = getEnv(
+  "GOOGLE_OAUTH_REDIRECT_URL", 
+  GOOGLE_CLIENT_ID ? undefined : null
 );
-export const OAUTH_CLIENT_ID = getEnv(
-  "OAUTH_CLIENT_ID",
-  OAUTH_PROVIDER_URL ? undefined : null
-);
-export const OAUTH_CLIENT_SECRET = getEnv(
-  "OAUTH_CLIENT_SECRET",
-  OAUTH_PROVIDER_URL ? undefined : null
-);
-export const USE_OAUTH = !!OAUTH_PROVIDER_URL;
+export const USE_OAUTH = !!GOOGLE_CLIENT_ID;
 
 // local dev
-export const LOCAL_HTTP_PROXY = getEnv("LOCAL_HTTP_PROXY", null);
-export const LOCAL_HTTPS_CERT_FILE = getEnv("LOCAL_HTTPS_CERT_FILE", null);
-export const LOCAL_HTTPS_PRIVATE_KEY_FILE = getEnv(
-  "LOCAL_HTTPS_PRIVATE_KEY_FILE",
-  LOCAL_HTTPS_CERT_FILE ? undefined : null
+export const DEV_HTTP_PROXY = getEnv("DEV_HTTP_PROXY", null);
+export const DEV_HTTPS_CERT_FILE = getEnv("DEV_HTTPS_CERT_FILE", null);
+export const DEV_HTTPS_PRIVATE_KEY_FILE = getEnv(
+  "DEV_HTTPS_PRIVATE_KEY_FILE",
+  DEV_HTTPS_CERT_FILE ? undefined : null
 );
+export const USE_HTTPS = !!DEV_HTTPS_CERT_FILE;
