@@ -1,4 +1,5 @@
-import { Arg, Field, InputType, Mutation, Query, Resolver } from "type-graphql";
+import { Context } from "apollo-server-core";
+import { Arg, Ctx, Field, InputType, Mutation, Query, Resolver } from "type-graphql";
 import Observation from "./model";
 
 const TestObservations:Observation[] = [
@@ -26,7 +27,8 @@ class ObservationInput implements Partial<Observation> {
 @Resolver()
 class ObservationResolver {
   @Query(() => [Observation])
-  async observations() {
+  async observations(@Ctx("ctx") ctx:Context) {
+    console.dir(ctx);
     return Promise.resolve(TestObservations);
   }
 

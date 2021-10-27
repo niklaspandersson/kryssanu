@@ -3,9 +3,13 @@ import Icon from '../Icon';
 
 
 const ApplicationHeader : StyledFC = ({className}) => {
+  const test = () => fetch('/test/');
   return (
-    <header className={className}><Icon name='menu' /></header>
-  )
+    <header className={className}>
+      <Icon name='menu' />
+      <button onClick={test}>test</button>
+    </header>
+  );
 }
 
 export default styled(ApplicationHeader)`
