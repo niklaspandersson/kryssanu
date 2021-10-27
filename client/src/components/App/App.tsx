@@ -19,18 +19,28 @@ function MainContents() {
 
 function SignIn() {
   useEffect(() => {
-    window.google?.accounts.id.initialize({
-      client_id:
-        "142613352055-mqn3r2g8qu40ldglfpa3j6eghokug6uh.apps.googleusercontent.com",
-      login_uri: "https://kryssa.nu:8000/login_redirect/",
-      callback: (res) => console.log(res),
-      ux_mode: "redirect",
-    });
+    if (process.env.REACT_APP_GOOGLE_CLIENT_ID) {
+      window.google?.accounts.id.initialize({
+        client_id: process.env.REACT_APP_GOOGLE_CLIENT_ID,
+        login_uri: "https://kryssa.nu:3000/login_redirect/",
+        callback: async (res) => {
+          console.log(res);
+          if (res.credential) {
+            const idToken = res.credential;
+            await fetch("/auth/google_login", {
+              method: "POST",
+              body: new URLSearchParams({ idToken }),
+            });
+          }
+        },
+        ux_mode: "popup",
+      });
 
-    window.google?.accounts.id.renderButton(
-      document.getElementById("sign-in")!,
-      { theme: "filled_black", shape: "pill", size: "large" }
-    );
+      window.google?.accounts.id.renderButton(
+        document.getElementById("sign-in")!,
+        { theme: "filled_black", shape: "pill", size: "large" }
+      );
+    }
   });
   return (
     <main>

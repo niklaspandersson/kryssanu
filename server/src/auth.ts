@@ -1,12 +1,9 @@
 import Router from 'koa-router';
 import parser from 'koa-bodyparser';
 import { OAuth2Client } from 'google-auth-library';
+import { service } from './models/users';
 import * as Config from './config';
 
-/**
-* Create a new OAuth2Client, and go through the OAuth2 content
-* workflow.  Return the full client to the callback.
-*/
 function setupGoogleAuth() {
   return new Promise<Router>((resolve, reject) => {
     const oAuth2Client = new OAuth2Client(
@@ -19,18 +16,29 @@ function setupGoogleAuth() {
           idToken: token,
           audience: Config.GOOGLE_CLIENT_ID,
       });
-      const payload = ticket.getPayload();
-      console.log(payload);
+      return ticket.getPayload();
     }
 
     const router = new Router({
-      prefix: '/login_redirect'
+      prefix: '/auth'
     });
 
-    router.post('/', parser(), async (ctx) => {
-      console.log(ctx);
-      verify(ctx.request.body?.['credential']);
-      ctx.redirect('/');
+    router.post('/google_login', parser(), async (ctx) => {
+      try {
+        const payload = await verify(ctx.request.body?.['idToken']);
+        if(payload) {
+          const googleId = payload.sub;
+          let user = await service.getUserByGoogleId(googleId);
+          if(!user)
+            user = await service.createUser(googleId, payload.given_name ?? "");
+
+        }
+        ctx.status = 204;
+      }
+      catch(err) {
+        console.error(err);
+        ctx.status = 400;
+      }
     });
 
     resolve(router);

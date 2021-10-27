@@ -6,6 +6,10 @@ import setupGoogleAuth from './auth';
 
 async function createKoaApp(apolloServer:ApolloServer) {
   const app = new Koa();
+  app.use(async (ctx, next) => {
+    console.log(`processing ${ctx.url}...`);
+    await next();
+  });
   app.use(apolloServer.getMiddleware());
   const authRouter = await setupGoogleAuth();
   app.use(authRouter.routes());
