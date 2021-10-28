@@ -1,33 +1,38 @@
-import styled, { StyledFC } from "styled-components";
+import styled, { StyledFC } from 'styled-components';
 
 type Props = {
   size: number;
-}
+};
 const Circle: StyledFC<Props> = ({ className, children }) => (
-  <div className={className}>
-    {children}
-  </div>
-)
+  <div className={className}>{children}</div>
+);
 
 const StyledCircle = styled(Circle)`
-  width: ${({size}) => size}px;
-  height: ${({size}) => size}px;
-  border: ${({theme}) => theme.circles.border};
-  border-radius: ${({size}) => size}px;
+  width: ${({ size }) => size}px;
+  height: ${({ size }) => size}px;
+  border: ${({ theme }) => theme.circles.border};
+  border-radius: ${({ size }) => size}px;
   display: flex;
   align-items: center;
   justify-content: center;
 `;
 export default StyledCircle;
 
-const RawImageCircle: StyledFC<Props & {url: string, alt: string}> = ({className, url, size, alt}) => (
-  <StyledCircle className={`${className} circle`} size={size}><img width={size} height={size} src={url} alt={alt} /></StyledCircle>
-)
+const RawImageCircle: StyledFC<Props & { url: string; alt: string }> = ({
+  className,
+  url,
+  size,
+  alt,
+}) => (
+  <StyledCircle className={`${className} circle`} size={size}>
+    <img width={size} height={size} src={url} alt={alt} />
+  </StyledCircle>
+);
 
 export const ImageCircle = styled(RawImageCircle)`
-img {
-  opacity: .5;
-  border: 0;
-  border-radius: ${({size}) => size}px;
-}
+  img {
+    opacity: 0.5;
+    border: 0;
+    border-radius: ${({ size }) => size}px;
+  }
 `;

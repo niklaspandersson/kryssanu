@@ -8,21 +8,32 @@ import mongoose from 'mongoose';
 
 async function bootstrap() {
   try {
-    if(Config.IS_DEV) {
+    if (Config.IS_DEV) {
       mongoose.set('debug', true);
     }
 
     await mongoose.connect(Config.MONGODB_URI);
 
     const httpServer = await createHttpServer();
-    const apolloServer = await startApolloServer(httpServer, await initModels());
+    const apolloServer = await startApolloServer(
+      httpServer,
+      await initModels()
+    );
     const app = await createKoaApp(apolloServer);
-  
+
     httpServer.on('request', app.callback());
-    await new Promise<void>(resolve => httpServer.listen({ host: Config.LISTEN_HOST, port: Config.PORT }, resolve));
-    console.log(`🚀 GraphQL endpoint ready at ${Config.USE_HTTPS ? "https" : "http"}://${Config.LISTEN_HOST}:${Config.PORT}${apolloServer.graphqlPath}`);
-  }
-  catch(e:any) {
+    await new Promise<void>(resolve =>
+      httpServer.listen(
+        { host: Config.LISTEN_HOST, port: Config.PORT },
+        resolve
+      )
+    );
+    console.log(
+      `🚀 GraphQL endpoint ready at ${Config.USE_HTTPS ? 'https' : 'http'}://${
+        Config.LISTEN_HOST
+      }:${Config.PORT}${apolloServer.graphqlPath}`
+    );
+  } catch (e: any) {
     console.error('CRITICAL: Failed to start ---v');
     console.error(e);
   }

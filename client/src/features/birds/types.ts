@@ -5,12 +5,12 @@ export type Bird = {
   image?: string;
   observed?: boolean;
   rare?: boolean;
-}
+};
 
 export type Family = {
   name: string;
   birds: Bird[];
-}
+};
 
 export interface BirdsState {
   birds: Bird[];

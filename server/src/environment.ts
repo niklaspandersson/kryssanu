@@ -7,9 +7,9 @@
 export function getEnvFlag(name: string, defaultValue?: boolean) {
   const value = getEnv(
     name,
-    !isUndefined(defaultValue) ? (defaultValue ? "true" : "false") : undefined
+    !isUndefined(defaultValue) ? (defaultValue ? 'true' : 'false') : undefined
   );
-  return value!.toLocaleLowerCase() === "true";
+  return value!.toLocaleLowerCase() === 'true';
 }
 
 /**
@@ -46,5 +46,5 @@ export function getEnv(name: string, defaultValue?: string | null) {
 }
 
 function isUndefined(value: any): value is undefined {
-  return typeof value === "undefined";
+  return typeof value === 'undefined';
 }

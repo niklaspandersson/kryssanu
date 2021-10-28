@@ -1,11 +1,11 @@
-import { useCallback } from "react";
-import { useMutation } from "@apollo/client";
-import styled, { StyledFC } from "styled-components";
-import { Bird } from "../../features/birds";
-import { ImageCircle } from "../Circle";
-import Icon from "../Icon";
-import LongPressButton from "../LongPressButton";
-import { REGISTER_OBSERVATION } from "../../features/birds/queries";
+import { useCallback } from 'react';
+import { useMutation } from '@apollo/client';
+import styled, { StyledFC } from 'styled-components';
+import { Bird } from '../../features/birds';
+import { ImageCircle } from '../Circle';
+import Icon from '../Icon';
+import LongPressButton from '../LongPressButton';
+import { REGISTER_OBSERVATION } from '../../features/birds/queries';
 
 const LongPressCheckButton = styled(LongPressButton)`
   z-index: 10;

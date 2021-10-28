@@ -1,6 +1,6 @@
-import { useState } from "react";
-import styled, { StyledFC } from "styled-components";
-import { useLongPress } from "use-long-press";
+import { useState } from 'react';
+import styled, { StyledFC } from 'styled-components';
+import { useLongPress } from 'use-long-press';
 
 type Props = {
   threshold?: number;
@@ -30,8 +30,8 @@ const LongPressButton: StyledFC<Props> = ({
 
   return (
     <button
-      className={`lp-button ${className} ${isPressed ? "pressed" : ""} ${
-        checked ? "toggled" : ""
+      className={`lp-button ${className} ${isPressed ? 'pressed' : ''} ${
+        checked ? 'toggled' : ''
       }`}
       {...binds}
     >

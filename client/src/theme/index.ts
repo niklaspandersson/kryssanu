@@ -7,10 +7,10 @@ const theme = {
       distance: '2px',
       spread: '4px',
       color: 'rgba(0, 0, 0, .2)',
-    }
+    },
   },
   header: {
-    padding: "10px",
+    padding: '10px',
     background: '#fff',
   },
   birdList: {
@@ -20,18 +20,19 @@ const theme = {
     border: '1px solid rgba(126, 126, 126, .5)',
   },
   colors: {
-    primaryBackground:  '#fefffd',
+    primaryBackground: '#fefffd',
     secondaryBackground: '#82AB8B',
   },
   typography: {
     defaultSize: '16px',
-    family: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";',
+    family:
+      '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";',
     defaultWeight: 400,
     listItem: {
       size: '1.25rem',
       weight: 200,
-    }
-  }
+    },
+  },
 };
 
 export type Theme = typeof theme;

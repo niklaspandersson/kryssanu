@@ -1,14 +1,14 @@
-import React from "react";
-import ReactDOM from "react-dom";
-import { ThemeProvider, createGlobalStyle } from "styled-components";
-import { GlobalIconStyles } from "./components/Icon";
-import App from "./components/App";
-import defaultTheme from "./theme";
-import { store } from "./app/store";
-import { Provider } from "react-redux";
-import { ApolloProvider } from "@apollo/client";
-import * as serviceWorker from "./serviceWorker";
-import client from "./apollo";
+import React from 'react';
+import ReactDOM from 'react-dom';
+import { ThemeProvider, createGlobalStyle } from 'styled-components';
+import { GlobalIconStyles } from './components/Icon';
+import App from './components/App';
+import defaultTheme from './theme';
+import { store } from './app/store';
+import { Provider } from 'react-redux';
+import { ApolloProvider } from '@apollo/client';
+import * as serviceWorker from './serviceWorker';
+import client from './apollo';
 
 const GlobalStyles = createGlobalStyle`
 body {
@@ -45,7 +45,7 @@ ReactDOM.render(
       </ApolloProvider>
     </Provider>
   </React.StrictMode>,
-  document.getElementById("root")
+  document.getElementById('root')
 );
 
 // If you want your app to work offline and load faster, you can change

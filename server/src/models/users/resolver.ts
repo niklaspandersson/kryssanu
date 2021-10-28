@@ -1,5 +1,5 @@
-import { Arg, Authorized, Ctx, Mutation, Query, Resolver } from "type-graphql";
-import { verify } from "../../auth";
+import { Arg, Authorized, Ctx, Mutation, Query, Resolver } from 'type-graphql';
+import { verify } from '../../auth';
 import { User, UserModel } from '.';
 import { ApolloContext } from '../../apollo';
 
@@ -12,23 +12,22 @@ class UserResolver {
   }
 
   @Mutation(() => User)
-  async googleLogin(@Arg("token") token: string, @Ctx() ctx: ApolloContext) {
+  async googleLogin(@Arg('token') token: string, @Ctx() ctx: ApolloContext) {
     console.log(ctx);
     const payload = await verify(token);
-    if(payload) {
+    if (payload) {
       const googleId = payload.sub;
       let user = await UserModel.findOne({ googleId });
-      if(!user) {
+      if (!user) {
         const now = new Date();
-        user = await UserModel.create({ 
-          googleId, 
-          name: payload.given_name ?? "", 
-          createdAt: now, 
-          lastLoggedInAt: now 
+        user = await UserModel.create({
+          googleId,
+          name: payload.given_name ?? '',
+          createdAt: now,
+          lastLoggedInAt: now,
         });
       }
-      if(ctx.session)
-        ctx.session.userId = user._id;
+      if (ctx.session) ctx.session.userId = user._id;
       return user;
     }
     return null;

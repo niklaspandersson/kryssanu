@@ -6,23 +6,26 @@ import { AuthChecker, buildSchema, BuildSchemaOptions } from 'type-graphql';
 
 export type ApolloContext = {
   session: Koa.Context['session'];
-}
+};
 
 const authChecker: AuthChecker<ApolloContext> = ({ context }) => {
-  return !!context?.session?.userId;     
-}
+  return !!context?.session?.userId;
+};
 
-async function startApolloServer(httpServer: http.Server, opts: BuildSchemaOptions) {
-  const schema = await buildSchema({ 
-    ...opts, 
+async function startApolloServer(
+  httpServer: http.Server,
+  opts: BuildSchemaOptions
+) {
+  const schema = await buildSchema({
+    ...opts,
     authChecker,
     authMode: 'null',
   });
-  
+
   const server = new ApolloServer({
     schema,
     plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
-    context: ({ctx}: { ctx: Koa.Context }): ApolloContext => {
+    context: ({ ctx }: { ctx: Koa.Context }): ApolloContext => {
       return { session: ctx.session };
     },
   });

@@ -6,6 +6,8 @@ import 'styled-components';
 
 // and extend them!
 declare module 'styled-components' {
-  export type StyledFC<P = {}> = React.FunctionComponent<P & { className?: string}>;
-  export interface DefaultTheme extends Theme {};
+  export type StyledFC<P = {}> = React.FunctionComponent<
+    P & { className?: string }
+  >;
+  export interface DefaultTheme extends Theme {}
 }

@@ -1,7 +1,7 @@
 import { gql } from '@apollo/client';
 
 const GET_BIRDS = gql`
-query GetBirds {
+  query GetBirds {
     birds {
       id
       name

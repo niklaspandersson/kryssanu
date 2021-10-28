@@ -1,5 +1,3 @@
-const View:React.FC = ({children}) => (
-  <main>{children}</main>
-)
+const View: React.FC = ({ children }) => <main>{children}</main>;
 
 export default View;

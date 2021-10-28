@@ -1,18 +1,18 @@
-import styled, { StyledFC } from "styled-components";
-import { useAppDispatch } from "../../app/hooks";
-import { startSearch } from "../../features/search/searchSlice";
+import styled, { StyledFC } from 'styled-components';
+import { useAppDispatch } from '../../app/hooks';
+import { startSearch } from '../../features/search/searchSlice';
 import Circle from '../Circle';
-import Icon from "../Icon";
+import Icon from '../Icon';
 
 const FilledCircle = styled(Circle)`
-  background: ${({theme}) => theme.panels.background};
+  background: ${({ theme }) => theme.panels.background};
 `;
 
-const Overlay: StyledFC = ({className}) => {
+const Overlay: StyledFC = ({ className }) => {
   const dispatch = useAppDispatch();
-  
+
   const showSearchBar = () => {
-    dispatch(startSearch())
+    dispatch(startSearch());
   };
 
   return (
@@ -24,11 +24,10 @@ const Overlay: StyledFC = ({className}) => {
       </button>
     </div>
   );
-
 };
 
 export default styled(Overlay)`
   position: fixed;
-  right: ${({theme}) => theme.panels.padding};
-  padding-top: ${({theme}) => theme.panels.padding};
+  right: ${({ theme }) => theme.panels.padding};
+  padding-top: ${({ theme }) => theme.panels.padding};
 `;

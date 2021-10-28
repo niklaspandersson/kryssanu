@@ -33,8 +33,14 @@ export const GlobalIconStyles = createGlobalStyle`
   .material-icons.md-light.md-inactive { color: rgba(255, 255, 255, 0.3); }
 `;
 
-const Icon: React.FC<IconProps> = ({name: icon, light, inactive}) => 
-  (<span className={`md-icon ${!!light ? 'md-light' : 'md-dark'} ${!!inactive ? 'md-inactive' : ''}`}>{icon}</span>);
-
+const Icon: React.FC<IconProps> = ({ name: icon, light, inactive }) => (
+  <span
+    className={`md-icon ${!!light ? 'md-light' : 'md-dark'} ${
+      !!inactive ? 'md-inactive' : ''
+    }`}
+  >
+    {icon}
+  </span>
+);
 
 export default Icon;
