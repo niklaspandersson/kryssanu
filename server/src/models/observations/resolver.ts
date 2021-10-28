@@ -1,19 +1,7 @@
-import { Context } from "apollo-server-core";
-import { Arg, Ctx, Field, InputType, Mutation, Query, Resolver } from "type-graphql";
-import Observation from "./model";
-
-const TestObservations:Observation[] = [
-  {
-    userId: 'testUser',
-    birdId: 'pica pica',
-    date: new Date('2021-01-01'),
-  },
-  {
-    userId: 'testUser',
-    birdId: 'grus grus',
-    date: new Date('2021-02-01'),
-  },
-];
+import { Arg, Authorized, Ctx, Field, InputType, Mutation, Query, Resolver } from "type-graphql";
+import { ApolloContext } from "../../apollo";
+import { UserModel } from "../users";
+import { Observation } from "./model";
 
 @InputType()
 class ObservationInput implements Partial<Observation> {
@@ -24,24 +12,23 @@ class ObservationInput implements Partial<Observation> {
   listId?: number;
 }
 
-@Resolver()
+@Resolver(() => Observation)
 class ObservationResolver {
-  @Query(() => [Observation])
-  async observations(@Ctx() ctx:Context) {
-    return Promise.resolve(TestObservations);
-  }
-
+  @Authorized()
   @Mutation(() => Observation)
-  async addObservation(@Arg("data") data: ObservationInput) {
-    // sample implementation
-    const observation:Observation = {
-      ...data,
-      date: new Date(),
-      userId: 'testUser',
-    };
-    TestObservations.push(observation);
-    console.log(TestObservations);
-    return observation;
+  async addObservation(@Arg("data") data: ObservationInput, @Ctx() context: ApolloContext) {
+    const user = await UserModel.findById(context.session?.userId);
+    if(user) {
+      const observation = {
+        ...data,
+        date: new Date(),
+      };
+
+      user.observations?.push(observation);
+      await user.save();
+
+      return observation;
+    }
   }
 }
 

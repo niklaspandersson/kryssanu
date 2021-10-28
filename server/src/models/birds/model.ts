@@ -20,6 +20,9 @@ class Bird {
 
   @Field(() => [Observation], { nullable: true })
   observations?: Observation[];
+
+  @Field({ nullable: true })
+  observed?: boolean;
 }
 
 export default Bird;

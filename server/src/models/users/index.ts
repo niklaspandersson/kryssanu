@@ -1,5 +1,3 @@
-import { InMemoryUserService } from "./service";
-import User from './model';
+import {User, UserModel } from './model';
 
-const service = new InMemoryUserService();
-export { User, service };
+export { User, UserModel };

@@ -1,4 +1,4 @@
-import Observation from './model';
+import { Observation, ObservationModel } from './model';
 import ObservationResolver from './resolver';
 
-export { Observation, ObservationResolver };
+export { Observation, ObservationModel, ObservationResolver };

@@ -12,6 +12,7 @@ export const SESSION_SECRET = getEnv(
   crypto.randomBytes(128).toString("base64")
 );
 
+export const MONGODB_URI = getEnv("MONGODB_URI", "mongodb://localhost:27017/kryssanu");
 export const BIRDS_PATH = getEnv("BIRDS_PATH", path.resolve("./data/sweden.json"));
 
 // OAuth2 client / provider config

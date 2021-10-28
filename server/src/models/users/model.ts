@@ -1,18 +1,27 @@
-import { ObjectType, Field, ID } from 'type-graphql';
+import { ObjectType, Field } from 'type-graphql';
+import { prop, getModelForClass } from '@typegoose/typegoose';
+import { Observation } from '../observations';
 
 @ObjectType()
-class User {
-  @Field(() => ID)
-  id: string;
+export class User {
+  @prop()
+  googleId: string;
 
+  @prop({ required: true })
   @Field()
   name: string;
 
+  @prop({ required: true })
   @Field()
-  addedAt: Date;
+  createdAt: Date;
 
+  @prop({ required: true })
   @Field()
-  updatedAt: Date;
+  lastLoggedInAt: Date;
+
+  @prop({ type: () => Observation })
+  @Field(() => [Observation])
+  observations?: Observation[];
 }
 
-export default User;
+export const UserModel = getModelForClass(User);

@@ -1,18 +1,19 @@
 import { ObjectType, Field, ID } from 'type-graphql';
+import { prop, getModelForClass } from '@typegoose/typegoose';
 
 @ObjectType()
-class Observation {
-  @Field(() => ID)
-  userId: string;
-
+export class Observation {
+  @prop({ required: true })
   @Field()
   birdId: string;
 
+  @prop({ required: true })
   @Field()
   date: Date;
 
+  @prop()
   @Field({ nullable: true })
   listId?: number;
 }
 
-export default Observation;
+export const ObservationModel = getModelForClass(Observation);
