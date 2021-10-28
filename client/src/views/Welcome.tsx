@@ -35,7 +35,7 @@ function Welcome() {
         { theme: "filled_black", shape: "pill", size: "large" }
       );
     }
-  }, [loginWithGoogle]);
+  }, [loginWithGoogle, googleSignInButton]);
   
   return (
     <View>

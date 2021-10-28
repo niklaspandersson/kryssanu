@@ -7,6 +7,7 @@ query GetBirds {
       name
       family
       rare
+      observed
     }
   }
 `;

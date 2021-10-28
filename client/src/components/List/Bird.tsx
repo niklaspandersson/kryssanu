@@ -24,7 +24,7 @@ const LongPressCheckButton = styled(LongPressButton)`
   }
 
   &.toggled .md-icon {
-    color: #146812;
+    color: #14681275;
     transition: color 0s;
   }
 `;
@@ -79,7 +79,7 @@ const BirdListItem: StyledFC<Props> = ({ className, bird }) => {
     <li className={className}>
       <StyledCheckBox
         imageUrl="bird.jpg"
-        checked={false}
+        checked={!!bird.observed}
         onChecked={doRegisterObservation}
       />
       <span className="name">{bird.name}</span>
