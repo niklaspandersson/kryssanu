@@ -27,8 +27,7 @@ class ObservationInput implements Partial<Observation> {
 @Resolver()
 class ObservationResolver {
   @Query(() => [Observation])
-  async observations(@Ctx("ctx") ctx:Context) {
-    console.dir(ctx);
+  async observations(@Ctx() ctx:Context) {
     return Promise.resolve(TestObservations);
   }
 

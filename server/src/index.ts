@@ -7,8 +7,8 @@ import * as Config from './config';
 
 async function bootstrap() {
   const httpServer = await createHttpServer();
-  const { schema } = await initModels();
-  const apolloServer = await startApolloServer(httpServer, schema);
+  const schemaOptions = await initModels();
+  const apolloServer = await startApolloServer(httpServer, schemaOptions);
   const app = await createKoaApp(apolloServer);
 
   httpServer.on('request', app.callback());

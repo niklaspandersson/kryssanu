@@ -1,34 +1,45 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import View from "../components/View";
+import * as Config from '../config';
+import { useMutation } from '@apollo/client';
+import { gql } from '@apollo/client';
+
+const GOOGLE_AUTH = gql`
+  mutation GoogleLogin($token: String!) {
+    googleLogin(token: $token) {
+      name
+    }
+  }
+`;
 
 function Welcome() {
+  const [loginWithGoogle] = useMutation(GOOGLE_AUTH, { refetchQueries: ['GetUser'] });
+  const googleSignInButton = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    if (process.env.REACT_APP_GOOGLE_CLIENT_ID) {
+    if (Config.GOOGLE_CLIENT_ID && googleSignInButton.current) {
       window.google?.accounts.id.initialize({
-        client_id: process.env.REACT_APP_GOOGLE_CLIENT_ID,
+        client_id: Config.GOOGLE_CLIENT_ID,
         callback: async (res) => {
           console.log(res);
           if (res.credential) {
-            const idToken = res.credential;
-            await fetch("/auth/google_login", {
-              method: "POST",
-              body: new URLSearchParams({ idToken }),
-            });
+            const token = res.credential;
+            loginWithGoogle({ variables: { token } })
           }
         },
         ux_mode: "popup",
+
       });
 
       window.google?.accounts.id.renderButton(
-        document.getElementById("sign-in")!,
+        googleSignInButton.current,
         { theme: "filled_black", shape: "pill", size: "large" }
       );
     }
-  }, []);
+  }, [loginWithGoogle]);
   
   return (
     <View>
-      <div id="sign-in" />
+      <div ref={googleSignInButton} />
     </View>
   );
 }
