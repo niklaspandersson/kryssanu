@@ -1,30 +1,17 @@
-import {  useEffect } from 'react';
 import styled, { StyledFC } from "styled-components";
-import { useAppDispatch, useAppSelector } from "../../app/hooks";
-import { fetchAllAsync } from "../../features/birds/birdsSlice";
-import SearchBar from "../../features/search/SearchBar";
+import { useUser } from "../../features/user";
+import { Checklist, Welcome } from "../../views";
 import ApplicationHeader from "../ApplicationHeader";
-import List from "../List/FamilyList";
-import Overlay from "../Overlay";
 
-const App: StyledFC = ({className}) => {
-  const dispatch = useAppDispatch();
-  const isSearching = useAppSelector(s => s.search.searchString !== null);
-  useEffect(() => {
-    dispatch(fetchAllAsync());
-  }, [dispatch]);
-
+const App: StyledFC = ({ className }) => {
+  const user = useUser();
   return (
     <div className={className}>
       <ApplicationHeader />
-      <main>
-        <Overlay />
-        { isSearching && <SearchBar /> }
-        <List />
-      </main>
+      {user ? <Checklist /> : <Welcome />}
     </div>
   );
-}
+};
 
 export default styled(App)`
   display: grid;

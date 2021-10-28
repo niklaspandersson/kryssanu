@@ -1,22 +1,26 @@
-import { useState } from 'react'; 
+import { useState } from "react";
 import styled, { StyledFC } from "styled-components";
-import { useAppSelector } from "../../app/hooks";
-import { selectBirdsByFamily } from "../../features/birds";
 import { Family } from "../../features/birds";
 import Icon from "../Icon";
-import Item from "./ListItem";
+import Bird from "./Bird";
+import { useFilteredBirdByFamilies } from "../../features/birds/hooks";
 
-const RawFamilyItemGroup : StyledFC<Family> = ({name, birds, className}) => {
+const RawFamilyItemGroup: StyledFC<Family> = ({ name, birds, className }) => {
   const [collapsed, setCollapsed] = useState(false);
-  const toggleCollapsed = () => setCollapsed(prev => !prev);
+  const toggleCollapsed = () => setCollapsed((prev) => !prev);
   return (
     <li className={className}>
-      <h3>{name} <button onClick={toggleCollapsed}><Icon name={collapsed ? "arrow_left" : "arrow_drop_down"} /></button></h3>
+      <h3>
+        {name}{" "}
+        <button onClick={toggleCollapsed}>
+          <Icon name={collapsed ? "arrow_right" : "arrow_drop_down"} />
+        </button>
+      </h3>
       <ul>
-        {!collapsed && birds.map(bird => <Item key={bird.name} bird={bird} />)}
+        {!collapsed && birds.map((bird) => <Bird key={bird.id} bird={bird} />)}
       </ul>
     </li>
-  )
+  );
 };
 const FamilyItemGroup = styled(RawFamilyItemGroup)`
   list-style-type: none;
@@ -37,21 +41,22 @@ const FamilyItemGroup = styled(RawFamilyItemGroup)`
   }
 `;
 
-const FamilyList : StyledFC = ({className}) => {
-  const families = useAppSelector(selectBirdsByFamily);
-
+const FamilyList: StyledFC = ({ className }) => {
+  const families = useFilteredBirdByFamilies();
   return (
     <ul className={className}>
-      {families.map(({name, birds}) => <FamilyItemGroup key={name} name={name} birds={birds} />)}
+      {families.map(({ name, birds }) => (
+        <FamilyItemGroup key={name} name={name} birds={birds} />
+      ))}
     </ul>
   );
 };
 
 export default styled(FamilyList)`
-padding: ${({theme}) => theme.panels.padding};
-margin: 0;
-list-style-type: none;
-font-size: ${({theme}) => theme.typography.listItem.size};
-font-weight: ${({theme}) => theme.typography.listItem.weight};
-overflow-y: auto;
+  padding: ${({ theme }) => theme.panels.padding};
+  margin: 0;
+  list-style-type: none;
+  font-size: ${({ theme }) => theme.typography.listItem.size};
+  font-weight: ${({ theme }) => theme.typography.listItem.weight};
+  overflow-y: auto;
 `;

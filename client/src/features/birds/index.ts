@@ -1,20 +1,16 @@
-import birdsReducer from './birdsSlice';
-import { RootState } from '../../app/store';
 import { Bird, Family } from './types';
+import { SearchState } from '../search/searchSlice';
 
-function birdFilter(match:string|null = null) {
-  const str = match?.toLocaleLowerCase();
+export function birdFilter(filter: SearchState) {
+  const str = filter.searchString?.toLocaleLowerCase();
+  const rareFilter = filter.rare ? (_:Bird) => true : (bird:Bird) => !bird.rare;
   return (str)
-    ? (bird:Bird) => (bird.name.includes(str) || bird.family.includes(str))
-    : (bird:Bird) => true;
+    ? (bird:Bird) => rareFilter(bird) && (bird.name.includes(str) || bird.family.includes(str))
+    : (bird:Bird) => rareFilter(bird);
 }
 
-export function selectBirds(state: RootState) {
-  return state.birds.birds;
-}
-
-export function selectBirdsByFamily(state:RootState) {
-  const birds = selectBirds(state).filter(birdFilter(state.search.searchString));
+export function birdsByFamily(allBirds: Bird[], filter:SearchState) {
+  const birds = allBirds.filter(birdFilter(filter));
   const families = birds.reduce<Record<string, Bird[]>>((agg, bird) => {
     if(!agg[bird.family])
       agg[bird.family] = [];
@@ -31,5 +27,3 @@ export function selectBirdsByFamily(state:RootState) {
 }
 
 export type { Bird, Family };
-
-export default birdsReducer;

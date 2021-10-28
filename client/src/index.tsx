@@ -1,20 +1,22 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
-import { ThemeProvider, createGlobalStyle } from 'styled-components';
-import { GlobalIconStyles } from './components/Icon';
-import App from './components/App';
-import defaultTheme from './theme';
-import { store } from './app/store';
-import { Provider } from 'react-redux';
-import * as serviceWorker from './serviceWorker';
+import React from "react";
+import ReactDOM from "react-dom";
+import { ThemeProvider, createGlobalStyle } from "styled-components";
+import { GlobalIconStyles } from "./components/Icon";
+import App from "./components/App";
+import defaultTheme from "./theme";
+import { store } from "./app/store";
+import { Provider } from "react-redux";
+import { ApolloProvider } from "@apollo/client";
+import * as serviceWorker from "./serviceWorker";
+import client from "./apollo";
 
 const GlobalStyles = createGlobalStyle`
 body {
   margin: 0;
-  background: ${({theme}) => theme.colors.primaryBackground};
-  font-family: ${({theme}) => theme.typography.family};
-  font-weight: ${({theme}) => theme.typography.defaultWeight};
-  font-size: ${({theme}) => theme.typography.defaultSize};
+  background: ${({ theme }) => theme.colors.primaryBackground};
+  font-family: ${({ theme }) => theme.typography.family};
+  font-weight: ${({ theme }) => theme.typography.defaultWeight};
+  font-size: ${({ theme }) => theme.typography.defaultSize};
 
   #root {
     width: 100vw;
@@ -34,14 +36,16 @@ body {
 ReactDOM.render(
   <React.StrictMode>
     <Provider store={store}>
-      <ThemeProvider theme={defaultTheme}>
-        <GlobalStyles />
-        <GlobalIconStyles />
-        <App />
-      </ThemeProvider>
+      <ApolloProvider client={client}>
+        <ThemeProvider theme={defaultTheme}>
+          <GlobalStyles />
+          <GlobalIconStyles />
+          <App />
+        </ThemeProvider>
+      </ApolloProvider>
     </Provider>
   </React.StrictMode>,
-  document.getElementById('root')
+  document.getElementById("root")
 );
 
 // If you want your app to work offline and load faster, you can change

@@ -4,8 +4,10 @@ import Icon from '../Icon';
 
 const ApplicationHeader : StyledFC = ({className}) => {
   return (
-    <header className={className}><Icon name='menu' /></header>
-  )
+    <header className={className}>
+      <Icon name='menu' />
+    </header>
+  );
 }
 
 export default styled(ApplicationHeader)`
