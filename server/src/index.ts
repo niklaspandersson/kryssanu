@@ -8,12 +8,14 @@ import mongoose from 'mongoose';
 
 async function bootstrap() {
   try {
-    mongoose.set('debug', true);
+    if(Config.IS_DEV) {
+      mongoose.set('debug', true);
+    }
+
     await mongoose.connect(Config.MONGODB_URI);
 
     const httpServer = await createHttpServer();
-    const schemaOptions = await initModels();
-    const apolloServer = await startApolloServer(httpServer, schemaOptions);
+    const apolloServer = await startApolloServer(httpServer, await initModels());
     const app = await createKoaApp(apolloServer);
   
     httpServer.on('request', app.callback());
@@ -21,7 +23,7 @@ async function bootstrap() {
     console.log(`🚀 GraphQL endpoint ready at ${Config.USE_HTTPS ? "https" : "http"}://${Config.LISTEN_HOST}:${Config.PORT}${apolloServer.graphqlPath}`);
   }
   catch(e:any) {
-    console.error('CRITICAL: Failed to start:');
+    console.error('CRITICAL: Failed to start ---v');
     console.error(e);
   }
 }

@@ -3,6 +3,7 @@ import crypto from "crypto";
 
 import { getEnv, getEnvInt } from "./environment";
 
+export const IS_DEV = getEnv("NODE_ENV", "production") === 'development';
 export const LISTEN_HOST = getEnv("LISTEN_HOST", "0.0.0.0");
 export const PORT = getEnvInt("PORT", 8000);
 
