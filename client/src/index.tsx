@@ -32,21 +32,22 @@ body {
   }
 }
 `;
-
-ReactDOM.render(
-  <React.StrictMode>
-    <Provider store={store}>
-      <ApolloProvider client={client}>
-        <ThemeProvider theme={defaultTheme}>
-          <GlobalStyles />
-          <GlobalIconStyles />
-          <App />
-        </ThemeProvider>
-      </ApolloProvider>
-    </Provider>
-  </React.StrictMode>,
-  document.getElementById('root')
-);
+window.onload = () => {
+  ReactDOM.render(
+    <React.StrictMode>
+      <Provider store={store}>
+        <ApolloProvider client={client}>
+          <ThemeProvider theme={defaultTheme}>
+            <GlobalStyles />
+            <GlobalIconStyles />
+            <App />
+          </ThemeProvider>
+        </ApolloProvider>
+      </Provider>
+    </React.StrictMode>,
+    document.getElementById('root')
+  );
+};
 
 // If you want your app to work offline and load faster, you can change
 // unregister() to register() below. Note this comes with some pitfalls.

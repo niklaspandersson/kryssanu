@@ -4,9 +4,6 @@ export const GET_USER = gql`
   query GetUser {
     user {
       name
-      observations {
-        birdId
-      }
     }
   }
 `;
