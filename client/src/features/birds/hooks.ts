@@ -1,8 +1,8 @@
-import { useQuery } from '@apollo/client';
-import { useMemo } from 'react';
+import { useMutation, useQuery, gql } from '@apollo/client';
+import { useCallback, useMemo } from 'react';
 import { Bird, birdFilter, birdsByFamily } from '.';
 import { useAppSelector } from '../../app/hooks';
-import { GET_BIRDS } from './queries';
+import { GET_BIRDS, REGISTER_OBSERVATION } from './queries';
 
 function useFilteredBirdByFamilies() {
   const { data } = useQuery(GET_BIRDS);
@@ -23,4 +23,32 @@ function useFilteredBirds() {
   );
   return birds;
 }
-export { useFilteredBirdByFamilies, useFilteredBirds };
+
+const UPDATE_BIRD_OBSERVED = gql`
+  fragment UpdateBird on Bird {
+    observed
+  }
+`;
+function useRegisterObservation(birdId: string) {
+  const [registerObservation] = useMutation(REGISTER_OBSERVATION);
+  const doRegisterObservation = useCallback(() => {
+    registerObservation({
+      variables: {
+        data: { birdId },
+      },
+      update(cache) {
+        cache.writeFragment({
+          fragment: UPDATE_BIRD_OBSERVED,
+          data: {
+            observed: true,
+          },
+          id: `Bird:${birdId}`,
+        });
+      },
+    });
+  }, [registerObservation, birdId]);
+
+  return doRegisterObservation;
+}
+
+export { useFilteredBirdByFamilies, useFilteredBirds, useRegisterObservation };

@@ -1,11 +1,9 @@
-import { useCallback } from 'react';
-import { useMutation } from '@apollo/client';
 import styled, { StyledFC } from 'styled-components';
 import { Bird } from '../../features/birds';
 import { ImageCircle } from '../Circle';
 import Icon from '../Icon';
 import LongPressButton from '../LongPressButton';
-import { REGISTER_OBSERVATION } from '../../features/birds/queries';
+import { useRegisterObservation } from '../../features/birds/hooks';
 
 const LongPressCheckButton = styled(LongPressButton)`
   z-index: 10;
@@ -66,21 +64,13 @@ type Props = {
   bird: Bird;
 };
 const BirdListItem: StyledFC<Props> = ({ className, bird }) => {
-  const [registerObservation] = useMutation(REGISTER_OBSERVATION);
-
-  const doRegisterObservation = useCallback(() => {
-    registerObservation({
-      variables: {
-        data: { birdId: bird.id },
-      },
-    });
-  }, [registerObservation, bird.id]);
+  const registerObservation = useRegisterObservation(bird.id);
   return (
     <li className={className}>
       <StyledCheckBox
         imageUrl="bird.jpg"
         checked={!!bird.observed}
-        onChecked={doRegisterObservation}
+        onChecked={registerObservation}
       />
       <span className="name">{bird.name}</span>
     </li>
