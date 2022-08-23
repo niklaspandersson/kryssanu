@@ -1,12 +1,17 @@
 import styled, { StyledFC } from 'styled-components';
+import { SearchContext } from '../../features/search';
+import useSearchState from '../../features/search/useSearchState';
 import { useUser } from '../../features/user';
 import { Checklist, Welcome } from '../../views';
 
 const App: StyledFC = ({ className }) => {
   const user = useUser();
+  const searchState = useSearchState();
   return (
     <div className={className}>
-      <main>{user ? <Checklist /> : <Welcome />}</main>
+      <SearchContext.Provider value={searchState}>
+        <main>{user ? <Checklist /> : <Welcome />}</main>
+      </SearchContext.Provider>
     </div>
   );
 };

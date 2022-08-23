@@ -10,11 +10,13 @@ class BirdService {
     if (!Array.isArray(data)) throw new Error('Invalid birds.json format');
 
     this.#birds = data.map(b => ({
-      id: b.latin,
-      family: b.family,
-      latin: b.latin,
+      id: b.latin.toLocaleLowerCase(),
+      family: b.family.toLocaleLowerCase(),
+      latin: b.latin.toLocaleLowerCase(),
       rare: b.rare,
-      name: b.swedish ? b.swedish.toLocaleLowerCase() : b.english,
+      name: b.swedish
+        ? b.swedish.toLocaleLowerCase()
+        : b.english.toLocaleLowerCase(),
     }));
   }
 

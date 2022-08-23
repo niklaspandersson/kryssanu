@@ -4,8 +4,6 @@ import { ThemeProvider, createGlobalStyle } from 'styled-components';
 import { GlobalIconStyles } from './components/Icon';
 import App from './components/App';
 import defaultTheme from './theme';
-import { store } from './app/store';
-import { Provider } from 'react-redux';
 import { ApolloProvider } from '@apollo/client';
 import * as serviceWorker from './serviceWorker';
 import client from './apollo';
@@ -35,15 +33,13 @@ body {
 window.onload = () => {
   ReactDOM.render(
     <React.StrictMode>
-      <Provider store={store}>
-        <ApolloProvider client={client}>
-          <ThemeProvider theme={defaultTheme}>
-            <GlobalStyles />
-            <GlobalIconStyles />
-            <App />
-          </ThemeProvider>
-        </ApolloProvider>
-      </Provider>
+      <ApolloProvider client={client}>
+        <ThemeProvider theme={defaultTheme}>
+          <GlobalStyles />
+          <GlobalIconStyles />
+          <App />
+        </ThemeProvider>
+      </ApolloProvider>
     </React.StrictMode>,
     document.getElementById('root')
   );

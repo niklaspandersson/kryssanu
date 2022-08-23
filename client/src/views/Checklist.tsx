@@ -1,10 +1,10 @@
-import { useAppSelector } from '../app/hooks';
 import { FamilyList } from '../components/List';
 import Overlay from '../components/Overlay';
-import SearchBar from '../features/search/SearchBar';
+import { SearchBar, useSearch } from '../features/search';
 
 function Checklist() {
-  const isSearching = useAppSelector(s => s.search.searchString !== null);
+  const { searchString } = useSearch();
+  const isSearching = searchString !== null;
   return (
     <>
       <Overlay />

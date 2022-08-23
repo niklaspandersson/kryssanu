@@ -1,5 +1,5 @@
+import { SearchState } from '../search';
 import { Bird, Family } from './types';
-import { SearchState } from '../search/searchSlice';
 
 export function birdFilter(filter: SearchState) {
   const str = filter.searchString?.toLocaleLowerCase();

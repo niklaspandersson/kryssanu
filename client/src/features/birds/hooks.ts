@@ -1,12 +1,12 @@
 import { useMutation, useQuery, gql } from '@apollo/client';
-import { useCallback, useMemo } from 'react';
+import { useCallback, useContext, useMemo } from 'react';
 import { Bird, birdFilter, birdsByFamily } from '.';
-import { useAppSelector } from '../../app/hooks';
+import { SearchContext, useSearch } from '../search';
 import { GET_BIRDS, REGISTER_OBSERVATION } from './queries';
 
 function useFilteredBirdByFamilies() {
   const { data } = useQuery(GET_BIRDS);
-  const filter = useAppSelector(state => state.search);
+  const filter = useContext(SearchContext);
   const families = useMemo(
     () => birdsByFamily(data?.birds ?? [], filter),
     [data?.birds, filter]
@@ -16,7 +16,7 @@ function useFilteredBirdByFamilies() {
 
 function useFilteredBirds() {
   const { data } = useQuery(GET_BIRDS);
-  const filter = useAppSelector(state => state.search);
+  const filter = useSearch();
   const birds = useMemo<Bird[]>(
     () => (data?.birds ?? []).filter(birdFilter(filter)),
     [data?.birds, filter]
