@@ -1,4 +1,5 @@
 import 'reflect-metadata';
+import gracefulShutdown from 'http-graceful-shutdown';
 import createHttpServer from './server';
 import initModels from './models';
 import startApolloServer from './apollo';
@@ -14,9 +15,13 @@ async function bootstrap() {
 
     await mongoose.connect(Config.MONGODB_URI, {
       dbName: Config.MONGODB_DBNAME,
+      user: Config.MONGODB_USER,
+      pass: Config.MONGODB_PASSWORD,
     });
 
     const httpServer = await createHttpServer();
+    gracefulShutdown(httpServer);
+
     const apolloServer = await startApolloServer(
       httpServer,
       await initModels()

@@ -15,6 +15,9 @@ export const SESSION_SECRET = getEnv(
 
 export const MONGODB_URI = getEnv('MONGODB_URI', 'mongodb://localhost:27017');
 export const MONGODB_DBNAME = getEnv('MONGODB_DBNAME', 'kryssanu');
+export const MONGODB_USER = getEnv('MONGODB_USER', 'kryssanu');
+export const MONGODB_PASSWORD = getEnv('MONGODB_PASSWORD', '');
+
 export const BIRDS_PATH = getEnv(
   'BIRDS_PATH',
   path.resolve('./data/sweden.json')

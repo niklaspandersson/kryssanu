@@ -991,6 +991,13 @@ debug@^3.1.0, debug@^3.2.6:
   dependencies:
     ms "^2.1.1"
 
+debug@^4.3.4:
+  version "4.3.4"
+  resolved "https://registry.yarnpkg.com/debug/-/debug-4.3.4.tgz#1319f6579357f2338d3337d2cdd4914bb5dcc865"
+  integrity sha512-PRWFHuSU3eDtQJPvnNY7Jcket1j0t5OuOsFzPPzsekD52Zl8qUfFIPEiswXqIvHWGVHOgX+7G/vCNNhehwxfkQ==
+  dependencies:
+    ms "2.1.2"
+
 decode-uri-component@^0.2.0:
   version "0.2.0"
   resolved "https://registry.yarnpkg.com/decode-uri-component/-/decode-uri-component-0.2.0.tgz#eb3913333458775cb84cd1a1fae062106bb87545"
@@ -1511,6 +1518,13 @@ http-errors@~1.6.2:
     inherits "2.0.3"
     setprototypeof "1.1.0"
     statuses ">= 1.4.0 < 2"
+
+http-graceful-shutdown@^3.1.8:
+  version "3.1.8"
+  resolved "https://registry.yarnpkg.com/http-graceful-shutdown/-/http-graceful-shutdown-3.1.8.tgz#b25514f93b9f2ad9721001b4d66ec9983e54f726"
+  integrity sha512-u1vwhYLrpT2I52poqm04KnKyvUfpRk93BIoWSizZkDJQ2oBAjsYFG8TPlsEkamTOkIVheIYuGeOL1OpzXYUxlA==
+  dependencies:
+    debug "^4.3.4"
 
 http-proxy-middleware@^0.18.0:
   version "0.18.0"
