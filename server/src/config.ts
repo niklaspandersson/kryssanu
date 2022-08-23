@@ -7,16 +7,14 @@ export const IS_DEV = getEnv('NODE_ENV', 'production') === 'development';
 export const LISTEN_HOST = getEnv('LISTEN_HOST', '0.0.0.0');
 export const PORT = getEnvInt('PORT', 8000);
 
-export const WWW_ROOT = getEnv('WWW_ROOT', path.resolve('../frontend/build'));
+export const WWW_ROOT = getEnv('WWW_ROOT', path.resolve('../client/build'));
 export const SESSION_SECRET = getEnv(
   'SESSION_SECRET',
   crypto.randomBytes(128).toString('base64')
 );
 
-export const MONGODB_URI = getEnv(
-  'MONGODB_URI',
-  'mongodb://localhost:27017/kryssanu'
-);
+export const MONGODB_URI = getEnv('MONGODB_URI', 'mongodb://localhost:27017');
+export const MONGODB_DBNAME = getEnv('MONGODB_DBNAME', 'kryssanu');
 export const BIRDS_PATH = getEnv(
   'BIRDS_PATH',
   path.resolve('./data/sweden.json')
@@ -41,4 +39,5 @@ export const DEV_HTTPS_PRIVATE_KEY_FILE = getEnv(
   'DEV_HTTPS_PRIVATE_KEY_FILE',
   DEV_HTTPS_CERT_FILE ? undefined : null
 );
+export const DEV_FAKE_USER_ID = getEnv('DEV_FAKE_USER_ID', null);
 export const USE_HTTPS = !!DEV_HTTPS_CERT_FILE;

@@ -12,7 +12,9 @@ async function bootstrap() {
       mongoose.set('debug', true);
     }
 
-    await mongoose.connect(Config.MONGODB_URI);
+    await mongoose.connect(Config.MONGODB_URI, {
+      dbName: Config.MONGODB_DBNAME,
+    });
 
     const httpServer = await createHttpServer();
     const apolloServer = await startApolloServer(
