@@ -1,14 +1,12 @@
 import styled, { StyledFC } from 'styled-components';
 import { useUser } from '../../features/user';
 import { Checklist, Welcome } from '../../views';
-import ApplicationHeader from '../ApplicationHeader';
 
 const App: StyledFC = ({ className }) => {
   const user = useUser();
   return (
     <div className={className}>
-      <ApplicationHeader />
-      {user ? <Checklist /> : <Welcome />}
+      <main>{user ? <Checklist /> : <Welcome />}</main>
     </div>
   );
 };
