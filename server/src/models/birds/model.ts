@@ -1,8 +1,9 @@
+import { getModelForClass } from '@typegoose/typegoose';
 import { ObjectType, Field, ID } from 'type-graphql';
 import { Observation } from '../observations';
 
 @ObjectType()
-class Bird {
+export class Bird {
   @Field(() => ID)
   id: string;
 
@@ -25,4 +26,4 @@ class Bird {
   observed?: boolean;
 }
 
-export default Bird;
+export const BirdModel = getModelForClass(Bird);

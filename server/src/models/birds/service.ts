@@ -1,5 +1,5 @@
 import fs from 'fs/promises';
-import Bird from './model';
+import { Bird } from './model';
 
 class BirdService {
   #birds: Bird[];
