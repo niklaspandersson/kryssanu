@@ -1,13 +1,14 @@
 import { Ctx, Query, Resolver } from 'type-graphql';
 import { ApolloContext } from '../../apollo';
 import { UserModel } from '../users';
-import { Bird, BirdModel } from './model';
+import { Bird } from './model';
+import service from './service';
 
 @Resolver()
 class BirdResolver {
   @Query(() => [Bird])
   async birds(@Ctx() ctx: ApolloContext) {
-    const birds = await BirdModel.find({ rare: false });
+    const birds = service.birds; // await BirdModel.find({ rare: false });
     if (ctx.session?.userId) {
       const user = await UserModel.findById(ctx.session.userId);
       const observedIds = user?.observations?.map(o => o.birdId) ?? [];
