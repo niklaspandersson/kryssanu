@@ -1,0 +1,31 @@
+services:
+  mongo:
+    image: mongo:latest
+    environment:
+      - MONGO_INITDB_ROOT_PASSWORD=${DEV_DB_USER}
+      - MONGO_INITDB_ROOT_USERNAME=${DEV_DB_PASSWORD}
+
+  # client:
+  #   build:
+  #     context: server
+  #     dockerfile: Dockerfile.dev
+  #     args:
+  #       - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+  #   volumes:
+  #     - client-node-modules:/app/node_modules:ro
+
+  server: 
+    build:
+      context: server
+      dockerfile: Dockerfile.dev
+    environment:
+      - PORT=8000
+      - MONGODB_URI=mongodb://mongo
+      - MONGODB_USER=${DEV_DB_USER}
+      - MONGODB_PASSWORD=${DEV_DB_PASSWORD}
+      - BIRDS_PATH=./birds.json
+    ports: 
+      - "8000:8000"
+    volumes:
+      - ./server/src:/app/src
+      - ./data/sweden.json:/app/birds.json

@@ -8,6 +8,7 @@ import * as Config from './config';
 import mongoose from 'mongoose';
 
 async function bootstrap() {
+  console.dir(Config);
   try {
     if (Config.IS_DEV) {
       mongoose.set('debug', true);
