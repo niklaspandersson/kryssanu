@@ -1,11 +1,21 @@
 import styled, { StyledFC } from 'styled-components';
 import Icon from '../Icon';
+import ApplicationMenu from '../ApplicationMenu';
+import { useState } from 'react';
 
 const ApplicationHeader: StyledFC = ({ className }) => {
+  const [menuVisible, setMenuVisibility] = useState(false);
   return (
-    <header className={className}>
-      <Icon name="menu" />
-    </header>
+    <>
+      <header className={className}>
+        <button onClick={() => setMenuVisibility(prev => !prev)}>
+          <Icon name="menu" />
+        </button>
+      </header>
+      {menuVisible && (
+        <ApplicationMenu onClose={() => setMenuVisibility(false)} />
+      )}
+    </>
   );
 };
 
