@@ -7,7 +7,7 @@ export class Observation {
   @Field()
   birdId: string;
 
-  @prop({ required: true })
+  @prop()
   @Field()
   date: Date;
 
