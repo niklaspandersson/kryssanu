@@ -1,7 +1,14 @@
 import { useEffect, useRef } from 'react';
-import { useMutation } from '@apollo/client';
-import { LOGIN_WITH_GOOGLE } from './graphql';
+import { useMutation, gql } from '@apollo/client';
 import * as Config from '../../config';
+
+const LOGIN_WITH_GOOGLE = gql`
+  mutation GoogleLogin($token: String!) {
+    googleLogin(token: $token) {
+      name
+    }
+  }
+`;
 
 const useGoogleLogin = () => {
   const [loginWithGoogle] = useMutation(LOGIN_WITH_GOOGLE, {
