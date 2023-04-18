@@ -2,7 +2,7 @@ import { FamilyList } from '../components/List';
 import Overlay from '../components/Overlay';
 import { SearchBar, useSearch } from '../features/search';
 
-function Checklist() {
+function Listview() {
   const { searchString } = useSearch();
   const isSearching = searchString !== null;
   return (
@@ -14,4 +14,4 @@ function Checklist() {
   );
 }
 
-export default Checklist;
+export default Listview;

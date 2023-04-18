@@ -2,7 +2,7 @@ import styled, { StyledFC } from 'styled-components';
 import { SearchContext } from '../../features/search';
 import useSearchState from '../../features/search/useSearchState';
 import { useUser } from '../../features/user';
-import { Checklist, Welcome } from '../../views';
+import { Listview, Welcome } from '../../views';
 import ApplicationHeader from '../ApplicationHeader';
 
 const App: StyledFC = ({ className }) => {
@@ -10,17 +10,9 @@ const App: StyledFC = ({ className }) => {
   const searchState = useSearchState();
   return (
     <div className={className}>
+      <ApplicationHeader />
       <SearchContext.Provider value={searchState}>
-        <main>
-          {user ? (
-            <>
-              <ApplicationHeader />
-              <Checklist />
-            </>
-          ) : (
-            <Welcome />
-          )}
-        </main>
+        <main>{user ? <Listview /> : <Welcome />}</main>
       </SearchContext.Provider>
     </div>
   );
