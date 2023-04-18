@@ -4,6 +4,7 @@ import { ImageCircle } from '../../../components/Circle';
 import Icon from '../../../components/Icon';
 import LongPressButton from '../../../components/LongPressButton';
 import { useRegisterObservation } from '../hooks';
+import { useCallback } from 'react';
 
 const LongPressCheckButton = styled(LongPressButton)`
   z-index: 10;
@@ -62,8 +63,13 @@ const StyledCheckBox = styled(CheckBox)`
 
 type Props = {
   bird: Bird;
+  select?: (bird: Bird) => void;
 };
-const BirdListItem: StyledFC<Props> = ({ className, bird }) => {
+const BirdListItem: StyledFC<Props> = ({ select, className, bird }) => {
+  const onClick = useCallback(() => {
+    select?.(bird);
+  }, [bird, select]);
+
   const registerObservation = useRegisterObservation(bird.id);
   return (
     <li className={className}>
@@ -72,7 +78,9 @@ const BirdListItem: StyledFC<Props> = ({ className, bird }) => {
         checked={!!bird.observed}
         onChecked={registerObservation}
       />
-      <span className="name">{bird.name}</span>
+      <span onClick={onClick} className="name">
+        {bird.name}
+      </span>
     </li>
   );
 };

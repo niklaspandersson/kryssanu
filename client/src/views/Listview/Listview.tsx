@@ -5,6 +5,7 @@ import Overlay from '../../components/Overlay';
 import { SearchBar, useSearchState } from './Search';
 import { useState } from 'react';
 import SideMenu from './SideMenu';
+import { Bird } from './types';
 
 const StyledHeader = styled(Header)`
   display: flex;
@@ -14,7 +15,11 @@ const StyledHeader = styled(Header)`
     `0px ${theme.panels.shadow.distance} ${theme.panels.shadow.spread} ${theme.panels.shadow.color}`};
 `;
 
-const Listview: StyledFC = ({ className }) => {
+type Props = {
+  onSelectBird: (bird: Bird) => void;
+};
+
+const Listview: StyledFC<Props> = ({ onSelectBird, className }) => {
   const [showMenu, setShowMenu] = useState(false);
   const { search, startSearch, endSearch, ...filter } = useSearchState();
   const isSearching = filter.searchString !== null;
@@ -24,7 +29,7 @@ const Listview: StyledFC = ({ className }) => {
       {showMenu && <SideMenu close={() => setShowMenu(false)} />}
       <Overlay onStartSearch={startSearch} />
       {isSearching && <SearchBar onSearch={search} onEndSearch={endSearch} />}
-      <FamilyList filter={filter} />
+      <FamilyList filter={filter} onSelectBird={onSelectBird} />
     </div>
   );
 };
