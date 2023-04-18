@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import styled, { StyledFC } from 'styled-components';
-import { useDebounce } from '../../../utils';
-import Icon from '../../../components/Icon';
+import { useDebounce } from '../../utils';
+import Icon from '../../components/Icon';
 
 type Props = {
   onSearch: (str: string) => void;

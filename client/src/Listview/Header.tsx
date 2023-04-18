@@ -1,5 +1,5 @@
 import { StyledFC } from 'styled-components';
-import Icon from '../../components/Icon';
+import Icon from '../components/Icon';
 
 type Props = {
   showMenu: () => void;

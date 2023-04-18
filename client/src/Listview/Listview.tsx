@@ -1,7 +1,7 @@
 import styled, { StyledFC } from 'styled-components';
 import Header from './Header';
 import FamilyList from './FamilyList';
-import Overlay from '../../components/Overlay';
+import Overlay from '../components/Overlay';
 import { SearchBar, useSearchState } from './Search';
 import { useState } from 'react';
 import SideMenu from './SideMenu';
@@ -28,7 +28,7 @@ const Listview: StyledFC<Props> = ({ onSelectBird, className }) => {
       <StyledHeader showMenu={() => setShowMenu(true)} />
       {showMenu && <SideMenu close={() => setShowMenu(false)} />}
       <Overlay onStartSearch={startSearch} />
-      {isSearching && <SearchBar onSearch={search} onEndSearch={endSearch} />}
+      {/* {isSearching && <SearchBar onSearch={search} onEndSearch={endSearch} />} */}
       <FamilyList filter={filter} onSelectBird={onSelectBird} />
     </div>
   );

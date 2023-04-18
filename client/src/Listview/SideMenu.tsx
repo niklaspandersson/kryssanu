@@ -1,6 +1,6 @@
 import styled, { StyledFC } from 'styled-components';
-import Icon from '../../components/Icon';
-import IconHeader from '../../components/IconHeader';
+import Icon from '../components/Icon';
+import IconHeader from '../components/IconHeader';
 
 type Props = {
   close: () => void;

@@ -1,8 +1,8 @@
 import styled, { StyledFC } from 'styled-components';
 import { Bird } from '../types';
-import { ImageCircle } from '../../../components/Circle';
-import Icon from '../../../components/Icon';
-import LongPressButton from '../../../components/LongPressButton';
+import { ImageCircle } from '../../components/Circle';
+import Icon from '../../components/Icon';
+import LongPressButton from '../../components/LongPressButton';
 import { useRegisterObservation } from '../hooks';
 import { useCallback } from 'react';
 

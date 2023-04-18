@@ -1,8 +1,10 @@
 import styled, { StyledFC } from 'styled-components';
-import { useUser } from '../../features/user';
-import { Listview, Welcome } from '../../views';
+import { useUser } from './features/user';
+import Listview from './Listview';
+import Welcome from './Welcome';
 import { useCallback, useState } from 'react';
-import { Bird } from '../../views/Listview/types';
+import { Bird } from './Listview/types';
+import Details from './Details';
 
 const App: StyledFC = ({ className }) => {
   const user = useUser();
@@ -17,9 +19,9 @@ const App: StyledFC = ({ className }) => {
   return (
     <main className={className}>
       {user ? <Listview onSelectBird={onSelectBird} /> : <Welcome />}
-      {/* {selectedBird && (
-        // <Details onClose={() => setSelectedBird(null)} bird={selectedBird} />
-      )} */}
+      {selectedBird && (
+        <Details onClose={() => setSelectedBird(null)} bird={selectedBird} />
+      )}
     </main>
   );
 };

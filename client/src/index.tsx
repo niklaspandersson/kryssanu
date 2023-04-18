@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import { ThemeProvider, createGlobalStyle } from 'styled-components';
 import { GlobalIconStyles } from './components/Icon';
-import App from './components/App';
+import App from './App';
 import defaultTheme from './theme';
 import { ApolloProvider } from '@apollo/client';
 import * as serviceWorker from './serviceWorker';
