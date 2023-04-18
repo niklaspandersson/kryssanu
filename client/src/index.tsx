@@ -27,6 +27,7 @@ body {
     background: transparent;
     padding: 0;
     margin: 0;
+    display: inline-flex;
   }
 }
 `;
