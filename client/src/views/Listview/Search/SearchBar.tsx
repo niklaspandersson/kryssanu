@@ -1,19 +1,21 @@
 import { useEffect, useState, useRef } from 'react';
 import styled, { StyledFC } from 'styled-components';
-import { useDebounce } from '../../utils';
-import Icon from '../../components/Icon';
-import useSearch from './useSearch';
+import { useDebounce } from '../../../utils';
+import Icon from '../../../components/Icon';
 
-const SearchBar: StyledFC = ({ className }) => {
+type Props = {
+  onSearch: (str: string) => void;
+  onEndSearch: () => void;
+};
+
+const SearchBar: StyledFC<Props> = ({ onSearch, onEndSearch, className }) => {
   const [immediate, setImmediate] = useState('');
   const debounced = useDebounce(immediate, 300);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const { search, endSearch } = useSearch();
-
   useEffect(() => {
-    search(debounced);
-  }, [search, debounced]);
+    onSearch(debounced);
+  }, [onSearch, debounced]);
 
   useEffect(() => {
     inputRef.current?.focus();
@@ -28,7 +30,7 @@ const SearchBar: StyledFC = ({ className }) => {
         onChange={e => setImmediate(e.target.value)}
         placeholder="sök"
       />
-      <button onClick={endSearch}>
+      <button onClick={onEndSearch}>
         <Icon name="gps_off" />
       </button>
     </div>

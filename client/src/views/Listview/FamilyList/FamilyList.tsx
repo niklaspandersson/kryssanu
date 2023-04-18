@@ -1,9 +1,8 @@
 import { useState } from 'react';
 import styled, { StyledFC } from 'styled-components';
-import { Family } from '../../features/birds';
-import Icon from '../Icon';
+import { Family, SearchState } from '../types';
 import Bird from './Bird';
-import { useFilteredBirdByFamilies } from '../../features/birds/hooks';
+import { useFilteredBirdByFamilies } from '../hooks';
 
 const RawFamilyItemGroup: StyledFC<Family> = ({ name, birds, className }) => {
   const [collapsed, setCollapsed] = useState(false);
@@ -11,10 +10,7 @@ const RawFamilyItemGroup: StyledFC<Family> = ({ name, birds, className }) => {
   return (
     <li className={className}>
       <h3>
-        {name}{' '}
-        <button onClick={toggleCollapsed}>
-          <Icon name={collapsed ? 'arrow_right' : 'arrow_drop_down'} />
-        </button>
+        <button onClick={toggleCollapsed}>{name}</button>
       </h3>
       <ul>
         {!collapsed && birds.map(bird => <Bird key={bird.id} bird={bird} />)}
@@ -33,7 +29,7 @@ const FamilyItemGroup = styled(RawFamilyItemGroup)`
     justify-content: center;
     display: flex;
     align-items: center;
-    font-weight: 400;
+    font-weight: 200;
     font-size: 1rem;
     text-transform: lowercase;
     text-align: center;
@@ -41,8 +37,12 @@ const FamilyItemGroup = styled(RawFamilyItemGroup)`
   }
 `;
 
-const FamilyList: StyledFC = ({ className }) => {
-  const families = useFilteredBirdByFamilies();
+type Props = {
+  filter: SearchState;
+};
+
+const FamilyList: StyledFC<Props> = ({ filter, className }) => {
+  const families = useFilteredBirdByFamilies(filter);
   return (
     <ul className={className}>
       {families.map(({ name, birds }) => (

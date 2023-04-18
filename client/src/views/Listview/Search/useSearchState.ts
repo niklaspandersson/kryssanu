@@ -1,5 +1,5 @@
 import { useMemo, useReducer } from 'react';
-import { SearchState } from './context';
+import { SearchState } from '../types';
 
 type Action = {
   type: string;

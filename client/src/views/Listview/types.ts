@@ -1,3 +1,8 @@
+export type SearchState = {
+  searchString: string | null;
+  rare: boolean;
+};
+
 export type Bird = {
   id: string;
   family: string;

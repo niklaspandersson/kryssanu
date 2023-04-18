@@ -1,15 +1,15 @@
 import styled, { StyledFC } from 'styled-components';
-import Icon from '../Icon';
-import IconHeader from '../IconHeader';
+import Icon from '../../components/Icon';
+import IconHeader from '../../components/IconHeader';
 
 type Props = {
-  onClose: () => void;
+  close: () => void;
 };
 
-const ApplicationMenu: StyledFC<Props> = ({ onClose, className }) => {
+const SideMenu: StyledFC<Props> = ({ close, className }) => {
   return (
     <div className={className}>
-      <button onClick={onClose}>
+      <button onClick={close}>
         <Icon name="close" />
       </button>
       <div>
@@ -38,7 +38,7 @@ const ApplicationMenu: StyledFC<Props> = ({ onClose, className }) => {
   );
 };
 
-export default styled(ApplicationMenu)`
+export default styled(SideMenu)`
 position absolute;
 top: 0;
 bottom: 0;

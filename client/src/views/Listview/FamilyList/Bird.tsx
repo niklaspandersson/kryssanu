@@ -1,9 +1,9 @@
 import styled, { StyledFC } from 'styled-components';
-import { Bird } from '../../features/birds';
-import { ImageCircle } from '../Circle';
-import Icon from '../Icon';
-import LongPressButton from '../LongPressButton';
-import { useRegisterObservation } from '../../features/birds/hooks';
+import { Bird } from '../types';
+import { ImageCircle } from '../../../components/Circle';
+import Icon from '../../../components/Icon';
+import LongPressButton from '../../../components/LongPressButton';
+import { useRegisterObservation } from '../hooks';
 
 const LongPressCheckButton = styled(LongPressButton)`
   z-index: 10;
