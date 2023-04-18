@@ -26,7 +26,7 @@ const SearchBar: StyledFC = ({ className }) => {
         type="text"
         value={immediate}
         onChange={e => setImmediate(e.target.value)}
-        placeholder="search"
+        placeholder="sök"
       />
       <button onClick={endSearch}>
         <Icon name="gps_off" />
