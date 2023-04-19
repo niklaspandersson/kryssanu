@@ -2,13 +2,13 @@ import styled, { StyledFC } from 'styled-components';
 import Icon from './Icon';
 
 type Props = {
-  icon: string;
+  icon: string | JSX.Element;
 };
 
 const IconHeader: StyledFC<Props> = ({ icon, children, className }) => {
   return (
     <header className={className}>
-      <Icon name={icon} />
+      {typeof icon === 'string' ? <Icon name={icon} /> : icon}
       <h2>{children}</h2>
     </header>
   );

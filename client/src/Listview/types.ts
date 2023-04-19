@@ -12,6 +12,11 @@ export type Bird = {
   rare?: boolean;
 };
 
+export type Observation = {
+  date: string;
+  listId: string | null;
+};
+
 export type Family = {
   name: string;
   birds: Bird[];

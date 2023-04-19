@@ -42,6 +42,16 @@ class ObservationResolver {
       return observation;
     }
   }
+
+  @Authorized()
+  @Query(() => [Observation])
+  async observations(
+    @Arg('birdId') birdId: string,
+    @Ctx() context: ApolloContext
+  ) {
+    const user = await UserModel.findById(context.session?.userId);
+    return user?.observations?.filter(o => o.birdId === birdId);
+  }
 }
 
 export default ObservationResolver;
