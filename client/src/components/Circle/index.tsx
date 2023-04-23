@@ -31,6 +31,8 @@ const RawImageCircle: StyledFC<Props & { url: string; alt: string }> = ({
 
 export const ImageCircle = styled(RawImageCircle)`
   img {
+    user-select: none;
+    -webkit-touch-callout: none;
     opacity: 0.5;
     border: 0;
     border-radius: ${({ size }) => size}px;
