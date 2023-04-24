@@ -1,3 +1,4 @@
+import { z } from 'zod';
 import {
   createTRPCRouter,
   publicProcedure,
@@ -6,10 +7,32 @@ import {
 
 export const birdsRouter = createTRPCRouter({
   getAll: publicProcedure.query(({ ctx }) => {
-    return ctx.prisma.bird.findMany();
+    return ctx.prisma.bird.findMany({
+      orderBy: {
+        swedish: 'asc',
+      },
+    });
   }),
 
-  getSecretMessage: protectedProcedure.query(() => {
-    return 'you can now see this secret message!';
+  getObservedBirds: protectedProcedure.query(({ ctx }) => {
+    const userId = ctx.session.user.id;
+    return ctx.prisma.observation.findMany({
+      select: { birdId: true },
+      distinct: ['birdId'],
+      where: { userId },
+    });
   }),
+
+  getObservations: protectedProcedure
+    .input(
+      z.object({
+        birdId: z.string(),
+      })
+    )
+    .query(({ ctx, input }) => {
+      const userId = ctx.session.user.id;
+      return ctx.prisma.observation.findMany({
+        where: { userId, birdId: input.birdId },
+      });
+    }),
 });
