@@ -7,8 +7,6 @@ import { api } from '~/utils/api';
 import Link from 'next/link';
 
 const Home: NextPage = () => {
-  const hello = api.example.hello.useQuery({ text: 'from tRPC' });
-
   return (
     <>
       <Head>
@@ -22,9 +20,6 @@ const Home: NextPage = () => {
             Kryssa<span className={styles.pinkSpan}>.nu</span>
           </h1>
           <div className={styles.showcaseContainer}>
-            <p className={styles.showcaseText}>
-              {hello.data ? hello.data.greeting : 'Loading tRPC query...'}
-            </p>
             <AuthShowcase />
           </div>
         </div>
@@ -38,16 +33,10 @@ export default Home;
 const AuthShowcase: React.FC = () => {
   const { data: sessionData } = useSession();
 
-  const { data: secretMessage } = api.example.getSecretMessage.useQuery(
-    undefined, // no input
-    { enabled: sessionData?.user !== undefined }
-  );
-
   return (
     <div className={styles.authContainer}>
       <p className={styles.showcaseText}>
         {sessionData && <Link href="/list">Gå till listan</Link>}
-        {secretMessage && <span> - {secretMessage}</span>}
       </p>
       <button
         className={styles.loginButton}
