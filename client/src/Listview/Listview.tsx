@@ -28,7 +28,7 @@ const Listview: StyledFC<Props> = ({ onSelectBird, className }) => {
       <StyledHeader showMenu={() => setShowMenu(true)} />
       {showMenu && <SideMenu close={() => setShowMenu(false)} />}
       <Overlay onStartSearch={startSearch} />
-      {/* {isSearching && <SearchBar onSearch={search} onEndSearch={endSearch} />} */}
+      {isSearching && <SearchBar onSearch={search} onEndSearch={endSearch} />}
       <FamilyList filter={filter} onSelectBird={onSelectBird} />
     </div>
   );
@@ -37,5 +37,5 @@ const Listview: StyledFC<Props> = ({ onSelectBird, className }) => {
 export default styled(Listview)`
   display: grid;
   overflow-y: hidden;
-  grid-template-rows: auto 1fr;
+  grid-template-rows: auto auto 1fr;
 `;
