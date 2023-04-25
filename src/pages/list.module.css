@@ -1,0 +1,15 @@
+.birds {
+  margin: 0;
+  padding: 0;
+}
+
+.birds li {
+  display: flex;
+  margin-bottom: 10px;
+  list-style-type: none;
+  align-items: center;
+}
+
+.birds li a {
+  padding-left: 10px;
+}

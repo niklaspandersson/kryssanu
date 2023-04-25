@@ -1,16 +1,36 @@
-import { type NextPage } from 'next';
+import styles from './list.module.css';
+import { createServerSideHelpers } from '@trpc/react-query/server';
+import type { InferGetStaticPropsType, NextPage } from 'next';
+import BirdListItem from '~/components/list/Bird';
+import { appRouter } from '~/server/api';
+import superjson from 'superjson';
+import { prisma } from '~/server/db';
 
-import { api } from '~/utils/api';
+const helper = createServerSideHelpers({
+  router: appRouter,
+  ctx: { prisma, session: null },
+  transformer: superjson, // optional - adds superjson serialization
+});
 
-const Home: NextPage = () => {
-  const res = api.birds.getAll.useQuery();
-  if (!res.data) return <main></main>;
+export async function getStaticProps() {
+  const birds = await helper.birds.getAll.fetch();
+  return {
+    props: {
+      birds,
+    },
+  };
+}
 
+const Home: NextPage<InferGetStaticPropsType<typeof getStaticProps>> = ({
+  birds,
+}) => {
   return (
     <main>
-      {res.data?.map(b => (
-        <span key={b.id}>{b.swedish}</span>
-      ))}
+      <ul className={styles.birds}>
+        {birds.map(b => (
+          <BirdListItem key={b.id} bird={b} />
+        ))}
+      </ul>
     </main>
   );
 };
