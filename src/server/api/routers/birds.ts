@@ -8,6 +8,9 @@ import {
 export const birdsRouter = createTRPCRouter({
   getAll: publicProcedure.query(({ ctx }) => {
     return ctx.prisma.bird.findMany({
+      where: {
+        visitor: false,
+      },
       orderBy: {
         swedish: 'asc',
       },
