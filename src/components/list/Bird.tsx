@@ -14,7 +14,7 @@ const BirdListItem = ({ bird, observed }: Props) => {
         className={observed ? styles.observed : ''}
         width="52"
         height="52"
-        src="bird.png"
+        src="/bird-icon.png"
         alt="Image of a bird"
       />
       <Link href={`bird/${bird.id}`}>{bird.swedish}</Link>
