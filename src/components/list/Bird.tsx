@@ -4,13 +4,14 @@ import Link from 'next/link';
 
 type Props = {
   bird: Bird;
+  observed: boolean;
 };
 
-const BirdListItem = ({ bird }: Props) => {
+const BirdListItem = ({ bird, observed }: Props) => {
   return (
     <li>
       <img
-        className={bird.swedish.length < 10 ? styles.observed : ''}
+        className={observed ? styles.observed : ''}
         width="52"
         height="52"
         src="bird.png"
