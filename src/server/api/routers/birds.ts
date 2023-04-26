@@ -26,6 +26,18 @@ export const birdsRouter = createTRPCRouter({
     });
   }),
 
+  getOne: publicProcedure
+    .input(
+      z.object({
+        birdId: z.string(),
+      })
+    )
+    .query(({ ctx, input }) => {
+      return ctx.prisma.bird.findFirst({
+        where: { id: input.birdId },
+      });
+    }),
+
   getObservations: protectedProcedure
     .input(
       z.object({
