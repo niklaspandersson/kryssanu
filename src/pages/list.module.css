@@ -10,7 +10,11 @@
     align-items: center;
 
     & a {
+      display: flex;
+      align-items: center;
       padding-left: var(--medium-padding);
+      flex-grow: 1;
+      align-self: stretch;
     }
   }
 
