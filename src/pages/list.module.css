@@ -1,20 +1,21 @@
 .birds {
   margin: 0;
   padding: 0;
-}
+  padding-left: var(--medium-padding);
 
-.birds li {
-  display: flex;
-  margin-bottom: 10px;
-  list-style-type: none;
-  align-items: center;
-}
+  & li {
+    display: flex;
+    margin-bottom: var(--medium-padding);
+    list-style-type: none;
+    align-items: center;
 
-.birds img.observed {
-  border-radius: 9999px;
-  border: 5px solid green;
-}
+    & a {
+      padding-left: var(--medium-padding);
+    }
+  }
 
-.birds li a {
-  padding-left: 10px;
+  & img.observed {
+    border-radius: 9999px;
+    border: 5px solid green;
+  }
 }

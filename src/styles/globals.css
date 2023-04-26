@@ -1,3 +1,7 @@
+:root {
+  --medium-padding: 10px;
+}
+
 html,
 body {
   padding: 0;
@@ -15,8 +19,8 @@ a {
   box-sizing: border-box;
 }
 
-.md-icon { 
-  user-select: none; 
+.md-icon {
+  user-select: none;
   font-family: 'Material Icons';
   font-weight: normal;
   font-style: normal;
@@ -34,9 +38,17 @@ a {
 }
 
 /* Rules for using icons as black on a light background. */
-.md-icon.md-dark { color: rgba(0, 0, 0, 0.54); }
-.md-icon.md-dark.md-inactive { color: rgba(0, 0, 0, 0.26); }
+.md-icon.md-dark {
+  color: rgba(0, 0, 0, 0.54);
+}
+.md-icon.md-dark.md-inactive {
+  color: rgba(0, 0, 0, 0.26);
+}
 
 /* Rules for using icons as white on a dark background. */
-.md-icon.md-light { color: rgba(255, 255, 255, 1); }
-.md-icon.md-light.md-inactive { color: rgba(255, 255, 255, 0.3); }
+.md-icon.md-light {
+  color: rgba(255, 255, 255, 1);
+}
+.md-icon.md-light.md-inactive {
+  color: rgba(255, 255, 255, 0.3);
+}
