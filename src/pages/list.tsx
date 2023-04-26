@@ -7,6 +7,7 @@ import { appRouter } from '~/server/api';
 import superjson from 'superjson';
 import { prisma } from '~/server/db';
 import { api } from '~/utils/api';
+import Header from '~/components/list/Header';
 
 const helper = createServerSideHelpers({
   router: appRouter,
@@ -34,6 +35,7 @@ const BirdList: NextPage<InferGetStaticPropsType<typeof getStaticProps>> = ({
 
   return (
     <main>
+      <Header />
       <ul className={styles.birds}>
         {birds.map(b => (
           <BirdListItem
