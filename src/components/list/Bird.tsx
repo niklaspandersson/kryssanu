@@ -1,21 +1,19 @@
-import styles from '../../pages/list.module.css';
 import { type Bird } from '@prisma/client';
 import Link from 'next/link';
+import ImageCheckBox from './ImageCheckBox';
 
 type Props = {
   bird: Bird;
   observed: boolean;
+  registerObservation: (birdId: string) => void;
 };
 
-const BirdListItem = ({ bird, observed }: Props) => {
+const BirdListItem = ({ bird, observed, registerObservation }: Props) => {
   return (
     <li>
-      <img
-        className={observed ? styles.observed : ''}
-        width="52"
-        height="52"
-        src="/bird-icon.png"
-        alt="Image of a bird"
+      <ImageCheckBox
+        observed={observed}
+        onClick={() => registerObservation(bird.id)}
       />
       <Link href={`bird/${bird.id}`}>{bird.swedish}</Link>
     </li>

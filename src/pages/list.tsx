@@ -33,12 +33,17 @@ const BirdList: NextPage<InferGetStaticPropsType<typeof getStaticProps>> = ({
     [data?.length]
   );
 
+  const onRegisterObservation = (birdId: string) => {
+    console.log(`Register observation for: ${birdId}`);
+  };
+
   return (
     <main>
       <Header />
       <ul className={styles.birds}>
         {birds.map(b => (
           <BirdListItem
+            registerObservation={onRegisterObservation}
             key={b.id}
             observed={observedBirds.has(b.id)}
             bird={b}
