@@ -21,7 +21,7 @@ export async function getStaticProps() {
   };
 }
 
-const Home: NextPage<InferGetStaticPropsType<typeof getStaticProps>> = ({
+const BirdList: NextPage<InferGetStaticPropsType<typeof getStaticProps>> = ({
   birds,
 }) => {
   return (
@@ -35,4 +35,4 @@ const Home: NextPage<InferGetStaticPropsType<typeof getStaticProps>> = ({
   );
 };
 
-export default Home;
+export default BirdList;

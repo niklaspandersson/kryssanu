@@ -10,6 +10,11 @@
   align-items: center;
 }
 
+.birds img.observed {
+  border-radius: 9999px;
+  border: 5px solid green;
+}
+
 .birds li a {
   padding-left: 10px;
 }
