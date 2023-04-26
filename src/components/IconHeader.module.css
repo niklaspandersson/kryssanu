@@ -1,0 +1,12 @@
+.iconHeader {
+  display: flex;
+  align-items: center;
+  flex-flow: row nowrap;
+  margin-top: var(--medium-padding);
+
+  & h2 {
+    font-size: 1.2rem;
+    font-weight: 400;
+    margin: 0 0 0 0.75em;
+  }
+}
