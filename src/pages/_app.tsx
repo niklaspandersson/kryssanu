@@ -16,6 +16,10 @@ const MyApp: AppType<{ session: Session | null }> = ({
       <Head>
         <title>Kryssa nu</title>
         <link rel="icon" href="/favicon.ico" />
+        <link
+          href="https://fonts.googleapis.com/icon?family=Material+Icons"
+          rel="stylesheet"
+        />
       </Head>
       <Component {...pageProps} />
     </SessionProvider>
