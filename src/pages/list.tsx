@@ -33,8 +33,13 @@ const BirdList: NextPage<InferGetStaticPropsType<typeof getStaticProps>> = ({
     [data?.length]
   );
 
+  const createObservation = api.birds.registerObservation.useMutation();
+
   const onRegisterObservation = (birdId: string) => {
-    console.log(`Register observation for: ${birdId}`);
+    createObservation
+      .mutateAsync({ birdId })
+      .then(console.log)
+      .catch(console.error);
   };
 
   return (

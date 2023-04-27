@@ -50,4 +50,15 @@ export const birdsRouter = createTRPCRouter({
         where: { userId, birdId: input.birdId },
       });
     }),
+  registerObservation: protectedProcedure
+    .input(z.object({ birdId: z.string() }))
+    .mutation(({ ctx, input }) => {
+      return ctx.prisma.observation.create({
+        data: {
+          birdId: input.birdId,
+          userId: ctx.session.user.id,
+          date: new Date(),
+        },
+      });
+    }),
 });
