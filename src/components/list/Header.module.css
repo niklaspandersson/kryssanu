@@ -1,0 +1,15 @@
+.header {
+  padding: var(--medium-padding);
+  border-bottom: 1px solid #bbb;
+  margin-bottom: 10px;
+  position: sticky;
+  background: white;
+  top: 0px;
+  z-index: 10;
+}
+.button {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  background: none;
+}

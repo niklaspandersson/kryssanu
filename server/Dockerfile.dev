@@ -1,9 +1,0 @@
-FROM node:16-alpine
-WORKDIR /app
-
-COPY ./package.json .
-COPY ./yarn.lock .
-COPY ./tsconfig.json .
-RUN yarn
-
-CMD ["/app/node_modules/.bin/nodemon", "--watch", "src", "-e", "ts,json", "--exec", "ts-node", "src/index.ts"]

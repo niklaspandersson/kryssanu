@@ -1,0 +1,20 @@
+.birds {
+  margin: 0;
+  padding: 0;
+  padding-left: var(--medium-padding);
+
+  & li {
+    display: flex;
+    margin-bottom: var(--medium-padding);
+    list-style-type: none;
+    align-items: center;
+
+    & a {
+      display: flex;
+      align-items: center;
+      margin-left: var(--medium-padding);
+      flex-grow: 1;
+      align-self: stretch;
+    }
+  }
+}
