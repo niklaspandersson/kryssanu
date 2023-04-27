@@ -1,11 +1,11 @@
 .header {
   padding: var(--medium-padding);
-  border-bottom: 1px solid gray;
+  border-bottom: 1px solid #bbb;
   margin-bottom: 10px;
   position: sticky;
   background: white;
   top: 0px;
-  z-index: 1;
+  z-index: 10;
 }
 .button {
   border: 0;

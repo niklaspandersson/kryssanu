@@ -3,10 +3,11 @@ import styles from './[id].module.css';
 import type { NextPage } from 'next';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { Bird } from '@prisma/client';
+import type { Bird } from '@prisma/client';
 import { api } from '~/utils/api';
 import Icon, { Binoculars } from '~/components/Icon';
 import IconHeader from '~/components/IconHeader';
+import Layout from '~/components/Layout';
 
 type Props = {
   bird: Bird;
@@ -19,12 +20,12 @@ const Details: React.FC<Props> = ({ bird }) => {
   return (
     <>
       <h3>{bird.swedish}</h3>
-      <img src="/bird.png" alt={`Bild av en ${bird.swedish}`} />
-      <caption>{'© Folke Foto'}</caption>
+      {/* <img src="/bird.png" alt={`Bild av en ${bird.swedish}`} /> */}
+      {/* <caption>{'© Folke Foto'}</caption> */}
       <IconHeader icon={<Binoculars />}>Observationer</IconHeader>
       <ul className="observations">
         {observations?.map(o => (
-          <li>{o.date.toDateString()}</li>
+          <li key={o.id}>{o.date.toDateString()}</li>
         ))}
       </ul>
     </>
@@ -39,14 +40,16 @@ const BirdPage: NextPage = () => {
   });
 
   return (
-    <main className={styles.details}>
-      <header>
-        <Link href="/list">
-          <Icon name="close" />
-        </Link>
-      </header>
-      {bird && <Details bird={bird} />}
-    </main>
+    <Layout>
+      <div className={styles.details}>
+        <header>
+          <Link href="/list">
+            <Icon name="close" />
+          </Link>
+        </header>
+        {bird && <Details bird={bird} />}
+      </div>
+    </Layout>
   );
 };
 
