@@ -11,6 +11,7 @@ const ImageCheckBox: React.FC<Props> = ({ observed, onClick }: Props) => {
   return (
     <div
       onClick={onClick}
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       className={clsx(styles.container, { [styles.observed!]: observed })}
       style={{ backgroundImage: 'url(/bird-icon.png)' }}
     >

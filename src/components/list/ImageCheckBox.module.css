@@ -6,7 +6,7 @@
   height: 52px;
   background-size: 0px;
   position: relative;
-  z-index: -1;
+  cursor: pointer;
 
   & :global .md-icon {
     font-weight: 200;
