@@ -1,4 +1,3 @@
-import { useMemo } from 'react';
 import styles from './list.module.css';
 import { createServerSideHelpers } from '@trpc/react-query/server';
 import type { InferGetStaticPropsType, NextPage } from 'next';
@@ -27,13 +26,18 @@ export async function getStaticProps() {
 const BirdList: NextPage<InferGetStaticPropsType<typeof getStaticProps>> = ({
   birds,
 }) => {
-  const { data } = api.birds.getObservedBirds.useQuery();
-  const observedBirds = useMemo(
-    () => new Map(data?.map(o => [o.birdId, true])),
-    [data?.length]
-  );
+  const utils = api.useContext();
+  const { data: observedBirds } = api.birds.getObservedBirds.useQuery();
 
-  const createObservation = api.birds.registerObservation.useMutation();
+  const createObservation = api.birds.registerObservation.useMutation({
+    onSuccess(input) {
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      utils.birds.getObservedBirds.setData(undefined, oldData => {
+        console.log(oldData);
+        return oldData ? { ...oldData, [input.birdId]: true } : undefined;
+      });
+    },
+  });
 
   const onRegisterObservation = (birdId: string) => {
     createObservation
@@ -50,7 +54,7 @@ const BirdList: NextPage<InferGetStaticPropsType<typeof getStaticProps>> = ({
           <BirdListItem
             registerObservation={onRegisterObservation}
             key={b.id}
-            observed={observedBirds.has(b.id)}
+            observed={observedBirds?.[b.id] ?? false}
             bird={b}
           />
         ))}

@@ -17,13 +17,17 @@ export const birdsRouter = createTRPCRouter({
     });
   }),
 
-  getObservedBirds: protectedProcedure.query(({ ctx }) => {
+  getObservedBirds: protectedProcedure.query(async ({ ctx }) => {
     const userId = ctx.session.user.id;
-    return ctx.prisma.observation.findMany({
+    const list = await ctx.prisma.observation.findMany({
       select: { birdId: true },
       distinct: ['birdId'],
       where: { userId },
     });
+
+    const result: Record<string, boolean> = {};
+    list.forEach(bird => (result[bird.birdId] = true));
+    return result;
   }),
 
   getOne: publicProcedure
