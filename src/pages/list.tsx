@@ -7,6 +7,8 @@ import superjson from 'superjson';
 import { prisma } from '~/server/db';
 import { api } from '~/utils/api';
 import Header from '~/components/list/Header';
+import Layout from '../components/Layout';
+import useCreateObservationMutation from '~/components/useCreateObservationMutation';
 
 const helper = createServerSideHelpers({
   router: appRouter,
@@ -26,18 +28,9 @@ export async function getStaticProps() {
 const BirdList: NextPage<InferGetStaticPropsType<typeof getStaticProps>> = ({
   birds,
 }) => {
-  const utils = api.useContext();
   const { data: observedBirds } = api.birds.getObservedBirds.useQuery();
 
-  const createObservation = api.birds.registerObservation.useMutation({
-    onSuccess(input) {
-      // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      utils.birds.getObservedBirds.setData(undefined, oldData => {
-        console.log(oldData);
-        return oldData ? { ...oldData, [input.birdId]: true } : undefined;
-      });
-    },
-  });
+  const createObservation = useCreateObservationMutation();
 
   const onRegisterObservation = (birdId: string) => {
     createObservation
@@ -47,7 +40,7 @@ const BirdList: NextPage<InferGetStaticPropsType<typeof getStaticProps>> = ({
   };
 
   return (
-    <main>
+    <Layout>
       <Header />
       <ul className={styles.birds}>
         {birds.map(b => (
@@ -59,7 +52,7 @@ const BirdList: NextPage<InferGetStaticPropsType<typeof getStaticProps>> = ({
           />
         ))}
       </ul>
-    </main>
+    </Layout>
   );
 };
 
