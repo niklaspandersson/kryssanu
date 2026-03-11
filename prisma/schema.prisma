@@ -21,6 +21,8 @@ model User {
   email         String?       @unique
   image         String?
   googleId      String?       @unique
+  city          String?
+  about         String?       @db.Text
   sessions      Session[]
   observations  Observation[]
   createdEvents Event[]       @relation("EventCreator")

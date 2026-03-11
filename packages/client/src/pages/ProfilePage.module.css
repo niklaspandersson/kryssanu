@@ -37,6 +37,108 @@
   color: var(--color-text-muted);
 }
 
+.city {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+
+.about {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  text-align: center;
+  margin: 0;
+  white-space: pre-line;
+}
+
+.editBtn {
+  padding: var(--space-sm) var(--space-xl);
+  border: 1px solid var(--color-primary-light);
+  border-radius: var(--radius-sm);
+  color: var(--color-primary);
+  font-size: var(--font-size-sm);
+  background: none;
+}
+
+.editBtn:active {
+  background: var(--color-bg-elevated);
+}
+
+.editForm {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.label {
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  margin-top: var(--space-sm);
+}
+
+.input {
+  width: 100%;
+  padding: var(--space-sm) var(--space-md);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg-card);
+  font-size: var(--font-size-base);
+  outline: none;
+}
+
+.input:focus {
+  border-color: var(--color-primary-light);
+}
+
+.textarea {
+  width: 100%;
+  padding: var(--space-sm) var(--space-md);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg-card);
+  font-size: var(--font-size-base);
+  outline: none;
+  resize: vertical;
+  font-family: inherit;
+}
+
+.textarea:focus {
+  border-color: var(--color-primary-light);
+}
+
+.editActions {
+  display: flex;
+  gap: var(--space-sm);
+  margin-top: var(--space-sm);
+}
+
+.cancelBtn {
+  flex: 1;
+  padding: var(--space-sm);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  background: none;
+}
+
+.saveBtn {
+  flex: 1;
+  padding: var(--space-sm);
+  border: none;
+  border-radius: var(--radius-sm);
+  background: var(--color-primary);
+  color: white;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+}
+
+.saveBtn:disabled,
+.cancelBtn:disabled {
+  opacity: 0.5;
+}
+
 .signOutBtn {
   padding: var(--space-sm) var(--space-xl);
   border: 1px solid var(--color-border);

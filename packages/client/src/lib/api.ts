@@ -13,6 +13,7 @@ import type {
   LeaderboardEntry,
   FeedItem,
   ParticipantWithUser,
+  UpdateProfileInput,
 } from '@kryssanu/shared';
 
 const BASE = '/api';
@@ -105,6 +106,11 @@ export const users = {
   search: (q: string) =>
     fetchJson<User[]>(`/users/search?q=${encodeURIComponent(q)}`),
   getOne: (id: string) => fetchJson<User>(`/users/${encodeURIComponent(id)}`),
+  updateProfile: (input: UpdateProfileInput) =>
+    fetchJson<User>('/users/me', {
+      method: 'PATCH',
+      body: JSON.stringify(input),
+    }),
 };
 
 // ── Feed ────────────────────────────────────────────────────────────

@@ -61,6 +61,8 @@ router.post("/google", async (req, res) => {
       name: user.name,
       email: user.email,
       image: user.image,
+      city: user.city,
+      about: user.about,
     });
   } catch (error) {
     console.error("Google auth error:", error);

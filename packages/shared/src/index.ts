@@ -42,8 +42,16 @@ export const UserSchema = z.object({
   name: z.string().nullable(),
   email: z.string().nullable(),
   image: z.string().nullable(),
+  city: z.string().nullable(),
+  about: z.string().nullable(),
 });
 export type User = z.infer<typeof UserSchema>;
+
+export const UpdateProfileSchema = z.object({
+  city: z.string().max(100).optional(),
+  about: z.string().max(500).optional(),
+});
+export type UpdateProfileInput = z.infer<typeof UpdateProfileSchema>;
 
 // ── Observed birds map ──────────────────────────────────────────────
 export const ObservedBirdsSchema = z.record(z.string(), z.boolean());

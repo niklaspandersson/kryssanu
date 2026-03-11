@@ -9,6 +9,8 @@ declare global {
         name: string | null;
         email: string | null;
         image: string | null;
+        city: string | null;
+        about: string | null;
       };
     }
   }
@@ -23,7 +25,7 @@ export async function sessionMiddleware(
   if (sessionId) {
     const session = await prisma.session.findUnique({
       where: { id: sessionId },
-      include: { user: { select: { id: true, name: true, email: true, image: true } } },
+      include: { user: { select: { id: true, name: true, email: true, image: true, city: true, about: true } } },
     });
     if (session && session.expiresAt > new Date()) {
       req.user = session.user;

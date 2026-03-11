@@ -1,11 +1,12 @@
 import { Router } from "express";
+import { UpdateProfileSchema } from "@kryssanu/shared";
 import { prisma } from "../db.js";
 import { requireAuth } from "../middleware/auth.js";
 
 const router = Router();
 router.use(requireAuth);
 
-const userSelect = { id: true, name: true, email: true, image: true };
+const userSelect = { id: true, name: true, email: true, image: true, city: true, about: true };
 
 // Search users by name
 router.get("/search", async (req, res) => {
@@ -37,6 +38,23 @@ router.get("/:id", async (req, res) => {
     res.status(404).json({ error: "User not found" });
     return;
   }
+  res.json(user);
+});
+
+// Update own profile
+router.patch("/me", async (req, res) => {
+  const parsed = UpdateProfileSchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error.flatten() });
+    return;
+  }
+
+  const user = await prisma.user.update({
+    where: { id: req.user!.id },
+    data: parsed.data,
+    select: userSelect,
+  });
+
   res.json(user);
 });
 

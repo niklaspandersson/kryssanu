@@ -14,6 +14,7 @@ type AuthContextValue = {
   isLoggedIn: () => boolean;
   requestLogin: () => void;
   signOut: () => Promise<void>;
+  updateUser: (updated: User) => void;
 };
 
 const AuthContext = createContext<AuthContextValue>();
@@ -73,6 +74,7 @@ export function AuthProvider(props: { children: JSX.Element }) {
         isLoggedIn: () => user() !== null,
         requestLogin,
         signOut,
+        updateUser: (updated: User) => setUser(updated),
       }}
     >
       {props.children}

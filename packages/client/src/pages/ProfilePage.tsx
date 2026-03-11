@@ -9,9 +9,13 @@ import type { User, StatsComparison } from "@kryssanu/shared";
 import styles from "./ProfilePage.module.css";
 
 export default function ProfilePage() {
-  const { user, isLoggedIn, requestLogin, signOut } = useAuth();
+  const { user, isLoggedIn, requestLogin, signOut, updateUser } = useAuth();
   const [searchQuery, setSearchQuery] = createSignal("");
   const [comparison, setComparison] = createSignal<StatsComparison | null>(null);
+  const [editing, setEditing] = createSignal(false);
+  const [city, setCity] = createSignal("");
+  const [about, setAbout] = createSignal("");
+  const [saving, setSaving] = createSignal(false);
 
   onMount(() => {
     if (!isLoggedIn()) requestLogin();
@@ -22,6 +26,31 @@ export default function ProfilePage() {
     () => searchQuery().length >= 2 ? searchQuery() : null,
     (q) => usersApi.search(q)
   );
+
+  function startEditing() {
+    const u = user();
+    if (u) {
+      setCity(u.city ?? "");
+      setAbout(u.about ?? "");
+      setEditing(true);
+    }
+  }
+
+  async function saveProfile() {
+    setSaving(true);
+    try {
+      const updated = await usersApi.updateProfile({
+        city: city() || undefined,
+        about: about() || undefined,
+      });
+      updateUser(updated);
+      setEditing(false);
+    } catch (e) {
+      console.error("Failed to save profile", e);
+    } finally {
+      setSaving(false);
+    }
+  }
 
   async function handleCompare(u: User) {
     setSearchQuery("");
@@ -42,7 +71,60 @@ export default function ProfilePage() {
             <div class={styles.info}>
               <span class={styles.name}>{u().name}</span>
               <span class={styles.email}>{u().email}</span>
+              <Show when={!editing() && u().city}>
+                <span class={styles.city}>{u().city}</span>
+              </Show>
+              <Show when={!editing() && u().about}>
+                <p class={styles.about}>{u().about}</p>
+              </Show>
             </div>
+
+            <Show
+              when={editing()}
+              fallback={
+                <button class={styles.editBtn} onClick={startEditing}>
+                  Redigera profil
+                </button>
+              }
+            >
+              <div class={styles.editForm}>
+                <label class={styles.label}>Stad</label>
+                <input
+                  type="text"
+                  class={styles.input}
+                  placeholder="Din stad..."
+                  value={city()}
+                  onInput={(e) => setCity(e.currentTarget.value)}
+                  maxLength={100}
+                />
+                <label class={styles.label}>Om mig</label>
+                <textarea
+                  class={styles.textarea}
+                  placeholder="Berätta lite om dig..."
+                  value={about()}
+                  onInput={(e) => setAbout(e.currentTarget.value)}
+                  maxLength={500}
+                  rows={3}
+                />
+                <div class={styles.editActions}>
+                  <button
+                    class={styles.cancelBtn}
+                    onClick={() => setEditing(false)}
+                    disabled={saving()}
+                  >
+                    Avbryt
+                  </button>
+                  <button
+                    class={styles.saveBtn}
+                    onClick={saveProfile}
+                    disabled={saving()}
+                  >
+                    {saving() ? "Sparar..." : "Spara"}
+                  </button>
+                </div>
+              </div>
+            </Show>
+
             <button class={styles.signOutBtn} onClick={signOut}>
               Logga ut
             </button>
