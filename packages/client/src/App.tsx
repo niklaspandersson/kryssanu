@@ -3,7 +3,6 @@ import { AuthProvider } from "./lib/auth";
 import AppShell from "./components/AppShell";
 import HomePage from "./pages/HomePage";
 import FeedPage from "./pages/FeedPage";
-import BirdDetailPage from "./pages/BirdDetailPage";
 import StatsPage from "./pages/StatsPage";
 import UserStatsPage from "./pages/UserStatsPage";
 import EventsPage from "./pages/EventsPage";
@@ -22,7 +21,6 @@ export default function App() {
         <Route path="/" component={HomePage} />
         <Route path="/my-birds" component={MyBirdsPage} />
         <Route path="/feed" component={FeedPage} />
-        <Route path="/bird/:id" component={BirdDetailPage} />
         <Route path="/stats" component={StatsPage} />
         <Route path="/stats/:userId" component={UserStatsPage} />
         <Route path="/events" component={EventsPage} />

@@ -97,7 +97,7 @@ export default function HomePage() {
             </h2>
             <For each={latestObs()!.slice(0, 5)}>
               {(obs) => (
-                <A href={`/bird/${encodeURIComponent(obs.birdId)}`} class={styles.obsItem}>
+                <div class={styles.obsItem}>
                   <div class={styles.obsInfo}>
                     <span class={styles.obsName}>{obs.bird.swedish}</span>
                     <span class={styles.obsMeta}>
@@ -105,8 +105,7 @@ export default function HomePage() {
                       {obs.location && ` · ${obs.location}`}
                     </span>
                   </div>
-                  <Icon name="chevron_right" />
-                </A>
+                </div>
               )}
             </For>
           </section>
@@ -132,9 +131,9 @@ export default function HomePage() {
                     <span class={styles.feedUser}>{item.user.name}</span>
                     <span class={styles.feedText}>
                       kryssade{" "}
-                      <A href={`/bird/${encodeURIComponent(item.bird.id)}`} class={styles.feedBird}>
+                      <span class={styles.feedBird}>
                         {item.bird.swedish}
-                      </A>
+                      </span>
                     </span>
                     <span class={styles.feedDate}>
                       {new Date(item.date).toLocaleDateString("sv-SE")}

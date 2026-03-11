@@ -1,4 +1,3 @@
-import { A } from "@solidjs/router";
 import type { Bird } from "@kryssanu/shared";
 import styles from "./BirdRow.module.css";
 
@@ -11,10 +10,10 @@ type Props = {
 export default function BirdRow(props: Props) {
   return (
     <div class={styles.row}>
-      <A href={`/bird/${encodeURIComponent(props.bird.id)}`} class={styles.info}>
+      <div class={styles.info}>
         <span class={styles.name}>{props.bird.swedish}</span>
         <span class={styles.family}>{props.bird.family}</span>
-      </A>
+      </div>
       <div class={styles.actions}>
         {props.observed && (
           <span class={`md-icon ${styles.observed}`}>check_circle</span>

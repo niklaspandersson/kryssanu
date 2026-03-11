@@ -1,5 +1,4 @@
 import { createSignal, createResource, createMemo, Show, For, onMount } from "solid-js";
-import { A } from "@solidjs/router";
 import { observations, events as eventsApi } from "../lib/api";
 import { useAuth } from "../lib/auth";
 import Icon from "../components/Icon";
@@ -109,7 +108,7 @@ export default function MyBirdsPage() {
         class={styles.birdRow}
         classList={{ [styles.unobserved]: !isObserved }}
       >
-        <A href={`/bird/${encodeURIComponent(bird.id)}`} class={styles.birdLink}>
+        <div class={styles.birdLink}>
           <div class={styles.birdInfo}>
             <span class={styles.birdName}>{bird.swedish}</span>
             <span class={styles.birdLatin}>{bird.id}</span>
@@ -119,7 +118,7 @@ export default function MyBirdsPage() {
               {new Date(date!).toLocaleDateString("sv-SE")}
             </span>
           </Show>
-        </A>
+        </div>
         <Show when={isObserved}>
           <span class={styles.checkMark}>
             <Icon name="check_circle" size={20} />

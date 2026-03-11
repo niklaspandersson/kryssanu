@@ -96,9 +96,9 @@ export default function FeedPage() {
                   <span class={styles.feedUser}>{item.user.name}</span>
                   <span class={styles.feedText}>
                     kryssade{" "}
-                    <A href={`/bird/${encodeURIComponent(item.bird.id)}`} class={styles.feedBird}>
+                    <span class={styles.feedBird}>
                       {item.bird.swedish}
-                    </A>
+                    </span>
                   </span>
                   <span class={styles.feedDate}>
                     {new Date(item.date).toLocaleDateString("sv-SE")}
