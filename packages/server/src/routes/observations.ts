@@ -1,7 +1,7 @@
-import { Router } from "express";
-import { prisma } from "../db.js";
-import { requireAuth } from "../middleware/auth.js";
-import { CreateObservationSchema } from "@kryssanu/shared";
+import { Router } from 'express';
+import { prisma } from '../db.js';
+import { requireAuth } from '../middleware/auth.js';
+import { CreateObservationSchema } from '@kryssanu/shared';
 
 const router = Router();
 
@@ -9,32 +9,43 @@ const router = Router();
 router.use(requireAuth);
 
 // Get map of observed bird IDs for current user
-router.get("/observed", async (req, res) => {
+router.get('/observed', async (req, res) => {
   const list = await prisma.observation.findMany({
     select: { birdId: true },
-    distinct: ["birdId"],
+    distinct: ['birdId'],
     where: { userId: req.user!.id },
   });
 
   const result: Record<string, boolean> = {};
-  list.forEach((o) => (result[o.birdId] = true));
+  list.forEach(o => (result[o.birdId] = true));
   res.json(result);
 });
 
+// Get latest observations for current user (with bird data)
+router.get('/latest', async (req, res) => {
+  const observations = await prisma.observation.findMany({
+    where: { userId: req.user!.id },
+    include: { bird: true },
+    orderBy: { date: 'desc' },
+    take: 10,
+  });
+  res.json(observations);
+});
+
 // Get observations for a specific bird by current user
-router.get("/bird/:birdId", async (req, res) => {
+router.get('/bird/:birdId', async (req, res) => {
   const observations = await prisma.observation.findMany({
     where: {
       userId: req.user!.id,
       birdId: req.params.birdId,
     },
-    orderBy: { date: "desc" },
+    orderBy: { date: 'desc' },
   });
   res.json(observations);
 });
 
 // Create an observation
-router.post("/", async (req, res) => {
+router.post('/', async (req, res) => {
   const parsed = CreateObservationSchema.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.flatten() });

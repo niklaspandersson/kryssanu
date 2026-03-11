@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from 'zod';
 
 // ── Bird ────────────────────────────────────────────────────────────
 export const BirdSchema = z.object({
@@ -22,6 +22,11 @@ export const ObservationSchema = z.object({
   eventId: z.string().nullable(),
 });
 export type Observation = z.infer<typeof ObservationSchema>;
+
+export const ObservationWithBirdSchema = ObservationSchema.extend({
+  bird: BirdSchema,
+});
+export type ObservationWithBird = z.infer<typeof ObservationWithBirdSchema>;
 
 export const CreateObservationSchema = z.object({
   birdId: z.string(),
@@ -66,9 +71,9 @@ export type Event = z.infer<typeof EventSchema>;
 
 // ── Participant ─────────────────────────────────────────────────────
 export const ParticipantStatusSchema = z.enum([
-  "INVITED",
-  "ACCEPTED",
-  "DECLINED",
+  'INVITED',
+  'ACCEPTED',
+  'DECLINED',
 ]);
 export type ParticipantStatus = z.infer<typeof ParticipantStatusSchema>;
 
@@ -77,7 +82,7 @@ export const InviteSchema = z.object({
 });
 
 export const RespondToInviteSchema = z.object({
-  status: z.enum(["ACCEPTED", "DECLINED"]),
+  status: z.enum(['ACCEPTED', 'DECLINED']),
 });
 
 // ── User Stats ────────────────────────────────────────────────────

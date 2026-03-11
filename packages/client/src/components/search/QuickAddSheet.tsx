@@ -1,4 +1,4 @@
-import { createSignal } from "solid-js";
+import { createSignal, createEffect } from "solid-js";
 import type { Bird, EventWithParticipants } from "@kryssanu/shared";
 import BottomSheet from "../BottomSheet";
 import styles from "./QuickAddSheet.module.css";
@@ -27,6 +27,14 @@ export default function QuickAddSheet(props: Props) {
     setLocation("");
   }
 
+  let locationRef!: HTMLInputElement;
+
+  createEffect(() => {
+    if (props.open) {
+      requestAnimationFrame(() => locationRef?.focus());
+    }
+  });
+
   return (
     <BottomSheet
       open={props.open}
@@ -35,6 +43,7 @@ export default function QuickAddSheet(props: Props) {
     >
       <div class={styles.form}>
         <input
+          ref={locationRef}
           type="text"
           class={styles.input}
           placeholder="Plats (valfri)"

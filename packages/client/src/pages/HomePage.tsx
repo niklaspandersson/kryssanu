@@ -1,6 +1,6 @@
 import { createResource, Show, For } from "solid-js";
 import { A } from "@solidjs/router";
-import { feed, stats as statsApi, events as eventsApi } from "../lib/api";
+import { feed, stats as statsApi, events as eventsApi, observations } from "../lib/api";
 import { useAuth } from "../lib/auth";
 import { openSearch } from "../components/AppShell";
 import StatCard from "../components/StatCard";
@@ -14,6 +14,7 @@ export default function HomePage() {
   const [myStats] = createResource(() => isLoggedIn(), (loggedIn) => loggedIn ? statsApi.me() : undefined);
   const [feedData] = createResource(() => isLoggedIn(), (loggedIn) => loggedIn ? feed.get() : undefined);
   const [activeEvents] = createResource(() => isLoggedIn(), (loggedIn) => loggedIn ? eventsApi.getAll("active") : undefined);
+  const [latestObs] = createResource(() => isLoggedIn(), (loggedIn) => loggedIn ? observations.latest() : undefined);
 
   function remaining(endsAt: string) {
     const diff = new Date(endsAt).getTime() - Date.now();
@@ -52,17 +53,6 @@ export default function HomePage() {
           </p>
         </div>
 
-        {/* Quick stats */}
-        <Show when={myStats()}>
-          {(s) => (
-            <div class={styles.statsRow}>
-              <StatCard value={s().uniqueSpeciesLifetime} label="Arter totalt" />
-              <StatCard value={s().uniqueSpeciesThisYear} label="Arter i år" />
-              <StatCard value={s().observationsThisWeek} label="Denna vecka" />
-            </div>
-          )}
-        </Show>
-
         {/* Active events */}
         <Show when={(activeEvents() ?? []).length > 0}>
           <section class={styles.section}>
@@ -78,6 +68,41 @@ export default function HomePage() {
                     <span class={styles.eventName}>{event.name}</span>
                     <span class={styles.eventMeta}>
                       {event.participants.length} deltagare · {remaining(event.endsAt)}
+                    </span>
+                  </div>
+                  <Icon name="chevron_right" />
+                </A>
+              )}
+            </For>
+          </section>
+        </Show>
+
+        {/* Quick stats */}
+        <Show when={myStats()}>
+          {(s) => (
+            <div class={styles.statsRow}>
+              <StatCard value={s().uniqueSpeciesLifetime} label="Arter totalt" />
+              <StatCard value={s().uniqueSpeciesThisYear} label="Arter i år" />
+              <StatCard value={s().observationsThisWeek} label="Denna vecka" />
+            </div>
+          )}
+        </Show>
+
+        {/* Latest observations */}
+        <Show when={(latestObs() ?? []).length > 0}>
+          <section class={styles.section}>
+            <h2 class={styles.sectionTitle}>
+              <Icon name="visibility" size={20} />
+              Senaste observationer
+            </h2>
+            <For each={latestObs()!.slice(0, 5)}>
+              {(obs) => (
+                <A href={`/bird/${encodeURIComponent(obs.birdId)}`} class={styles.obsItem}>
+                  <div class={styles.obsInfo}>
+                    <span class={styles.obsName}>{obs.bird.swedish}</span>
+                    <span class={styles.obsMeta}>
+                      {new Date(obs.date).toLocaleDateString("sv-SE")}
+                      {obs.location && ` · ${obs.location}`}
                     </span>
                   </div>
                   <Icon name="chevron_right" />

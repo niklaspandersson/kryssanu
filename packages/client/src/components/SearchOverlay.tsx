@@ -1,4 +1,4 @@
-import { createSignal, createResource, createMemo, Show, For } from "solid-js";
+import { createSignal, createResource, createMemo, createEffect, Show, For } from "solid-js";
 import type { Bird } from "@kryssanu/shared";
 import { birds, observations, events as eventsApi } from "../lib/api";
 import { useAuth } from "../lib/auth";
@@ -72,6 +72,12 @@ export default function SearchOverlay(props: Props) {
   }
 
   let inputRef!: HTMLInputElement;
+
+  createEffect(() => {
+    if (props.open) {
+      requestAnimationFrame(() => inputRef?.focus());
+    }
+  });
 
   return (
     <Show when={props.open}>
