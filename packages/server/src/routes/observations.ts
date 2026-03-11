@@ -46,6 +46,8 @@ router.post("/", async (req, res) => {
       birdId: parsed.data.birdId,
       userId: req.user!.id,
       eventId: parsed.data.eventId,
+      note: parsed.data.note,
+      location: parsed.data.location,
       date: new Date(),
     },
   });

@@ -1,0 +1,137 @@
+import { createSignal, createResource, Show, For } from "solid-js";
+import { useParams, A } from "@solidjs/router";
+import { events as eventsApi } from "../lib/api";
+import { useAuth } from "../lib/auth";
+import Icon from "../components/Icon";
+import Avatar from "../components/Avatar";
+import EmptyState from "../components/EmptyState";
+import styles from "./EventDetailPage.module.css";
+
+export default function EventDetailPage() {
+  const params = useParams();
+  const { user } = useAuth();
+  const [inviteEmail, setInviteEmail] = createSignal("");
+
+  const [event, { refetch }] = createResource(() => params.id, eventsApi.getOne);
+  const [leaderboard] = createResource(() => params.id, eventsApi.leaderboard);
+
+  const isCreator = () => event()?.creatorId === user()?.id;
+
+  async function handleInvite(e: Event) {
+    e.preventDefault();
+    if (!inviteEmail()) return;
+    await eventsApi.invite(params.id, inviteEmail());
+    setInviteEmail("");
+    refetch();
+  }
+
+  return (
+    <div class={styles.page}>
+      <A href="/events" class={styles.back}>
+        <Icon name="arrow_back" size={18} />
+        Tillbaka
+      </A>
+
+      <Show when={event()} fallback={<EmptyState icon="event" message="Laddar event..." />}>
+        {(ev) => (
+          <>
+            <h1 class={styles.heading}>{ev().name}</h1>
+            <Show when={ev().description}>
+              <p class={styles.description}>{ev().description}</p>
+            </Show>
+            <div class={styles.dates}>
+              <Icon name="schedule" size={16} />
+              {new Date(ev().startsAt).toLocaleDateString("sv-SE")} -{" "}
+              {new Date(ev().endsAt).toLocaleDateString("sv-SE")}
+            </div>
+
+            {/* Add observation */}
+            <A
+              href={`/?eventId=${ev().id}`}
+              class={styles.addObsBtn}
+            >
+              <Icon name="add" size={20} />
+              Lagg till observation
+            </A>
+
+            {/* Leaderboard */}
+            <section class={styles.section}>
+              <h2 class={styles.sectionTitle}>Topplista</h2>
+              <Show
+                when={(leaderboard() ?? []).length > 0}
+                fallback={<EmptyState icon="emoji_events" message="Inga observationer annu" />}
+              >
+                <div class={styles.leaderboard}>
+                  <For each={leaderboard()}>
+                    {(entry, i) => (
+                      <A href={`/stats/${entry.user.id}`} class={styles.lbRow}>
+                        <span class={styles.lbRank}>{i() + 1}</span>
+                        <Avatar name={entry.user.name} image={entry.user.image} size={32} />
+                        <div class={styles.lbInfo}>
+                          <span class={styles.lbName}>{entry.user.name}</span>
+                          <span class={styles.lbMeta}>
+                            {entry.uniqueSpecies} arter · {entry.totalObservations} obs
+                          </span>
+                        </div>
+                      </A>
+                    )}
+                  </For>
+                </div>
+              </Show>
+            </section>
+
+            {/* Participants */}
+            <section class={styles.section}>
+              <h2 class={styles.sectionTitle}>
+                Deltagare ({ev().participants.length})
+              </h2>
+              <div class={styles.participants}>
+                <For each={ev().participants}>
+                  {(p) => (
+                    <div class={styles.participant}>
+                      <Avatar name={p.user.name} image={p.user.image} size={32} />
+                      <span class={styles.pName}>{p.user.name}</span>
+                      <span
+                        class={styles.pStatus}
+                        classList={{
+                          [styles.accepted]: p.status === "ACCEPTED",
+                          [styles.invited]: p.status === "INVITED",
+                          [styles.declined]: p.status === "DECLINED",
+                        }}
+                      >
+                        {p.status === "ACCEPTED"
+                          ? "Accepterad"
+                          : p.status === "INVITED"
+                          ? "Inbjuden"
+                          : "Avbojd"}
+                      </span>
+                    </div>
+                  )}
+                </For>
+              </div>
+            </section>
+
+            {/* Invite (creator only) */}
+            <Show when={isCreator()}>
+              <section class={styles.section}>
+                <h2 class={styles.sectionTitle}>Bjud in</h2>
+                <form class={styles.inviteForm} onSubmit={handleInvite}>
+                  <input
+                    type="email"
+                    class={styles.inviteInput}
+                    placeholder="E-postadress"
+                    value={inviteEmail()}
+                    onInput={(e) => setInviteEmail(e.currentTarget.value)}
+                  />
+                  <button type="submit" class={styles.inviteBtn}>
+                    Bjud in
+                  </button>
+                </form>
+              </section>
+            </Show>
+          </>
+        )}
+      </Show>
+    </div>
+  );
+}

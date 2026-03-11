@@ -1,0 +1,94 @@
+.page {
+  padding: var(--space-lg);
+}
+
+.heading {
+  margin: 0 0 var(--space-lg);
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  color: var(--color-primary-dark);
+}
+
+.statsRow {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-sm);
+  margin-bottom: var(--space-xl);
+}
+
+.section {
+  margin-bottom: var(--space-xl);
+}
+
+.sectionTitle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  margin: 0 0 var(--space-md);
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+.eventCard {
+  display: flex;
+  align-items: center;
+  padding: var(--space-md);
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-primary-light);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-sm);
+  text-decoration: none;
+}
+
+.eventInfo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.eventName {
+  font-weight: 600;
+  color: var(--color-primary-dark);
+}
+
+.eventMeta {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}
+
+.feedItem {
+  display: flex;
+  gap: var(--space-md);
+  padding: var(--space-md) 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.feedContent {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.feedUser {
+  font-weight: 600;
+  font-size: var(--font-size-sm);
+}
+
+.feedText {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.feedBird {
+  color: var(--color-primary);
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.feedDate {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}

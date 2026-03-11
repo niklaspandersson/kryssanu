@@ -1,0 +1,174 @@
+.page {
+  padding: var(--space-lg);
+}
+
+.back {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  margin-bottom: var(--space-lg);
+  text-decoration: none;
+}
+
+.heading {
+  margin: 0 0 var(--space-sm);
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  color: var(--color-primary-dark);
+}
+
+.description {
+  margin: 0 0 var(--space-md);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.dates {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+  margin-bottom: var(--space-xl);
+}
+
+.addObsBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  width: 100%;
+  padding: var(--space-md);
+  background: var(--color-primary);
+  color: white;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  margin-bottom: var(--space-xl);
+  text-decoration: none;
+}
+
+.section {
+  margin-bottom: var(--space-xl);
+}
+
+.sectionTitle {
+  margin: 0 0 var(--space-md);
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+.leaderboard {
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.lbRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-md);
+  border-bottom: 1px solid var(--color-border);
+  text-decoration: none;
+}
+
+.lbRow:last-child {
+  border-bottom: none;
+}
+
+.lbRank {
+  width: 24px;
+  text-align: center;
+  font-weight: 700;
+  color: var(--color-accent);
+  font-size: var(--font-size-lg);
+}
+
+.lbInfo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.lbName {
+  font-weight: 500;
+  font-size: var(--font-size-sm);
+}
+
+.lbMeta {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}
+
+.participants {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.participant {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.pName {
+  flex: 1;
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+}
+
+.pStatus {
+  font-size: var(--font-size-xs);
+  padding: 2px var(--space-sm);
+  border-radius: var(--radius-full);
+}
+
+.accepted {
+  background: #e8f5e9;
+  color: var(--color-success);
+}
+
+.invited {
+  background: #fff8e1;
+  color: #f57c00;
+}
+
+.declined {
+  background: #fce4ec;
+  color: var(--color-danger);
+}
+
+.inviteForm {
+  display: flex;
+  gap: var(--space-sm);
+}
+
+.inviteInput {
+  flex: 1;
+  padding: var(--space-md);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg-card);
+  font-size: var(--font-size-sm);
+  outline: none;
+}
+
+.inviteInput:focus {
+  border-color: var(--color-primary-light);
+}
+
+.inviteBtn {
+  padding: var(--space-sm) var(--space-lg);
+  background: var(--color-primary);
+  color: white;
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  white-space: nowrap;
+}

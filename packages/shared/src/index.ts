@@ -26,6 +26,8 @@ export type Observation = z.infer<typeof ObservationSchema>;
 export const CreateObservationSchema = z.object({
   birdId: z.string(),
   eventId: z.string().optional(),
+  note: z.string().optional(),
+  location: z.string().optional(),
 });
 export type CreateObservationInput = z.infer<typeof CreateObservationSchema>;
 
@@ -77,3 +79,55 @@ export const InviteSchema = z.object({
 export const RespondToInviteSchema = z.object({
   status: z.enum(["ACCEPTED", "DECLINED"]),
 });
+
+// ── User Stats ────────────────────────────────────────────────────
+export const UserStatsSchema = z.object({
+  uniqueSpeciesLifetime: z.number(),
+  uniqueSpeciesThisYear: z.number(),
+  totalObservations: z.number(),
+  observationsThisWeek: z.number(),
+  observationsThisMonth: z.number(),
+  latestObservation: z.string().nullable(),
+  topFamilies: z.array(z.object({ family: z.string(), count: z.number() })),
+});
+export type UserStats = z.infer<typeof UserStatsSchema>;
+
+export const StatsComparisonSchema = z.object({
+  me: UserStatsSchema,
+  other: UserStatsSchema,
+  otherUser: UserSchema,
+});
+export type StatsComparison = z.infer<typeof StatsComparisonSchema>;
+
+// ── Event (with participants) ─────────────────────────────────────
+export const ParticipantWithUserSchema = z.object({
+  user: UserSchema,
+  status: ParticipantStatusSchema,
+});
+export type ParticipantWithUser = z.infer<typeof ParticipantWithUserSchema>;
+
+export const EventWithParticipantsSchema = EventSchema.extend({
+  creator: UserSchema,
+  participants: z.array(ParticipantWithUserSchema),
+  observationCount: z.number(),
+});
+export type EventWithParticipants = z.infer<typeof EventWithParticipantsSchema>;
+
+// ── Leaderboard ───────────────────────────────────────────────────
+export const LeaderboardEntrySchema = z.object({
+  user: UserSchema,
+  uniqueSpecies: z.number(),
+  totalObservations: z.number(),
+});
+export type LeaderboardEntry = z.infer<typeof LeaderboardEntrySchema>;
+
+// ── Feed ──────────────────────────────────────────────────────────
+export const FeedItemSchema = z.object({
+  id: z.string(),
+  date: z.string(),
+  user: UserSchema,
+  bird: BirdSchema,
+  eventId: z.string().nullable(),
+  eventName: z.string().nullable(),
+});
+export type FeedItem = z.infer<typeof FeedItemSchema>;

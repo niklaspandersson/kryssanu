@@ -1,0 +1,36 @@
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.input,
+.select {
+  width: 100%;
+  padding: var(--space-md);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg);
+  font-size: var(--font-size-base);
+  outline: none;
+}
+
+.input:focus,
+.select:focus {
+  border-color: var(--color-primary-light);
+}
+
+.confirmBtn {
+  width: 100%;
+  padding: var(--space-md);
+  background: var(--color-primary);
+  color: white;
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  margin-top: var(--space-sm);
+}
+
+.confirmBtn:active {
+  background: var(--color-primary-dark);
+}

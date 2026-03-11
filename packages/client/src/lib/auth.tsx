@@ -11,7 +11,8 @@ import { auth } from "./api";
 type AuthContextValue = {
   user: () => User | null;
   loading: () => boolean;
-  signIn: () => void;
+  isLoggedIn: () => boolean;
+  requestLogin: () => void;
   signOut: () => Promise<void>;
 };
 
@@ -20,6 +21,25 @@ const AuthContext = createContext<AuthContextValue>();
 export function AuthProvider(props: { children: JSX.Element }) {
   const [user, setUser] = createSignal<User | null>(null);
   const [loading, setLoading] = createSignal(true);
+  let googleInitialized = false;
+
+  function handleCredentialResponse(response: { credential: string }) {
+    auth
+      .loginWithGoogle(response.credential)
+      .then((u) => setUser(u))
+      .catch(console.error);
+  }
+
+  function initGoogle() {
+    const google = (window as any).google;
+    if (!google || googleInitialized) return;
+
+    google.accounts.id.initialize({
+      client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
+      callback: handleCredentialResponse,
+    });
+    googleInitialized = true;
+  }
 
   onMount(async () => {
     try {
@@ -30,23 +50,13 @@ export function AuthProvider(props: { children: JSX.Element }) {
     } finally {
       setLoading(false);
     }
+    initGoogle();
   });
 
-  function handleCredentialResponse(response: { credential: string }) {
-    auth
-      .loginWithGoogle(response.credential)
-      .then((u) => setUser(u))
-      .catch(console.error);
-  }
-
-  function signIn() {
+  function requestLogin() {
+    initGoogle();
     const google = (window as any).google;
     if (!google) return;
-
-    google.accounts.id.initialize({
-      client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
-      callback: handleCredentialResponse,
-    });
     google.accounts.id.prompt();
   }
 
@@ -56,7 +66,15 @@ export function AuthProvider(props: { children: JSX.Element }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, loading, signIn, signOut }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        loading,
+        isLoggedIn: () => user() !== null,
+        requestLogin,
+        signOut,
+      }}
+    >
       {props.children}
     </AuthContext.Provider>
   );

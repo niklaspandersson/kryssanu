@@ -3,15 +3,16 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "mysql"
   url      = env("DATABASE_URL")
 }
 
 model Bird {
-  id      String  @id // latin name
-  swedish String
-  family  String
-  visitor Boolean
+  id           String        @id // latin name
+  swedish      String
+  family       String
+  visitor      Boolean
+  observations Observation[]
 }
 
 model User {
@@ -45,6 +46,7 @@ model Observation {
   birdId    String
   userId    String
   eventId   String?
+  bird      Bird     @relation(fields: [birdId], references: [id])
   user      User     @relation(fields: [userId], references: [id])
   event     Event?   @relation(fields: [eventId], references: [id])
 

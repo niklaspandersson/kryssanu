@@ -1,0 +1,39 @@
+.wrapper {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-md) var(--space-lg);
+  background: var(--color-bg);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.wrapper .md-icon {
+  color: var(--color-text-muted);
+  font-size: 20px;
+}
+
+.input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: var(--font-size-base);
+  padding: var(--space-sm) 0;
+}
+
+.input::placeholder {
+  color: var(--color-text-muted);
+}
+
+.clear {
+  display: flex;
+  padding: var(--space-xs);
+}
+
+.clear .md-icon {
+  font-size: 18px;
+  color: var(--color-text-muted);
+}
