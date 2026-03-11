@@ -3,6 +3,7 @@ import type {
   Observation,
   ObservationWithBird,
   ObservedBirds,
+  ChecklistData,
   User,
   UserStats,
   StatsComparison,
@@ -48,6 +49,7 @@ export const birds = {
 // ── Observations ────────────────────────────────────────────────────
 export const observations = {
   getObserved: () => fetchJson<ObservedBirds>('/observations/observed'),
+  checklist: () => fetchJson<ChecklistData>('/observations/checklist'),
   getForBird: (birdId: string) =>
     fetchJson<Observation[]>(
       `/observations/bird/${encodeURIComponent(birdId)}`

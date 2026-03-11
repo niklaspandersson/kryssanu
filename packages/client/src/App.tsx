@@ -10,12 +10,14 @@ import EventsPage from "./pages/EventsPage";
 import CreateEventPage from "./pages/CreateEventPage";
 import EventDetailPage from "./pages/EventDetailPage";
 import ProfilePage from "./pages/ProfilePage";
+import MyBirdsPage from "./pages/MyBirdsPage";
 
 export default function App() {
   return (
     <AuthProvider>
       <Router root={AppShell}>
         <Route path="/" component={HomePage} />
+        <Route path="/my-birds" component={MyBirdsPage} />
         <Route path="/feed" component={FeedPage} />
         <Route path="/bird/:id" component={BirdDetailPage} />
         <Route path="/stats" component={StatsPage} />

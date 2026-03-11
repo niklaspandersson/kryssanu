@@ -8,6 +8,29 @@ const router = Router();
 // All observation routes require auth
 router.use(requireAuth);
 
+// Get checklist: all birds + user's observation dates per bird
+router.get('/checklist', async (req, res) => {
+  const [allBirds, userObs] = await Promise.all([
+    prisma.bird.findMany({
+      where: { visitor: false },
+      orderBy: { swedish: 'asc' },
+    }),
+    prisma.observation.findMany({
+      where: { userId: req.user!.id },
+      select: { birdId: true, date: true },
+      orderBy: { date: 'asc' },
+    }),
+  ]);
+
+  const observed: Record<string, string[]> = {};
+  for (const o of userObs) {
+    if (!observed[o.birdId]) observed[o.birdId] = [];
+    observed[o.birdId].push(o.date.toISOString());
+  }
+
+  res.json({ birds: allBirds, observed });
+});
+
 // Get map of observed bird IDs for current user
 router.get('/observed', async (req, res) => {
   const list = await prisma.observation.findMany({

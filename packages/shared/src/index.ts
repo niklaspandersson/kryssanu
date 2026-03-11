@@ -49,6 +49,12 @@ export type User = z.infer<typeof UserSchema>;
 export const ObservedBirdsSchema = z.record(z.string(), z.boolean());
 export type ObservedBirds = z.infer<typeof ObservedBirdsSchema>;
 
+// ── Checklist ───────────────────────────────────────────────────────
+export type ChecklistData = {
+  birds: Bird[];
+  observed: Record<string, string[]>;
+};
+
 // ── Event ───────────────────────────────────────────────────────────
 export const CreateEventSchema = z.object({
   name: z.string().min(1),
