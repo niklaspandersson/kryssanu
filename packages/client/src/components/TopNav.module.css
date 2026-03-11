@@ -32,42 +32,10 @@
   color: var(--color-primary);
 }
 
-.links {
+.left {
   display: flex;
   align-items: center;
   gap: var(--space-xs);
-}
-
-.tab {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  padding: var(--space-sm) var(--space-md);
-  color: var(--color-text-muted);
-  border-radius: var(--radius-sm);
-  transition: color 0.15s, background 0.15s;
-  text-decoration: none;
-  font-size: var(--font-size-sm);
-  font-weight: 500;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.tab .md-icon {
-  font-size: 20px;
-}
-
-.tab:hover {
-  color: var(--color-text);
-  background: var(--color-bg-elevated);
-}
-
-.active {
-  color: var(--color-primary);
-}
-
-.active:hover {
-  color: var(--color-primary);
-  background: rgba(45, 106, 79, 0.08);
 }
 
 .actions {
