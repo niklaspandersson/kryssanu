@@ -1,0 +1,15 @@
+.page {
+  padding: 1.5rem 1rem;
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.page h1 {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.page p {
+  line-height: 1.6;
+  color: var(--text-secondary, #555);
+}

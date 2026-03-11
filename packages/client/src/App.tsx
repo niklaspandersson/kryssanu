@@ -11,6 +11,9 @@ import CreateEventPage from "./pages/CreateEventPage";
 import EventDetailPage from "./pages/EventDetailPage";
 import ProfilePage from "./pages/ProfilePage";
 import MyBirdsPage from "./pages/MyBirdsPage";
+import AboutPage from "./pages/AboutPage";
+import HelpPage from "./pages/HelpPage";
+import TermsPage from "./pages/TermsPage";
 
 export default function App() {
   return (
@@ -26,6 +29,9 @@ export default function App() {
         <Route path="/events/new" component={CreateEventPage} />
         <Route path="/events/:id" component={EventDetailPage} />
         <Route path="/profile" component={ProfilePage} />
+        <Route path="/about" component={AboutPage} />
+        <Route path="/help" component={HelpPage} />
+        <Route path="/terms" component={TermsPage} />
       </Router>
     </AuthProvider>
   );
