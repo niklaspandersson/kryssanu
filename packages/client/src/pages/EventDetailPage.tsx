@@ -2,6 +2,7 @@ import { createSignal, createResource, Show, For } from "solid-js";
 import { useParams, A } from "@solidjs/router";
 import { events as eventsApi } from "../lib/api";
 import { useAuth } from "../lib/auth";
+import { openSearch } from "../components/AppShell";
 import Icon from "../components/Icon";
 import Avatar from "../components/Avatar";
 import EmptyState from "../components/EmptyState";
@@ -46,13 +47,13 @@ export default function EventDetailPage() {
             </div>
 
             {/* Add observation */}
-            <A
-              href={`/?eventId=${ev().id}`}
+            <button
               class={styles.addObsBtn}
+              onClick={() => openSearch()}
             >
               <Icon name="add" size={20} />
               Lagg till observation
-            </A>
+            </button>
 
             {/* Leaderboard */}
             <section class={styles.section}>

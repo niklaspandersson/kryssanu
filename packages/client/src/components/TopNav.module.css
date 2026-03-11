@@ -1,0 +1,124 @@
+.nav {
+  position: fixed;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: var(--max-width);
+  height: var(--nav-height);
+  background: var(--color-bg-card);
+  border-bottom: 1px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--space-lg);
+  z-index: 100;
+  padding-top: env(safe-area-inset-top, 0);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  text-decoration: none;
+  font-weight: 700;
+  font-size: var(--font-size-lg);
+  color: var(--color-primary-dark);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.brandIcon {
+  font-size: 24px;
+  color: var(--color-primary);
+}
+
+.links {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.tab {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: var(--space-sm) var(--space-md);
+  color: var(--color-text-muted);
+  border-radius: var(--radius-sm);
+  transition: color 0.15s, background 0.15s;
+  text-decoration: none;
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.tab .md-icon {
+  font-size: 20px;
+}
+
+.tab:hover {
+  color: var(--color-text);
+  background: var(--color-bg-elevated);
+}
+
+.active {
+  color: var(--color-primary);
+}
+
+.active:hover {
+  color: var(--color-primary);
+  background: rgba(45, 106, 79, 0.08);
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.iconBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-full);
+  transition: background 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.iconBtn:hover {
+  background: var(--color-bg-elevated);
+}
+
+.iconBtn .md-icon {
+  font-size: 22px;
+  color: var(--color-text-secondary);
+}
+
+.profileBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-full);
+  transition: background 0.15s;
+  -webkit-tap-highlight-color: transparent;
+  text-decoration: none;
+}
+
+.profileBtn:hover {
+  background: var(--color-bg-elevated);
+}
+
+/* Hide text labels on small screens, show only icons */
+.tabLabel {
+  display: none;
+}
+
+@media (min-width: 480px) {
+  .tabLabel {
+    display: inline;
+  }
+}

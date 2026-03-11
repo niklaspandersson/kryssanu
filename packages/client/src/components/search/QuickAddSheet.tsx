@@ -1,6 +1,6 @@
 import { createSignal } from "solid-js";
 import type { Bird, EventWithParticipants } from "@kryssanu/shared";
-import BottomSheet from "../../../components/BottomSheet";
+import BottomSheet from "../BottomSheet";
 import styles from "./QuickAddSheet.module.css";
 
 type Props = {

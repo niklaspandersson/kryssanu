@@ -9,7 +9,7 @@
 
 .content {
   flex: 1;
-  padding-bottom: var(--nav-height);
+  padding-top: var(--nav-height);
   overflow-y: auto;
 }
 

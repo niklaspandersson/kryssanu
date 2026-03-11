@@ -1,7 +1,7 @@
 import { Router, Route } from "@solidjs/router";
 import { AuthProvider } from "./lib/auth";
 import AppShell from "./components/AppShell";
-import SearchPage from "./pages/SearchPage";
+import HomePage from "./pages/HomePage";
 import FeedPage from "./pages/FeedPage";
 import BirdDetailPage from "./pages/BirdDetailPage";
 import StatsPage from "./pages/StatsPage";
@@ -15,7 +15,7 @@ export default function App() {
   return (
     <AuthProvider>
       <Router root={AppShell}>
-        <Route path="/" component={SearchPage} />
+        <Route path="/" component={HomePage} />
         <Route path="/feed" component={FeedPage} />
         <Route path="/bird/:id" component={BirdDetailPage} />
         <Route path="/stats" component={StatsPage} />
