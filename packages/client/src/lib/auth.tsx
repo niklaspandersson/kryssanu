@@ -58,12 +58,41 @@ export function AuthProvider(props: { children: JSX.Element }) {
     initGoogle();
     const google = (window as any).google;
     if (!google) return;
-    google.accounts.id.prompt();
+    google.accounts.id.prompt((notification: any) => {
+      // If One Tap is suppressed (cooldown after dismiss), fall back to button popup
+      if (
+        notification.isNotDisplayed() ||
+        notification.isSkippedMoment()
+      ) {
+        openGoogleSignInPopup(google);
+      }
+    });
+  }
+
+  function openGoogleSignInPopup(google: any) {
+    // Create a temporary hidden container, render Google button, and click it
+    const container = document.createElement("div");
+    container.style.position = "fixed";
+    container.style.opacity = "0";
+    container.style.pointerEvents = "none";
+    document.body.appendChild(container);
+    google.accounts.id.renderButton(container, {
+      type: "standard",
+      size: "large",
+    });
+    // The rendered button is an iframe; find and click it after a short delay
+    requestAnimationFrame(() => {
+      const btn =
+        container.querySelector<HTMLElement>("div[role=button]") ??
+        container.firstElementChild as HTMLElement | null;
+      btn?.click();
+      setTimeout(() => container.remove(), 5000);
+    });
   }
 
   async function signOut() {
     await auth.logout();
-    setUser(null);
+    window.location.href = "/";
   }
 
   return (

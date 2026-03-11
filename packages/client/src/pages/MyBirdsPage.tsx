@@ -18,9 +18,25 @@ export default function MyBirdsPage() {
     if (!isLoggedIn()) requestLogin();
   });
 
-  const [showMode, setShowMode] = createSignal<ShowMode>("all");
-  const [timeFilter, setTimeFilter] = createSignal<TimeFilter>("all");
-  const [sortMode, setSortMode] = createSignal<SortMode>("alpha");
+  const stored = (() => {
+    try {
+      return JSON.parse(localStorage.getItem("mybirds-filters") ?? "{}");
+    } catch {
+      return {};
+    }
+  })();
+
+  const [showMode, setShowMode] = createSignal<ShowMode>(stored.show ?? "all");
+  const [timeFilter, setTimeFilter] = createSignal<TimeFilter>(stored.time ?? "all");
+  const [sortMode, setSortMode] = createSignal<SortMode>(stored.sort ?? "alpha");
+
+  function persistFilters(show: ShowMode, time: TimeFilter, sort: SortMode) {
+    localStorage.setItem("mybirds-filters", JSON.stringify({ show, time, sort }));
+  }
+
+  function updateShowMode(v: ShowMode) { setShowMode(v); persistFilters(v, timeFilter(), sortMode()); }
+  function updateTimeFilter(v: TimeFilter) { setTimeFilter(v); persistFilters(showMode(), v, sortMode()); }
+  function updateSortMode(v: SortMode) { setSortMode(v); persistFilters(showMode(), timeFilter(), v); }
   const [quickAddBird, setQuickAddBird] = createSignal<Bird | null>(null);
 
   const [data, { refetch }] = createResource(() => isLoggedIn(), (loggedIn) =>
@@ -155,14 +171,14 @@ export default function MyBirdsPage() {
             <button
               class={styles.controlBtn}
               classList={{ [styles.controlActive]: showMode() === "all" }}
-              onClick={() => setShowMode("all")}
+              onClick={() => updateShowMode("all")}
             >
               Alla
             </button>
             <button
               class={styles.controlBtn}
               classList={{ [styles.controlActive]: showMode() === "observed" }}
-              onClick={() => setShowMode("observed")}
+              onClick={() => updateShowMode("observed")}
             >
               Observerade
             </button>
@@ -171,14 +187,14 @@ export default function MyBirdsPage() {
             <button
               class={styles.controlBtn}
               classList={{ [styles.controlActive]: timeFilter() === "all" }}
-              onClick={() => setTimeFilter("all")}
+              onClick={() => updateTimeFilter("all")}
             >
               Alla år
             </button>
             <button
               class={styles.controlBtn}
               classList={{ [styles.controlActive]: timeFilter() === "year" }}
-              onClick={() => setTimeFilter("year")}
+              onClick={() => updateTimeFilter("year")}
             >
               {currentYear}
             </button>
@@ -187,14 +203,14 @@ export default function MyBirdsPage() {
             <button
               class={styles.controlBtn}
               classList={{ [styles.controlActive]: sortMode() === "alpha" }}
-              onClick={() => setSortMode("alpha")}
+              onClick={() => updateSortMode("alpha")}
             >
               A–Ö
             </button>
             <button
               class={styles.controlBtn}
               classList={{ [styles.controlActive]: sortMode() === "family" }}
-              onClick={() => setSortMode("family")}
+              onClick={() => updateSortMode("family")}
             >
               Familj
             </button>
