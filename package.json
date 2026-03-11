@@ -1,50 +1,24 @@
 {
   "name": "kryssanu",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "scripts": {
-    "build": "next build",
-    "dev": "next dev",
+    "dev": "concurrently -n client,server -c blue,green \"pnpm --filter @kryssanu/client dev\" \"pnpm --filter @kryssanu/server dev\"",
+    "build": "pnpm --filter @kryssanu/client build && pnpm --filter @kryssanu/server build",
     "postinstall": "prisma generate",
-    "lint": "next lint",
-    "start": "next start"
-  },
-  "dependencies": {
-    "@next-auth/prisma-adapter": "^1.0.5",
-    "@prisma/client": "^4.11.0",
-    "@tanstack/react-query": "^4.28.0",
-    "@trpc/client": "^10.18.0",
-    "@trpc/next": "^10.18.0",
-    "@trpc/react-query": "^10.18.0",
-    "@trpc/server": "^10.18.0",
-    "clsx": "^1.2.1",
-    "next": "^13.2.4",
-    "next-auth": "^4.21.0",
-    "react": "18.2.0",
-    "react-dom": "18.2.0",
-    "superjson": "1.12.2",
-    "zod": "^3.21.4"
+    "db:push": "prisma db push",
+    "db:seed": "tsx prisma/seed.ts"
   },
   "devDependencies": {
-    "@types/eslint": "^8.21.3",
-    "@types/node": "^18.16.0",
-    "@types/react": "^18.0.28",
-    "@types/react-dom": "^18.0.11",
-    "@typescript-eslint/eslint-plugin": "^5.56.0",
-    "@typescript-eslint/parser": "^5.56.0",
-    "eslint": "^8.36.0",
-    "eslint-config-next": "^13.2.4",
-    "postcss-custom-properties": "^13.1.5",
-    "postcss-nesting": "^11.2.2",
-    "postcss-preset-env": "^8.3.2",
-    "prisma": "^4.11.0",
-    "ts-node": "^10.9.1",
-    "typescript": "^5.0.2"
+    "concurrently": "^9.0.0",
+    "prisma": "^6.4.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.5.0"
   },
   "prisma": {
-    "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"
+    "seed": "tsx prisma/seed.ts"
   },
-  "ct3aMetadata": {
-    "initVersion": "7.12.0"
+  "dependencies": {
+    "@prisma/client": "6.19.2"
   }
 }

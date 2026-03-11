@@ -1,0 +1,17 @@
+.details {
+  display: flex;
+  position: relative;
+  flex-flow: column nowrap;
+  background: white;
+
+  & header {
+    padding: var(--medium-padding);
+  }
+  & h3 {
+    text-transform: capitalize;
+    align-self: center;
+    font-size: 1.75rem;
+    font-weight: 300;
+    margin: 0 0 0.5rem 0;
+  }
+}
