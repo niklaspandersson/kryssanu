@@ -56,16 +56,16 @@ export default function SideDrawer(props: Props) {
       <div class={styles.overlay} onClick={() => props.onClose()} />
       <div class={styles.drawer}>
         <div class={styles.header}>
-          <span class={styles.brand}>
-            <span class={`md-icon ${styles.brandIcon}`}>park</span>
-            Kryssa.nu
-          </span>
           <button class={styles.closeBtn} onClick={() => props.onClose()} aria-label="Stäng meny">
             <span class="md-icon">close</span>
           </button>
         </div>
 
         <div class={styles.body}>
+          <A href="/" class={styles.navLink} activeClass={styles.activeLink} end onClick={() => props.onClose()}>
+            <span class="md-icon">home</span>
+            Hem
+          </A>
           <A href="/my-birds" class={styles.navLink} activeClass={styles.activeLink} onClick={() => props.onClose()}>
             <span class="md-icon">checklist</span>
             Mina kryss
