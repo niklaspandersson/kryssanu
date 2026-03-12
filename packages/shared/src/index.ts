@@ -111,12 +111,6 @@ export const UserStatsSchema = z.object({
 });
 export type UserStats = z.infer<typeof UserStatsSchema>;
 
-export const StatsComparisonSchema = z.object({
-  me: UserStatsSchema,
-  other: UserStatsSchema,
-  otherUser: UserSchema,
-});
-export type StatsComparison = z.infer<typeof StatsComparisonSchema>;
 
 // ── Event (with participants) ─────────────────────────────────────
 export const ParticipantWithUserSchema = z.object({

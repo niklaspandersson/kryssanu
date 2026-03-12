@@ -6,7 +6,6 @@ import type {
   ChecklistData,
   User,
   UserStats,
-  StatsComparison,
   CreateObservationInput,
   CreateEventInput,
   EventWithParticipants,
@@ -97,8 +96,6 @@ export const stats = {
   me: () => fetchJson<UserStats>('/stats/me'),
   user: (userId: string) =>
     fetchJson<UserStats>(`/stats/user/${encodeURIComponent(userId)}`),
-  compare: (userId: string) =>
-    fetchJson<StatsComparison>(`/stats/compare/${encodeURIComponent(userId)}`),
 };
 
 // ── Users ───────────────────────────────────────────────────────────

@@ -97,23 +97,5 @@ router.get("/user/:userId", async (req, res) => {
   res.json(stats);
 });
 
-// Compare current user with another
-router.get("/compare/:userId", async (req, res) => {
-  const otherUser = await prisma.user.findUnique({
-    where: { id: req.params.userId },
-    select: { id: true, name: true, email: true, image: true },
-  });
-  if (!otherUser) {
-    res.status(404).json({ error: "User not found" });
-    return;
-  }
-
-  const [me, other] = await Promise.all([
-    getUserStats(req.user!.id),
-    getUserStats(req.params.userId),
-  ]);
-
-  res.json({ me, other, otherUser });
-});
 
 export default router;
