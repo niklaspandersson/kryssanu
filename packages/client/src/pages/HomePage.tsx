@@ -31,7 +31,7 @@ export default function HomePage() {
       <section class={styles.hero}>
         <div class={styles.heroContent}>
           <span class={`md-icon ${styles.heroIcon}`}>park</span>
-          <h1 class={styles.heroTitle}>Kryssanu</h1>
+          <h1 class={styles.heroTitle}>Kryssa.nu</h1>
           <p class={styles.heroSubtitle}>
             Din personliga fågeljournal — kryssa arter, tävla med vänner och följ din statistik.
           </p>

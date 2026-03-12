@@ -27,7 +27,6 @@ export default function AppShell(props: RouteSectionProps) {
           <A href="/help">Hjälp</A>
           <A href="/terms">Villkor</A>
         </nav>
-        <p>&copy; {new Date().getFullYear()} kryssa.nu</p>
       </footer>
       <SearchOverlay open={searchOpen()} onClose={() => setSearchOpen(false)} />
       <SideDrawer open={menuOpen()} onClose={() => setMenuOpen(false)} />

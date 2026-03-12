@@ -78,7 +78,7 @@ export default function EventsPage() {
                     class={styles.declineBtn}
                     onClick={() => handleRespond(event.id, "DECLINED")}
                   >
-                    Avboj
+                    Avböj
                   </button>
                 </div>
               </div>
@@ -103,7 +103,7 @@ export default function EventsPage() {
       {/* Event list */}
       <Show
         when={filtered().length > 0}
-        fallback={<EmptyState icon="event" message="Inga event har" />}
+        fallback={<EmptyState icon="event" message="Inga event här" />}
       >
         <div class={styles.list}>
           <For each={filtered()}>

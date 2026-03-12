@@ -46,7 +46,7 @@ export default function BirdDetailPage() {
                   fallback={
                     <EmptyState
                       icon="visibility_off"
-                      message="Du har inte observerat denna fagel annu"
+                      message="Du har inte observerat denna fågel ännu"
                     />
                   }
                 >

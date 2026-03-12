@@ -12,7 +12,7 @@ export default function SearchInput(props: Props) {
       <input
         type="text"
         class={styles.input}
-        placeholder="Sok efter fagel..."
+        placeholder="Sök efter fågel..."
         value={props.value}
         onInput={(e) => props.onInput(e.currentTarget.value)}
         autofocus

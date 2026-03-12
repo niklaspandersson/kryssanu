@@ -205,7 +205,7 @@ export default function MyBirdsPage() {
               classList={{ [styles.controlActive]: sortMode() === "alpha" }}
               onClick={() => updateSortMode("alpha")}
             >
-              A–Ö
+              A-Ö
             </button>
             <button
               class={styles.controlBtn}

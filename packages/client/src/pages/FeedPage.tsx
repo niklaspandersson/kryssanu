@@ -21,14 +21,14 @@ export default function FeedPage() {
 
   return (
     <div class={styles.page}>
-      <h1 class={styles.heading}>Flode</h1>
+      <h1 class={styles.heading}>Flöde</h1>
 
       {/* Quick stats */}
       <Show when={myStats()}>
         {(s) => (
           <div class={styles.statsRow}>
             <StatCard value={s().uniqueSpeciesLifetime} label="Arter totalt" />
-            <StatCard value={s().uniqueSpeciesThisYear} label="Arter i ar" />
+            <StatCard value={s().uniqueSpeciesThisYear} label="Arter i år" />
             <StatCard value={s().observationsThisWeek} label="Denna vecka" />
           </div>
         )}

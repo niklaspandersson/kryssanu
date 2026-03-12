@@ -21,7 +21,7 @@ export default function BirdRow(props: Props) {
         <button
           class={styles.addBtn}
           onClick={() => props.onAdd(props.bird)}
-          aria-label={`Lagg till observation av ${props.bird.swedish}`}
+          aria-label={`Lägg till observation av ${props.bird.swedish}`}
         >
           <span class="md-icon">add_circle</span>
         </button>

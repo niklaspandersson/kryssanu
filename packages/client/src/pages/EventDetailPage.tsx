@@ -80,7 +80,7 @@ export default function EventDetailPage() {
                 onClick={() => openSearch()}
               >
                 <Icon name="add" size={20} />
-                Lagg till observation
+                Lägg till observation
               </button>
             </Show>
 
