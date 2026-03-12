@@ -80,6 +80,19 @@
   border-bottom: none;
 }
 
+.lbRowHighlight {
+  background: var(--color-primary-light, #e3f2fd);
+}
+
+.lbDivider {
+  text-align: center;
+  padding: var(--space-xs) 0;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+  letter-spacing: 4px;
+  border-bottom: 1px solid var(--color-border);
+}
+
 .lbRank {
   width: 24px;
   text-align: center;
