@@ -9,26 +9,6 @@ router.use(requireAuth);
 
 const userSelect = { id: true, name: true, email: true, image: true, city: true, about: true };
 
-// Search users by name
-router.get("/search", asyncHandler(async (req, res) => {
-  const q = (req.query.q as string) || "";
-  if (q.length < 2) {
-    res.json([]);
-    return;
-  }
-
-  const users = await prisma.user.findMany({
-    where: {
-      name: { contains: q },
-      id: { not: req.user!.id },
-    },
-    select: userSelect,
-    take: 10,
-  });
-
-  res.json(users);
-}));
-
 // Public profile
 router.get("/:id", asyncHandler(async (req, res) => {
   const user = await prisma.user.findUnique({

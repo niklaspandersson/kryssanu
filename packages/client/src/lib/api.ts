@@ -100,8 +100,6 @@ export const stats = {
 
 // ── Users ───────────────────────────────────────────────────────────
 export const users = {
-  search: (q: string) =>
-    fetchJson<User[]>(`/users/search?q=${encodeURIComponent(q)}`),
   getOne: (id: string) => fetchJson<User>(`/users/${encodeURIComponent(id)}`),
   updateProfile: (input: UpdateProfileInput) =>
     fetchJson<User>('/users/me', {
