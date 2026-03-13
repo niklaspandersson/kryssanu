@@ -1,6 +1,6 @@
 import { createResource, Show, For, onMount } from "solid-js";
 import { A } from "@solidjs/router";
-import { feed, stats as statsApi, events as eventsApi } from "../lib/api";
+import { feed, stats as statsApi, events as eventsApi, observations } from "../lib/api";
 import { useAuth } from "../lib/auth";
 import StatCard from "../components/StatCard";
 import Avatar from "../components/Avatar";
@@ -9,7 +9,7 @@ import Icon from "../components/Icon";
 import styles from "./FeedPage.module.css";
 
 export default function FeedPage() {
-  const { isLoggedIn, requestLogin } = useAuth();
+  const { user, isLoggedIn, requestLogin } = useAuth();
 
   onMount(() => {
     if (!isLoggedIn()) requestLogin();
@@ -18,10 +18,27 @@ export default function FeedPage() {
   const [myStats] = createResource(() => isLoggedIn(), () => statsApi.me());
   const [feedData] = createResource(() => isLoggedIn(), () => feed.get());
   const [activeEvents] = createResource(() => isLoggedIn(), () => eventsApi.getAll("active"));
+  const [latestObs] = createResource(() => isLoggedIn(), () => observations.latest());
+
+  function remaining(endsAt: string) {
+    const diff = new Date(endsAt).getTime() - Date.now();
+    const hours = Math.floor(diff / 3600000);
+    const days = Math.floor(hours / 24);
+    if (days > 0) return `${days}d kvar`;
+    if (hours > 0) return `${hours}h kvar`;
+    return "Slutar snart";
+  }
 
   return (
     <div class={styles.page}>
-      <h1 class={styles.heading}>Aktivitet</h1>
+      <div class={styles.greeting}>
+        <h2 class={styles.greetingText}>
+          Hej, {user()?.name?.split(" ")[0] ?? "du"}!
+        </h2>
+        <p class={styles.greetingSubtitle}>
+          Här är din sammanfattning
+        </p>
+      </div>
 
       {/* Quick stats */}
       <Show when={myStats()}>
@@ -42,29 +59,17 @@ export default function FeedPage() {
             Aktiva event
           </h2>
           <For each={activeEvents()}>
-            {(event) => {
-              const remaining = () => {
-                const end = new Date(event.endsAt);
-                const diff = end.getTime() - Date.now();
-                const hours = Math.floor(diff / 3600000);
-                const days = Math.floor(hours / 24);
-                if (days > 0) return `${days}d kvar`;
-                if (hours > 0) return `${hours}h kvar`;
-                return "Slutar snart";
-              };
-
-              return (
-                <A href={`/events/${event.id}`} class={styles.eventCard}>
-                  <div class={styles.eventInfo}>
-                    <span class={styles.eventName}>{event.name}</span>
-                    <span class={styles.eventMeta}>
-                      {event.participants.length} deltagare · {remaining()}
-                    </span>
-                  </div>
-                  <Icon name="chevron_right" />
-                </A>
-              );
-            }}
+            {(event) => (
+              <A href={`/events/${event.id}`} class={styles.eventCard}>
+                <div class={styles.eventInfo}>
+                  <span class={styles.eventName}>{event.name}</span>
+                  <span class={styles.eventMeta}>
+                    {event.participants.length} deltagare · {remaining(event.endsAt)}
+                  </span>
+                </div>
+                <Icon name="chevron_right" />
+              </A>
+            )}
           </For>
         </section>
       </Show>
@@ -80,7 +85,7 @@ export default function FeedPage() {
           fallback={
             <EmptyState
               icon="group"
-              message="Inga observationer fran andra annu. Ga med i ett event!"
+              message="Inga observationer från andra ännu. Ga med i ett event!"
             />
           }
         >
@@ -108,7 +113,31 @@ export default function FeedPage() {
             )}
           </For>
         </Show>
-      </section>
+      </section>      
+
+      {/* Latest observations */}
+      <Show when={(latestObs() ?? []).length > 0}>
+        <section class={styles.section}>
+          <h2 class={styles.sectionTitle}>
+            <Icon name="visibility" size={20} />
+            Dina senaste observationer
+            <A href="/my-birds" class={styles.sectionLink}>Visa alla</A>
+          </h2>
+          <For each={latestObs()!.slice(0, 5)}>
+            {(obs) => (
+              <div class={styles.obsItem}>
+                <div class={styles.obsInfo}>
+                  <span class={styles.obsName}>{obs.bird.swedish}</span>
+                  <span class={styles.obsMeta}>
+                    {new Date(obs.date).toLocaleDateString("sv-SE")}
+                    {obs.location && ` · ${obs.location}`}
+                  </span>
+                </div>
+              </div>
+            )}
+          </For>
+        </section>
+      </Show>
     </div>
   );
 }
