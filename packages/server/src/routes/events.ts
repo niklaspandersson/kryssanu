@@ -31,7 +31,7 @@ router.get("/", asyncHandler(async (req, res) => {
       participants: {
         include: { user: { select: userSelect } },
       },
-      _count: { select: { observations: true } },
+      _count: { select: { observationEvents: true } },
     },
     orderBy: { startsAt: "desc" },
   });
@@ -50,7 +50,7 @@ router.get("/", asyncHandler(async (req, res) => {
         user: p.user,
         status: p.status,
       })),
-      observationCount: e._count.observations,
+      observationCount: e._count.observationEvents,
     }))
     .filter((e) => {
       if (!status) return true;
@@ -92,7 +92,7 @@ router.post("/", asyncHandler(async (req, res) => {
       participants: {
         include: { user: { select: userSelect } },
       },
-      _count: { select: { observations: true } },
+      _count: { select: { observationEvents: true } },
     },
   });
 
@@ -105,7 +105,7 @@ router.post("/", asyncHandler(async (req, res) => {
       user: p.user,
       status: p.status,
     })),
-    observationCount: event._count.observations,
+    observationCount: event._count.observationEvents,
   });
 }));
 
@@ -118,7 +118,7 @@ router.get("/:id", asyncHandler(async (req, res) => {
       participants: {
         include: { user: { select: userSelect } },
       },
-      _count: { select: { observations: true } },
+      _count: { select: { observationEvents: true } },
     },
   });
 
@@ -145,7 +145,7 @@ router.get("/:id", asyncHandler(async (req, res) => {
       user: p.user,
       status: p.status,
     })),
-    observationCount: event._count.observations,
+    observationCount: event._count.observationEvents,
   });
 }));
 
@@ -249,13 +249,9 @@ router.get("/:id/leaderboard", asyncHandler(async (req, res) => {
 
   const participantIds = event.participants.map((p) => p.userId);
 
-  const observations = await prisma.observation.findMany({
-    where: {
-      eventId: event.id,
-      userId: { in: participantIds },
-      date: { gte: event.startsAt, lte: event.endsAt },
-    },
-    select: { userId: true, birdId: true },
+  const observationEvents = await prisma.observationEvent.findMany({
+    where: { eventId: event.id },
+    include: { observation: { select: { userId: true, birdId: true } } },
   });
 
   const statsMap = new Map<string, { species: Set<string>; total: number }>();
@@ -263,10 +259,10 @@ router.get("/:id/leaderboard", asyncHandler(async (req, res) => {
     statsMap.set(id, { species: new Set(), total: 0 })
   );
 
-  observations.forEach((o) => {
-    const entry = statsMap.get(o.userId);
+  observationEvents.forEach((oe) => {
+    const entry = statsMap.get(oe.observation.userId);
     if (entry) {
-      entry.species.add(o.birdId);
+      entry.species.add(oe.observation.birdId);
       entry.total++;
     }
   });

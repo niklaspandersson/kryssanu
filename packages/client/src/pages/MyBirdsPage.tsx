@@ -1,5 +1,5 @@
 import { createSignal, createResource, createMemo, Show, For, onMount } from "solid-js";
-import { observations, events as eventsApi } from "../lib/api";
+import { observations } from "../lib/api";
 import { useAuth } from "../lib/auth";
 import Icon from "../components/Icon";
 import EmptyState from "../components/EmptyState";
@@ -42,10 +42,6 @@ export default function MyBirdsPage() {
   const [data, { refetch }] = createResource(() => isLoggedIn(), (loggedIn) =>
     loggedIn ? observations.checklist() : undefined
   );
-  const [activeEvents] = createResource(() => isLoggedIn(), (loggedIn) =>
-    loggedIn ? eventsApi.getAll("active") : undefined
-  );
-
   const currentYear = new Date().getFullYear();
 
   const observedSet = createMemo(() => {
@@ -92,14 +88,13 @@ export default function MyBirdsPage() {
   const observedCount = createMemo(() => observedSet().size);
   const totalCount = createMemo(() => data()?.birds.length ?? 0);
 
-  async function handleQuickAdd(addData: { note?: string; location?: string; eventId?: string }) {
+  async function handleQuickAdd(addData: { note?: string; location?: string }) {
     const bird = quickAddBird();
     if (!bird) return;
     await observations.create({
       birdId: bird.id,
       note: addData.note,
       location: addData.location,
-      eventId: addData.eventId,
     });
     setQuickAddBird(null);
     refetch();
@@ -262,7 +257,6 @@ export default function MyBirdsPage() {
         open={quickAddBird() !== null}
         onClose={() => setQuickAddBird(null)}
         onConfirm={handleQuickAdd}
-        activeEvents={activeEvents() ?? []}
       />
     </div>
   );

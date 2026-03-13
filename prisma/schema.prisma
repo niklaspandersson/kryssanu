@@ -47,14 +47,12 @@ model Observation {
   updatedAt DateTime @updatedAt
   birdId    String
   userId    String
-  eventId   String?
   bird      Bird     @relation(fields: [birdId], references: [id])
   user      User     @relation(fields: [userId], references: [id])
-  event     Event?   @relation(fields: [eventId], references: [id])
+  events    ObservationEvent[]
 
   @@index([userId])
   @@index([birdId])
-  @@index([eventId])
 }
 
 model Event {
@@ -66,10 +64,21 @@ model Event {
   createdAt    DateTime      @default(now())
   creatorId    String
   creator      User          @relation("EventCreator", fields: [creatorId], references: [id])
-  participants Participant[]
-  observations Observation[]
+  participants      Participant[]
+  observationEvents ObservationEvent[]
 
   @@index([creatorId])
+}
+
+model ObservationEvent {
+  observationId String
+  eventId       String
+  observation   Observation @relation(fields: [observationId], references: [id], onDelete: Cascade)
+  event         Event       @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@id([observationId, eventId])
+  @@index([eventId])
+  @@index([observationId])
 }
 
 model Participant {

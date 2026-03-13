@@ -102,7 +102,6 @@ export default function FeedPage() {
                   </span>
                   <span class={styles.feedDate}>
                     {new Date(item.date).toLocaleDateString("sv-SE")}
-                    {item.eventName && ` · ${item.eventName}`}
                   </span>
                 </div>
               </div>

@@ -76,31 +76,35 @@ router.post('/', asyncHandler(async (req, res) => {
     return;
   }
 
-  if (parsed.data.eventId) {
-    const participant = await prisma.participant.findUnique({
-      where: {
-        userId_eventId: {
-          userId: req.user!.id,
-          eventId: parsed.data.eventId,
-        },
-      },
-    });
-    if (!participant || participant.status !== 'ACCEPTED') {
-      res.status(403).json({ error: 'Not a participant of this event' });
-      return;
-    }
-  }
-
   const observation = await prisma.observation.create({
     data: {
       birdId: parsed.data.birdId,
       userId: req.user!.id,
-      eventId: parsed.data.eventId,
       note: parsed.data.note,
       location: parsed.data.location,
       date: new Date(),
     },
   });
+
+  // Auto-link to all active events where user is accepted participant
+  const matchingEvents = await prisma.event.findMany({
+    where: {
+      startsAt: { lte: observation.date },
+      endsAt: { gte: observation.date },
+      participants: { some: { userId: req.user!.id, status: 'ACCEPTED' } },
+    },
+    select: { id: true },
+  });
+
+  if (matchingEvents.length > 0) {
+    await prisma.observationEvent.createMany({
+      data: matchingEvents.map((e) => ({
+        observationId: observation.id,
+        eventId: e.id,
+      })),
+    });
+  }
+
   res.status(201).json(observation);
 }));
 

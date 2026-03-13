@@ -137,7 +137,6 @@ export default function HomePage() {
                     </span>
                     <span class={styles.feedDate}>
                       {new Date(item.date).toLocaleDateString("sv-SE")}
-                      {item.eventName && ` · ${item.eventName}`}
                     </span>
                   </div>
                 </div>

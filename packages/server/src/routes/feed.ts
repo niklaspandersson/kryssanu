@@ -47,7 +47,6 @@ router.get("/", asyncHandler(async (req, res) => {
     include: {
       user: { select: { id: true, name: true, email: true, image: true } },
       bird: true,
-      event: { select: { id: true, name: true } },
     },
     orderBy: { date: "desc" },
     take: limit + 1,
@@ -64,8 +63,6 @@ router.get("/", asyncHandler(async (req, res) => {
       family: o.bird.family,
       visitor: o.bird.visitor,
     },
-    eventId: o.event?.id ?? null,
-    eventName: o.event?.name ?? null,
   }));
 
   res.json({

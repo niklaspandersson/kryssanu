@@ -1,6 +1,6 @@
 import { createSignal, createResource, createMemo, createEffect, Show, For } from "solid-js";
 import type { Bird } from "@kryssanu/shared";
-import { birds, observations, events as eventsApi } from "../lib/api";
+import { birds, observations } from "../lib/api";
 import { useAuth } from "../lib/auth";
 import BirdRow from "./search/BirdRow";
 import QuickAddSheet from "./search/QuickAddSheet";
@@ -23,11 +23,6 @@ export default function SearchOverlay(props: Props) {
     () => props.open && user(),
     () => observations.getObserved()
   );
-  const [activeEvents] = createResource(
-    () => props.open && user(),
-    () => eventsApi.getAll("active")
-  );
-
   const filtered = createMemo(() => {
     const list = allBirds() ?? [];
     const q = query().toLowerCase().trim();
@@ -51,7 +46,6 @@ export default function SearchOverlay(props: Props) {
   async function handleConfirm(data: {
     note?: string;
     location?: string;
-    eventId?: string;
   }) {
     const bird = selectedBird();
     if (!bird) return;
@@ -132,7 +126,6 @@ export default function SearchOverlay(props: Props) {
           open={sheetOpen()}
           onClose={() => setSheetOpen(false)}
           onConfirm={handleConfirm}
-          activeEvents={activeEvents() ?? []}
         />
       </div>
     </Show>

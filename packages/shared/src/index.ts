@@ -19,7 +19,6 @@ export const ObservationSchema = z.object({
   updatedAt: z.string(),
   birdId: z.string(),
   userId: z.string(),
-  eventId: z.string().nullable(),
 });
 export type Observation = z.infer<typeof ObservationSchema>;
 
@@ -30,7 +29,6 @@ export type ObservationWithBird = z.infer<typeof ObservationWithBirdSchema>;
 
 export const CreateObservationSchema = z.object({
   birdId: z.string(),
-  eventId: z.string().optional(),
   note: z.string().optional(),
   location: z.string().optional(),
 });
@@ -140,7 +138,5 @@ export const FeedItemSchema = z.object({
   date: z.string(),
   user: UserSchema,
   bird: BirdSchema,
-  eventId: z.string().nullable(),
-  eventName: z.string().nullable(),
 });
 export type FeedItem = z.infer<typeof FeedItemSchema>;
