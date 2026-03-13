@@ -127,6 +127,15 @@ router.get("/:id", asyncHandler(async (req, res) => {
     return;
   }
 
+  const userId = req.user!.id;
+  const isMember =
+    event.creatorId === userId ||
+    event.participants.some((p) => p.user.id === userId);
+  if (!isMember) {
+    res.status(403).json({ error: "Not a member of this event" });
+    return;
+  }
+
   res.json({
     ...event,
     startsAt: event.startsAt.toISOString(),
@@ -226,6 +235,15 @@ router.get("/:id/leaderboard", asyncHandler(async (req, res) => {
 
   if (!event) {
     res.status(404).json({ error: "Event not found" });
+    return;
+  }
+
+  const userId = req.user!.id;
+  const isMember =
+    event.creatorId === userId ||
+    event.participants.some((p) => p.user.id === userId);
+  if (!isMember) {
+    res.status(403).json({ error: "Not a member of this event" });
     return;
   }
 
