@@ -1,11 +1,11 @@
 :root {
   /* Nature/earthy palette */
-  --color-bg: #faf8f2;
-  --color-bg-card: #ffffff;
-  --color-bg-elevated: #f5f0e8;
   --color-primary: #2d6a4f;
   --color-primary-light: #52b788;
   --color-primary-dark: #1b4332;
+  --color-bg: #faf8f2;
+  --color-bg-card: #ffffff;
+  --color-bg-elevated: oklch(from var(--color-primary) calc(l + .49) calc(c * .1) h);
   --color-accent: #d4a373;
   --color-accent-light: #e9c89b;
   --color-text: #2c2c2c;
@@ -111,12 +111,15 @@ select {
 .md-icon.md-dark {
   color: rgba(0, 0, 0, 0.54);
 }
+
 .md-icon.md-dark.md-inactive {
   color: rgba(0, 0, 0, 0.26);
 }
+
 .md-icon.md-light {
   color: rgba(255, 255, 255, 1);
 }
+
 .md-icon.md-light.md-inactive {
   color: rgba(255, 255, 255, 0.3);
 }

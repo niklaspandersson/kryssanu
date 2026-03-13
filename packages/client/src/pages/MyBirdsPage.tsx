@@ -112,30 +112,30 @@ export default function MyBirdsPage() {
   }
 
   function renderBirdRow(bird: Bird) {
-    const isObserved = observedSet().has(bird.id);
-    const date = firstObsDate(bird.id);
+    const isObserved = () => observedSet().has(bird.id);
+    const date = () => firstObsDate(bird.id);
     return (
       <div
         class={styles.birdRow}
-        classList={{ [styles.unobserved]: !isObserved }}
+        classList={{ [styles.unobserved]: !isObserved() }}
       >
         <div class={styles.birdLink}>
           <div class={styles.birdInfo}>
             <span class={styles.birdName}>{bird.swedish}</span>
             <span class={styles.birdLatin}>{bird.id}</span>
           </div>
-          <Show when={date}>
+          <Show when={date()}>
             <span class={styles.birdDate}>
-              {new Date(date!).toLocaleDateString("sv-SE")}
+              {new Date(date()!).toLocaleDateString("sv-SE")}
             </span>
           </Show>
         </div>
-        <Show when={isObserved}>
+        <Show when={isObserved()}>
           <span class={styles.checkMark}>
             <Icon name="check_circle" size={20} />
           </span>
         </Show>
-        <Show when={!isObserved}>
+
           <button
             class={styles.addBtn}
             onClick={() => setQuickAddBird(bird)}
@@ -143,7 +143,7 @@ export default function MyBirdsPage() {
           >
             <Icon name="add_circle_outline" size={20} />
           </button>
-        </Show>
+
       </div>
     );
   }
@@ -153,15 +153,16 @@ export default function MyBirdsPage() {
       <h1 class={styles.heading}>Mina kryss</h1>
 
       <Show when={data()}>
-        <div class={styles.summary}>
-          <span class={styles.summaryCount}>{observedCount()}</span>
-          <span class={styles.summaryLabel}>
-            av {totalCount()} arter {timeFilter() === "year" ? `(${currentYear})` : "(totalt)"}
-          </span>
-        </div>
+        <div class={styles.toolbar}>
+          <div class={styles.summary}>
+            <span class={styles.summaryCount}>{observedCount()}</span>
+            <span class={styles.summaryLabel}>
+               {timeFilter() === "year" ? `(${currentYear})` : "(totalt)"}
+            </span>
+          </div>
 
-        {/* Controls */}
-        <div class={styles.controls}>
+          {/* Controls */}
+          <div class={styles.controls}>
           <div class={styles.controlGroup}>
             <button
               class={styles.controlBtn}
@@ -210,6 +211,7 @@ export default function MyBirdsPage() {
               Familj
             </button>
           </div>
+        </div>
         </div>
 
         {/* Bird list */}

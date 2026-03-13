@@ -94,6 +94,7 @@ export default function HomePage() {
             <h2 class={styles.sectionTitle}>
               <Icon name="visibility" size={20} />
               Senaste observationer
+              <A href="/my-birds" class={styles.sectionLink}>Visa alla</A>
             </h2>
             <For each={latestObs()!.slice(0, 5)}>
               {(obs) => (
