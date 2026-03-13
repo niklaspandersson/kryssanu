@@ -1,6 +1,7 @@
 import path from 'path';
 import { fileURLToPath } from 'url';
 import express from 'express';
+import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
 import { sessionMiddleware } from './middleware/auth.js';
 import authRoutes from './routes/auth.js';
@@ -17,7 +18,8 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-app.use(express.json());
+app.use(helmet());
+app.use(express.json({ limit: '10kb' }));
 app.use(cookieParser());
 app.use(sessionMiddleware);
 
