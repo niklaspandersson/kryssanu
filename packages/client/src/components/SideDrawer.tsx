@@ -79,7 +79,7 @@ export default function SideDrawer(props: Props) {
           </A>
           <A href="/feed" class={styles.navLink} activeClass={styles.activeLink} onClick={() => props.onClose()}>
             <span class="md-icon">dynamic_feed</span>
-            <span class={styles.navLabel}>Flöde</span>
+            <span class={styles.navLabel}>Aktivitet</span>
           </A>
 
           <div class={styles.divider} />

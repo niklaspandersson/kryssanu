@@ -21,7 +21,7 @@ export default function FeedPage() {
 
   return (
     <div class={styles.page}>
-      <h1 class={styles.heading}>Flöde</h1>
+      <h1 class={styles.heading}>Aktivitet</h1>
 
       {/* Quick stats */}
       <Show when={myStats()}>
