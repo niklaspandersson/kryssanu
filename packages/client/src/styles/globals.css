@@ -6,6 +6,7 @@
   --color-bg: #faf8f2;
   --color-bg-card: #ffffff;
   --color-bg-elevated: oklch(from var(--color-primary) calc(l + .49) calc(c * .1) h);
+  --color-bg-menu-hover: #d6e8df;
   --color-accent: #d4a373;
   --color-accent-light: #e9c89b;
   --color-text: #2c2c2c;
@@ -48,6 +49,9 @@
   /* Layout */
   --nav-height: 56px;
   --max-width: 640px;
+  --sidebar-width: 0px;
+  --sidebar-rail-width: 72px;
+  --sidebar-full-width: 235px;
 }
 
 *,

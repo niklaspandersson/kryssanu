@@ -1,3 +1,4 @@
+/* ===== Overlay ===== */
 .overlay {
   position: fixed;
   inset: 0;
@@ -6,25 +7,34 @@
   animation: fadeIn 0.2s ease-out;
 }
 
-.drawer {
+/* ===== Sidebar (base / mobile) ===== */
+.sidebar {
   position: fixed;
+  padding-inline: var(--space-sm);
+  left: 0;
   top: 0;
-  left: 50%;
-  transform: translateX(min(-50%, calc(-1 * var(--max-width) / 2)));
-  width: min(280px, 75vw);
-  height: 100dvh;
-  background: var(--color-bg-card);
+  bottom: 0;
+  width: min(235px, 75vw);
   z-index: 201;
   display: flex;
   flex-direction: column;
-  animation: slideIn 0.2s ease-out;
   padding-top: env(safe-area-inset-top, 0);
+  transform: translateX(-100%);
+  transition: transform 0.2s ease-out, width 0.2s ease-out;
+  background-color: var(--color-bg-card);
+  content-visibility: hidden;
 }
 
+.sidebar.open {
+  transform: translateX(0);
+  content-visibility: visible;
+}
+
+/* ===== Header ===== */
 .header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: start;
   height: var(--nav-height);
   padding: 0 var(--space-lg);
   border-bottom: 1px solid var(--color-border);
@@ -59,12 +69,14 @@
   background: var(--color-bg-elevated);
 }
 
+/* ===== Body ===== */
 .body {
   flex: 1;
   overflow-y: auto;
   padding: var(--space-md) 0;
 }
 
+/* ===== Nav links ===== */
 .navLink {
   display: flex;
   align-items: center;
@@ -74,12 +86,14 @@
   text-decoration: none;
   font-size: var(--font-size-base);
   font-weight: 500;
+  border-radius: var(--radius-md);
+
   -webkit-tap-highlight-color: transparent;
   transition: background 0.15s;
 }
 
 .navLink:hover {
-  background: var(--color-bg-elevated);
+  background: var(--color-bg-menu-hover);
 }
 
 .navLink .md-icon {
@@ -95,6 +109,12 @@
   color: var(--color-primary);
 }
 
+/* ===== Rail event link (icon-only, visible only in rail mode) ===== */
+.railEventLink {
+  display: none;
+}
+
+/* ===== Events section ===== */
 .sectionTitle {
   padding: var(--space-lg) var(--space-lg) var(--space-sm);
   font-size: var(--font-size-xs);
@@ -111,12 +131,13 @@
   padding: var(--space-sm) var(--space-lg);
   text-decoration: none;
   color: var(--color-text);
+  border-radius: var(--radius-md);
   -webkit-tap-highlight-color: transparent;
   transition: background 0.15s;
 }
 
 .eventItem:hover {
-  background: var(--color-bg-elevated);
+  background: var(--color-bg-menu-hover);
 }
 
 .eventDot {
@@ -180,6 +201,7 @@
   margin: var(--space-sm) 0;
 }
 
+/* ===== Animations ===== */
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -190,12 +212,136 @@
   }
 }
 
-@keyframes slideIn {
-  from {
-    transform: translateX(calc(min(-50%, calc(-1 * var(--max-width) / 2)) - 280px));
+/* ==========================================================
+   TABLET: 750px – 900px — Icon rail always visible
+   ========================================================== */
+@media (min-width: 750px) {
+  .sidebar {
+    width: var(--sidebar-rail-width);
+    transform: translateX(0);
+    z-index: 99;
+    background-color: unset;
+    top: 0;
+    content-visibility: visible;
   }
 
-  to {
-    transform: translateX(min(-50%, calc(-1 * var(--max-width) / 2)));
+  .sidebar.open {
+    width: min(235px, 75vw);
+    z-index: 201;
+    background-color: var(--color-bg-card);
+  }
+
+  /* Nav links: icon-only centered in rail */
+  .navLink {
+    justify-content: center;
+    padding: var(--space-md) 0;
+  }
+
+  .navLink:hover {
+    background: var(--color-bg-menu-hover);
+  }
+
+  .navLabel {
+    display: none;
+  }
+
+  .sidebar.open .navLink {
+    justify-content: flex-start;
+    padding: var(--space-md) var(--space-lg);
+  }
+
+  .sidebar.open .navLabel {
+    display: inline;
+  }
+
+  /* Rail event link */
+  .railEventLink {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-lg) 0;
+    color: var(--color-text);
+    text-decoration: none;
+    -webkit-tap-highlight-color: transparent;
+    border-radius: var(--radius-md);
+    transition: background 0.15s;
+  }
+
+  .railEventLink:hover {
+    background: var(--color-bg-menu-hover);
+  }
+
+  .railEventLink .md-icon {
+    font-size: 22px;
+    color: var(--color-text-secondary);
+  }
+
+  .sidebar.open .railEventLink {
+    display: none;
+  }
+
+  /* Events section: hidden in rail, shown when expanded */
+  .eventsSection {
+    display: none;
+  }
+
+  .sidebar.open .eventsSection {
+    display: block;
+  }
+
+  /* Divider hidden in rail */
+  .divider {
+    display: none;
+  }
+
+  .sidebar.open .divider {
+    display: block;
+  }
+}
+
+/* ==========================================================
+   DESKTOP: > 900px — Full sidebar always visible, in-flow
+   ========================================================== */
+@media (min-width: 1000px) {
+  .overlay {
+    display: none;
+  }
+
+  .sidebar {
+    position: sticky;
+    top: var(--nav-height);
+    width: var(--sidebar-full-width);
+    transform: none;
+    transition: none;
+  }
+
+  /* Header hidden at desktop (logo already in TopNav) */
+  .header {
+    display: none;
+  }
+
+  /* Nav links: full width with labels */
+  .navLink {
+    justify-content: flex-start;
+    padding: var(--space-md) var(--space-lg);
+  }
+
+  .navLabel {
+    display: inline;
+    flex-grow: 1;
+  }
+
+  /* Rail event link hidden at desktop */
+  .railEventLink {
+    display: none;
+  }
+
+  /* Events section always visible */
+  .eventsSection {
+    display: block;
+  }
+
+  .divider {
+    display: block;
   }
 }

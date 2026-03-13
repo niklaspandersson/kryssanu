@@ -14,7 +14,7 @@ export default function TopNav(props: Props) {
   return (
     <nav class={styles.nav}>
       <div class={styles.left}>
-        <button class={styles.iconBtn} onClick={() => props.onMenuOpen()} aria-label="Meny">
+        <button class={`${styles.iconBtn} ${styles.menuBtn}`} onClick={() => props.onMenuOpen()} aria-label="Meny">
           <span class="md-icon">menu</span>
         </button>
         <A href="/" class={styles.brand}>

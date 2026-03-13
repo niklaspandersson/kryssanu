@@ -45,75 +45,90 @@ export default function SideDrawer(props: Props) {
   const { isLoggedIn } = useAuth();
 
   const [allEvents] = createResource(
-    () => isLoggedIn() && props.open,
+    () => isLoggedIn(),
     () => eventsApi.getAll()
   );
 
   const displayEvents = () => categorizeEvents(allEvents() ?? []);
 
   return (
-    <Show when={props.open}>
-      <div class={styles.overlay} onClick={() => props.onClose()} />
-      <div class={styles.drawer}>
+    <>
+      <Show when={props.open}>
+        <div class={styles.overlay} onClick={() => props.onClose()} />
+      </Show>
+
+      <aside class={styles.sidebar} classList={{ [styles.open]: props.open }}>
         <div class={styles.header}>
           <button class={styles.closeBtn} onClick={() => props.onClose()} aria-label="Stäng meny">
             <span class="md-icon">close</span>
           </button>
+          <A href="/" class={styles.brand}>
+            <span class={`md-icon ${styles.brandIcon}`}>park</span>
+            Kryssa.nu
+          </A>
         </div>
 
         <div class={styles.body}>
           <A href="/" class={styles.navLink} activeClass={styles.activeLink} end onClick={() => props.onClose()}>
             <span class="md-icon">home</span>
-            Hem
+            <span class={styles.navLabel}>Hem</span>
           </A>
           <A href="/my-birds" class={styles.navLink} activeClass={styles.activeLink} onClick={() => props.onClose()}>
             <span class="md-icon">checklist</span>
-            Mina kryss
+            <span class={styles.navLabel}>Mina kryss</span>
           </A>
           <A href="/feed" class={styles.navLink} activeClass={styles.activeLink} onClick={() => props.onClose()}>
             <span class="md-icon">dynamic_feed</span>
-            Flöde
+            <span class={styles.navLabel}>Flöde</span>
           </A>
 
           <div class={styles.divider} />
 
-          <div class={styles.sectionTitle}>Event</div>
-          <Show
-            when={displayEvents().length > 0}
-            fallback={
-              <span class={styles.eventItem} style={{ color: "var(--color-text-muted)", "font-size": "var(--font-size-sm)" }}>
-                Inga event
-              </span>
-            }
-          >
-            <For each={displayEvents()}>
-              {(item) => (
-                <A href={`/events/${item.event.id}`} class={styles.eventItem} onClick={() => props.onClose()}>
-                  <span
-                    class={styles.eventDot}
-                    classList={{
-                      [styles.dotOngoing]: item.status === "ongoing",
-                      [styles.dotUpcoming]: item.status === "upcoming",
-                      [styles.dotPast]: item.status === "past",
-                    }}
-                  />
-                  <div class={styles.eventInfo}>
-                    <span class={styles.eventName}>{item.event.name}</span>
-                    <span class={styles.eventDate}>
-                      {new Date(item.event.startsAt).toLocaleDateString("sv-SE")}
-                      {item.status === "ongoing" ? " · Pågår" : item.status === "upcoming" ? " · Kommande" : ""}
-                    </span>
-                  </div>
-                </A>
-              )}
-            </For>
-          </Show>
-          <A href="/events" class={styles.allEventsLink} onClick={() => props.onClose()}>
-            Alla event
-            <span class="md-icon" style={{ "font-size": "18px" }}>arrow_forward</span>
+          {/* Icon-only event link for rail mode */}
+          <A href="/events" class={styles.railEventLink} onClick={() => props.onClose()}>
+            <span class="md-icon">event</span>
+            
           </A>
+
+          {/* Full events section for expanded/desktop mode */}
+          <div class={styles.eventsSection}>
+            <A href="/events" class={styles.navLink} activeClass={styles.activeLink} onClick={() => props.onClose()}>
+              <span class="md-icon">event</span>
+              <span class={styles.navLabel}>Events</span>
+            </A>
+            <Show
+              when={displayEvents().length > 0}
+              fallback={
+                <span class={styles.eventItem} style={{ color: "var(--color-text-muted)", "font-size": "var(--font-size-sm)" }}>
+                  Inga event
+                </span>
+              }
+            >
+              <For each={displayEvents()}>
+                {(item) => (
+                  <A href={`/events/${item.event.id}`} class={styles.eventItem} onClick={() => props.onClose()}>
+                    <span
+                      class={styles.eventDot}
+                      classList={{
+                        [styles.dotOngoing]: item.status === "ongoing",
+                        [styles.dotUpcoming]: item.status === "upcoming",
+                        [styles.dotPast]: item.status === "past",
+                      }}
+                    />
+                    <div class={styles.eventInfo}>
+                      <span class={styles.eventName}>{item.event.name}</span>
+                      <span class={styles.eventDate}>
+                        {new Date(item.event.startsAt).toLocaleDateString("sv-SE")}
+                        {item.status === "ongoing" ? " · Pågår" : item.status === "upcoming" ? " · Kommande" : ""}
+                      </span>
+                    </div>
+                  </A>
+                )}
+              </For>
+            </Show>
+          </div>
         </div>
-      </div>
-    </Show>
+      </aside>
+    </>
   );
 }

@@ -16,11 +16,14 @@ export function openSearch() {
 export default function AppShell(props: RouteSectionProps) {
   return (
     <div class={styles.shell}>
-      <TopNav
-        onSearchOpen={() => setSearchOpen(true)}
-        onMenuOpen={() => setMenuOpen(true)}
-      />
-      <main class={styles.content}>{props.children}</main>
+        <TopNav
+          onSearchOpen={() => setSearchOpen(true)}
+          onMenuOpen={() => setMenuOpen(true)}
+        />
+      <SideDrawer open={menuOpen()} onClose={() => setMenuOpen(false)} />
+      <div class={styles.mainArea}>
+        <main class={styles.content}>{props.children}</main>
+      </div>
       <footer class={styles.footer}>
         <nav class={styles.footerLinks}>
           <A href="/about">Om kryssa.nu</A>
@@ -29,7 +32,6 @@ export default function AppShell(props: RouteSectionProps) {
         </nav>
       </footer>
       <SearchOverlay open={searchOpen()} onClose={() => setSearchOpen(false)} />
-      <SideDrawer open={menuOpen()} onClose={() => setMenuOpen(false)} />
     </div>
   );
 }
