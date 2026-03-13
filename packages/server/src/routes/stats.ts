@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { prisma } from "../db.js";
 import { requireAuth } from "../middleware/auth.js";
+import { asyncHandler } from "../middleware/asyncHandler.js";
 
 const router = Router();
 router.use(requireAuth);
@@ -78,13 +79,13 @@ async function getUserStats(userId: string) {
 }
 
 // Current user's stats
-router.get("/me", async (req, res) => {
+router.get("/me", asyncHandler(async (req, res) => {
   const stats = await getUserStats(req.user!.id);
   res.json(stats);
-});
+}));
 
 // Another user's stats
-router.get("/user/:userId", async (req, res) => {
+router.get("/user/:userId", asyncHandler(async (req, res) => {
   const user = await prisma.user.findUnique({
     where: { id: req.params.userId },
     select: { id: true },
@@ -95,7 +96,7 @@ router.get("/user/:userId", async (req, res) => {
   }
   const stats = await getUserStats(req.params.userId);
   res.json(stats);
-});
+}));
 
 
 export default router;

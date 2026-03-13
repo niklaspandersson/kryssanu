@@ -10,6 +10,7 @@ import eventsRoutes from './routes/events.js';
 import statsRoutes from './routes/stats.js';
 import usersRoutes from './routes/users.js';
 import feedRoutes from './routes/feed.js';
+import type { Request, Response, NextFunction } from 'express';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -47,6 +48,12 @@ app.use(express.static(clientDistPath, { maxAge: 0 }));
 // SPA catch-all: serve index.html for any non-API route
 app.get('*', (_req, res) => {
   res.sendFile(path.join(clientDistPath, 'index.html'));
+});
+
+// Global error handler — catches errors forwarded by asyncHandler
+app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
+  console.error("Unhandled error:", err.message);
+  res.status(500).json({ error: "Internal server error" });
 });
 
 app.listen(PORT, () => {

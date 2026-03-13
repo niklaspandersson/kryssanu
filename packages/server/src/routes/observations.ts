@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { prisma } from '../db.js';
 import { requireAuth } from '../middleware/auth.js';
+import { asyncHandler } from '../middleware/asyncHandler.js';
 import { CreateObservationSchema } from '@kryssanu/shared';
 
 const router = Router();
@@ -9,7 +10,7 @@ const router = Router();
 router.use(requireAuth);
 
 // Get checklist: all birds + user's observation dates per bird
-router.get('/checklist', async (req, res) => {
+router.get('/checklist', asyncHandler(async (req, res) => {
   const [allBirds, userObs] = await Promise.all([
     prisma.bird.findMany({
       where: { visitor: false },
@@ -29,10 +30,10 @@ router.get('/checklist', async (req, res) => {
   }
 
   res.json({ birds: allBirds, observed });
-});
+}));
 
 // Get map of observed bird IDs for current user
-router.get('/observed', async (req, res) => {
+router.get('/observed', asyncHandler(async (req, res) => {
   const list = await prisma.observation.findMany({
     select: { birdId: true },
     distinct: ['birdId'],
@@ -42,10 +43,10 @@ router.get('/observed', async (req, res) => {
   const result: Record<string, boolean> = {};
   list.forEach(o => (result[o.birdId] = true));
   res.json(result);
-});
+}));
 
 // Get latest observations for current user (with bird data)
-router.get('/latest', async (req, res) => {
+router.get('/latest', asyncHandler(async (req, res) => {
   const observations = await prisma.observation.findMany({
     where: { userId: req.user!.id },
     include: { bird: true },
@@ -53,10 +54,10 @@ router.get('/latest', async (req, res) => {
     take: 10,
   });
   res.json(observations);
-});
+}));
 
 // Get observations for a specific bird by current user
-router.get('/bird/:birdId', async (req, res) => {
+router.get('/bird/:birdId', asyncHandler(async (req, res) => {
   const observations = await prisma.observation.findMany({
     where: {
       userId: req.user!.id,
@@ -65,10 +66,10 @@ router.get('/bird/:birdId', async (req, res) => {
     orderBy: { date: 'desc' },
   });
   res.json(observations);
-});
+}));
 
 // Create an observation
-router.post('/', async (req, res) => {
+router.post('/', asyncHandler(async (req, res) => {
   const parsed = CreateObservationSchema.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.flatten() });
@@ -86,6 +87,6 @@ router.post('/', async (req, res) => {
     },
   });
   res.status(201).json(observation);
-});
+}));
 
 export default router;

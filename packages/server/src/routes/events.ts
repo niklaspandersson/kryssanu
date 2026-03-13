@@ -6,6 +6,7 @@ import {
   InviteSchema,
   RespondToInviteSchema,
 } from "@kryssanu/shared";
+import { asyncHandler } from "../middleware/asyncHandler.js";
 
 const router = Router();
 router.use(requireAuth);
@@ -13,7 +14,7 @@ router.use(requireAuth);
 const userSelect = { id: true, name: true, email: true, image: true };
 
 // List events for current user (created + participating)
-router.get("/", async (req, res) => {
+router.get("/", asyncHandler(async (req, res) => {
   const userId = req.user!.id;
   const now = new Date();
   const status = req.query.status as string | undefined;
@@ -62,10 +63,10 @@ router.get("/", async (req, res) => {
     });
 
   res.json(mapped);
-});
+}));
 
 // Create event
-router.post("/", async (req, res) => {
+router.post("/", asyncHandler(async (req, res) => {
   const parsed = CreateEventSchema.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.flatten() });
@@ -106,10 +107,10 @@ router.post("/", async (req, res) => {
     })),
     observationCount: event._count.observations,
   });
-});
+}));
 
 // Event detail
-router.get("/:id", async (req, res) => {
+router.get("/:id", asyncHandler(async (req, res) => {
   const event = await prisma.event.findUnique({
     where: { id: req.params.id },
     include: {
@@ -137,10 +138,10 @@ router.get("/:id", async (req, res) => {
     })),
     observationCount: event._count.observations,
   });
-});
+}));
 
 // Invite user by email
-router.post("/:id/invite", async (req, res) => {
+router.post("/:id/invite", asyncHandler(async (req, res) => {
   const parsed = InviteSchema.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.flatten() });
@@ -179,10 +180,10 @@ router.post("/:id/invite", async (req, res) => {
   });
 
   res.status(201).json({ user: participant.user, status: participant.status });
-});
+}));
 
 // Respond to invite
-router.post("/:id/respond", async (req, res) => {
+router.post("/:id/respond", asyncHandler(async (req, res) => {
   const parsed = RespondToInviteSchema.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.flatten() });
@@ -209,10 +210,10 @@ router.post("/:id/respond", async (req, res) => {
   });
 
   res.json({ status: updated.status });
-});
+}));
 
 // Event leaderboard
-router.get("/:id/leaderboard", async (req, res) => {
+router.get("/:id/leaderboard", asyncHandler(async (req, res) => {
   const event = await prisma.event.findUnique({
     where: { id: req.params.id },
     include: {
@@ -264,6 +265,6 @@ router.get("/:id/leaderboard", async (req, res) => {
     .sort((a, b) => b.uniqueSpecies - a.uniqueSpecies);
 
   res.json(leaderboard);
-});
+}));
 
 export default router;

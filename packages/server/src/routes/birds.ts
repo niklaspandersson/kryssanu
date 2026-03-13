@@ -1,17 +1,18 @@
 import { Router } from "express";
 import { prisma } from "../db.js";
+import { asyncHandler } from "../middleware/asyncHandler.js";
 
 const router = Router();
 
-router.get("/", async (_req, res) => {
+router.get("/", asyncHandler(async (_req, res) => {
   const birds = await prisma.bird.findMany({
     where: { visitor: false },
     orderBy: { swedish: "asc" },
   });
   res.json(birds);
-});
+}));
 
-router.get("/:id", async (req, res) => {
+router.get("/:id", asyncHandler(async (req, res) => {
   const bird = await prisma.bird.findUnique({
     where: { id: req.params.id },
   });
@@ -20,6 +21,6 @@ router.get("/:id", async (req, res) => {
     return;
   }
   res.json(bird);
-});
+}));
 
 export default router;

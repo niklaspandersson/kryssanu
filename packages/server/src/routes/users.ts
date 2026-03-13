@@ -2,6 +2,7 @@ import { Router } from "express";
 import { UpdateProfileSchema } from "@kryssanu/shared";
 import { prisma } from "../db.js";
 import { requireAuth } from "../middleware/auth.js";
+import { asyncHandler } from "../middleware/asyncHandler.js";
 
 const router = Router();
 router.use(requireAuth);
@@ -9,7 +10,7 @@ router.use(requireAuth);
 const userSelect = { id: true, name: true, email: true, image: true, city: true, about: true };
 
 // Search users by name
-router.get("/search", async (req, res) => {
+router.get("/search", asyncHandler(async (req, res) => {
   const q = (req.query.q as string) || "";
   if (q.length < 2) {
     res.json([]);
@@ -26,10 +27,10 @@ router.get("/search", async (req, res) => {
   });
 
   res.json(users);
-});
+}));
 
 // Public profile
-router.get("/:id", async (req, res) => {
+router.get("/:id", asyncHandler(async (req, res) => {
   const user = await prisma.user.findUnique({
     where: { id: req.params.id },
     select: userSelect,
@@ -39,10 +40,10 @@ router.get("/:id", async (req, res) => {
     return;
   }
   res.json(user);
-});
+}));
 
 // Update own profile
-router.patch("/me", async (req, res) => {
+router.patch("/me", asyncHandler(async (req, res) => {
   const parsed = UpdateProfileSchema.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.flatten() });
@@ -56,6 +57,6 @@ router.patch("/me", async (req, res) => {
   });
 
   res.json(user);
-});
+}));
 
 export default router;

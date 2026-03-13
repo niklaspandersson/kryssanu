@@ -2,6 +2,7 @@ import { Router } from "express";
 import { OAuth2Client } from "google-auth-library";
 import { prisma } from "../db.js";
 import { requireAuth } from "../middleware/auth.js";
+import { asyncHandler } from "../middleware/asyncHandler.js";
 
 const router = Router();
 
@@ -9,8 +10,7 @@ const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 const SESSION_MAX_AGE_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
 
-router.post("/google", async (req, res) => {
-  try {
+router.post("/google", asyncHandler(async (req, res) => {
     const { credential } = req.body as { credential: string };
 
     const ticket = await googleClient.verifyIdToken({
@@ -64,20 +64,16 @@ router.post("/google", async (req, res) => {
       city: user.city,
       about: user.about,
     });
-  } catch (error) {
-    console.error("Google auth error:", error);
-    res.status(500).json({ error: "Authentication failed" });
-  }
-});
+}));
 
-router.post("/logout", async (req, res) => {
+router.post("/logout", asyncHandler(async (req, res) => {
   const sessionId = req.cookies?.session;
   if (sessionId) {
     await prisma.session.delete({ where: { id: sessionId } }).catch(() => {});
   }
   res.clearCookie("session", { path: "/" });
   res.json({ ok: true });
-});
+}));
 
 router.get("/me", requireAuth, (req, res) => {
   res.json(req.user);

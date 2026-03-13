@@ -1,12 +1,13 @@
 import { Router } from "express";
 import { prisma } from "../db.js";
 import { requireAuth } from "../middleware/auth.js";
+import { asyncHandler } from "../middleware/asyncHandler.js";
 
 const router = Router();
 router.use(requireAuth);
 
 // Recent observations from users in shared events
-router.get("/", async (req, res) => {
+router.get("/", asyncHandler(async (req, res) => {
   const userId = req.user!.id;
   const cursor = req.query.cursor as string | undefined;
   const limit = 20;
@@ -71,6 +72,6 @@ router.get("/", async (req, res) => {
     items,
     nextCursor: hasMore ? items[items.length - 1].id : null,
   });
-});
+}));
 
 export default router;
