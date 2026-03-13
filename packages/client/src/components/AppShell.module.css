@@ -48,6 +48,10 @@
   .mainArea {
     padding-left: var(--sidebar-rail-width);
   }
+
+  .noSidebar .mainArea {
+    padding-left: 0;
+  }
 }
 
 /* Desktop: sidebar is in-flow, side-by-side layout */
@@ -58,7 +62,15 @@
     box-shadow: var(--shadow-lg);
   }
 
+  .noSidebar {
+    grid-template-columns: 1fr;
+  }
+
   .mainArea {
     padding-left: 25px;
+  }
+
+  .noSidebar .mainArea {
+    padding-left: 0;
   }
 }

@@ -5,6 +5,7 @@ import {
   onMount,
   type JSX,
 } from "solid-js";
+import { useNavigate } from "@solidjs/router";
 import type { User } from "@kryssanu/shared";
 import { auth } from "./api";
 
@@ -22,12 +23,16 @@ const AuthContext = createContext<AuthContextValue>();
 export function AuthProvider(props: { children: JSX.Element }) {
   const [user, setUser] = createSignal<User | null>(null);
   const [loading, setLoading] = createSignal(true);
+  const navigate = useNavigate();
   let googleInitialized = false;
 
   function handleCredentialResponse(response: { credential: string }) {
     auth
       .loginWithGoogle(response.credential)
-      .then((u) => setUser(u))
+      .then((u) => {
+        setUser(u);
+        navigate("/feed");
+      })
       .catch(console.error);
   }
 

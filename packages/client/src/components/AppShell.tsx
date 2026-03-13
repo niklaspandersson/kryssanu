@@ -1,6 +1,7 @@
-import { createSignal } from "solid-js";
+import { createSignal, Show } from "solid-js";
 import type { RouteSectionProps } from "@solidjs/router";
 import { A } from "@solidjs/router";
+import { useAuth } from "../lib/auth";
 import TopNav from "./TopNav";
 import SearchOverlay from "./SearchOverlay";
 import SideDrawer from "./SideDrawer";
@@ -14,13 +15,17 @@ export function openSearch() {
 }
 
 export default function AppShell(props: RouteSectionProps) {
+  const { isLoggedIn } = useAuth();
+
   return (
-    <div class={styles.shell}>
+    <div class={styles.shell} classList={{ [styles.noSidebar]: !isLoggedIn() }}>
         <TopNav
           onSearchOpen={() => setSearchOpen(true)}
           onMenuOpen={() => setMenuOpen(true)}
         />
-      <SideDrawer open={menuOpen()} onClose={() => setMenuOpen(false)} />
+      <Show when={isLoggedIn()}>
+        <SideDrawer open={menuOpen()} onClose={() => setMenuOpen(false)} />
+      </Show>
       <div class={styles.mainArea}>
         <main class={styles.content}>{props.children}</main>
       </div>
