@@ -1,8 +1,8 @@
 import { Router } from "express";
 import { UpdateProfileSchema } from "@kryssanu/shared";
-import { prisma } from "../db.js";
-import { requireAuth } from "../middleware/auth.js";
-import { asyncHandler } from "../middleware/asyncHandler.js";
+import { prisma } from "../db.ts";
+import { requireAuth } from "../middleware/auth.ts";
+import { asyncHandler } from "../middleware/asyncHandler.ts";
 
 const router = Router();
 router.use(requireAuth);

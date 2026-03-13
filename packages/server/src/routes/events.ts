@@ -1,12 +1,12 @@
 import { Router } from "express";
-import { prisma } from "../db.js";
-import { requireAuth } from "../middleware/auth.js";
+import { prisma } from "../db.ts";
+import { requireAuth } from "../middleware/auth.ts";
 import {
   CreateEventSchema,
   InviteSchema,
   RespondToInviteSchema,
 } from "@kryssanu/shared";
-import { asyncHandler } from "../middleware/asyncHandler.js";
+import { asyncHandler } from "../middleware/asyncHandler.ts";
 
 const router = Router();
 router.use(requireAuth);

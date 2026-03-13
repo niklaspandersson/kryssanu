@@ -1,18 +1,18 @@
-import './env.js';
+import './env.ts';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import express from 'express';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
-import { sessionMiddleware } from './middleware/auth.js';
-import { prisma } from './db.js';
-import authRoutes from './routes/auth.js';
-import birdsRoutes from './routes/birds.js';
-import observationsRoutes from './routes/observations.js';
-import eventsRoutes from './routes/events.js';
-import statsRoutes from './routes/stats.js';
-import usersRoutes from './routes/users.js';
-import feedRoutes from './routes/feed.js';
+import { sessionMiddleware } from './middleware/auth.ts';
+import { prisma } from './db.ts';
+import authRoutes from './routes/auth.ts';
+import birdsRoutes from './routes/birds.ts';
+import observationsRoutes from './routes/observations.ts';
+import eventsRoutes from './routes/events.ts';
+import statsRoutes from './routes/stats.ts';
+import usersRoutes from './routes/users.ts';
+import feedRoutes from './routes/feed.ts';
 import type { Request, Response, NextFunction } from 'express';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
