@@ -13,7 +13,8 @@ type AuthContextValue = {
   user: () => User | null;
   loading: () => boolean;
   isLoggedIn: () => boolean;
-  requestLogin: () => void;
+  showOneTap: () => void;
+  renderGoogleButton: (container: HTMLElement) => void;
   signOut: () => Promise<void>;
   updateUser: (updated: User) => void;
 };
@@ -59,39 +60,21 @@ export function AuthProvider(props: { children: JSX.Element }) {
     initGoogle();
   });
 
-  function requestLogin() {
+  function showOneTap() {
+    if (loading()) return;
     initGoogle();
     const google = (window as any).google;
     if (!google) return;
-    google.accounts.id.prompt((notification: any) => {
-      // If One Tap is suppressed (cooldown after dismiss), fall back to button popup
-      if (
-        notification.isNotDisplayed() ||
-        notification.isSkippedMoment()
-      ) {
-        openGoogleSignInPopup(google);
-      }
-    });
+    google.accounts.id.prompt();
   }
 
-  function openGoogleSignInPopup(google: any) {
-    // Create a temporary hidden container, render Google button, and click it
-    const container = document.createElement("div");
-    container.style.position = "fixed";
-    container.style.opacity = "0";
-    container.style.pointerEvents = "none";
-    document.body.appendChild(container);
+  function renderGoogleButton(container: HTMLElement) {
+    initGoogle();
+    const google = (window as any).google;
+    if (!google) return;
     google.accounts.id.renderButton(container, {
       type: "standard",
       size: "large",
-    });
-    // The rendered button is an iframe; find and click it after a short delay
-    requestAnimationFrame(() => {
-      const btn =
-        container.querySelector<HTMLElement>("div[role=button]") ??
-        container.firstElementChild as HTMLElement | null;
-      btn?.click();
-      setTimeout(() => container.remove(), 5000);
     });
   }
 
@@ -106,7 +89,8 @@ export function AuthProvider(props: { children: JSX.Element }) {
         user,
         loading,
         isLoggedIn: () => user() !== null,
-        requestLogin,
+        showOneTap,
+        renderGoogleButton,
         signOut,
         updateUser: (updated: User) => setUser(updated),
       }}

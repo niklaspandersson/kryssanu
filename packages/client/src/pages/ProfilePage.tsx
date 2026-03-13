@@ -1,4 +1,4 @@
-import { Show, For, createResource, createSignal, onMount } from "solid-js";
+import { Show, For, createResource, createSignal } from "solid-js";
 import { useAuth } from "../lib/auth";
 import { stats as statsApi, users as usersApi } from "../lib/api";
 import Avatar from "../components/Avatar";
@@ -7,15 +7,11 @@ import EmptyState from "../components/EmptyState";
 import styles from "./ProfilePage.module.css";
 
 export default function ProfilePage() {
-  const { user, isLoggedIn, requestLogin, signOut, updateUser } = useAuth();
+  const { user, isLoggedIn, signOut, updateUser } = useAuth();
   const [editing, setEditing] = createSignal(false);
   const [city, setCity] = createSignal("");
   const [about, setAbout] = createSignal("");
   const [saving, setSaving] = createSignal(false);
-
-  onMount(() => {
-    if (!isLoggedIn()) requestLogin();
-  });
 
   const [myStats] = createResource(() => isLoggedIn(), () => statsApi.me());
 

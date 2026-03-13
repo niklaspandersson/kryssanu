@@ -1,5 +1,8 @@
 import { Router, Route } from "@solidjs/router";
-import { AuthProvider } from "./lib/auth";
+import type { RouteSectionProps } from "@solidjs/router";
+import { Show, onMount, type JSX } from "solid-js";
+import { AuthProvider, useAuth } from "./lib/auth";
+import EmptyState from "./components/EmptyState";
 import AppShell from "./components/AppShell";
 import HomePage from "./pages/HomePage";
 import FeedPage from "./pages/FeedPage";
@@ -12,21 +15,68 @@ import AboutPage from "./pages/AboutPage";
 import HelpPage from "./pages/HelpPage";
 import TermsPage from "./pages/TermsPage";
 
-export default function App() {
+function RootLayout(props: RouteSectionProps) {
   return (
     <AuthProvider>
-      <Router root={AppShell}>
-        <Route path="/" component={HomePage} />
-        <Route path="/my-birds" component={MyBirdsPage} />
-        <Route path="/feed" component={FeedPage} />
-        <Route path="/events" component={EventsPage} />
-        <Route path="/events/new" component={CreateEventPage} />
-        <Route path="/events/:id" component={EventDetailPage} />
-        <Route path="/profile" component={ProfilePage} />
-        <Route path="/about" component={AboutPage} />
-        <Route path="/help" component={HelpPage} />
-        <Route path="/terms" component={TermsPage} />
-      </Router>
+      <AppShell {...props} />
     </AuthProvider>
+  );
+}
+
+function LoginFallback() {
+  const { showOneTap, renderGoogleButton } = useAuth();
+  let loginRef!: HTMLDivElement;
+
+  onMount(() => {
+    showOneTap();
+    renderGoogleButton(loginRef);
+  });
+
+  return (
+    <>
+      <EmptyState icon="login" message="Logga in för att fortsätta" />
+      <div style={{ display: "flex", "justify-content": "center", "margin-top": "1rem" }}>
+        <div ref={loginRef} />
+      </div>
+    </>
+  );
+}
+
+function Protected(props: { children: JSX.Element }) {
+  const { isLoggedIn, loading } = useAuth();
+
+  return (
+    <Show when={!loading() && isLoggedIn()} fallback={
+      <Show when={!loading()}>
+        <LoginFallback />
+      </Show>
+    }>
+      {props.children}
+    </Show>
+  );
+}
+
+function protectedPage(Component: () => JSX.Element) {
+  return () => (
+    <Protected>
+      <Component />
+    </Protected>
+  );
+}
+
+export default function App() {
+  return (
+    <Router root={RootLayout}>
+      <Route path="/" component={HomePage} />
+      <Route path="/my-birds" component={protectedPage(MyBirdsPage)} />
+      <Route path="/feed" component={protectedPage(FeedPage)} />
+      <Route path="/events" component={protectedPage(EventsPage)} />
+      <Route path="/events/new" component={protectedPage(CreateEventPage)} />
+      <Route path="/events/:id" component={protectedPage(EventDetailPage)} />
+      <Route path="/profile" component={protectedPage(ProfilePage)} />
+      <Route path="/about" component={AboutPage} />
+      <Route path="/help" component={HelpPage} />
+      <Route path="/terms" component={TermsPage} />
+    </Router>
   );
 }

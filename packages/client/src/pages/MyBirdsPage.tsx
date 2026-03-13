@@ -1,4 +1,4 @@
-import { createSignal, createResource, createMemo, Show, For, onMount } from "solid-js";
+import { createSignal, createResource, createMemo, Show, For } from "solid-js";
 import { observations } from "../lib/api";
 import { useAuth } from "../lib/auth";
 import Icon from "../components/Icon";
@@ -12,11 +12,7 @@ type TimeFilter = "all" | "year";
 type SortMode = "alpha" | "family";
 
 export default function MyBirdsPage() {
-  const { isLoggedIn, requestLogin } = useAuth();
-
-  onMount(() => {
-    if (!isLoggedIn()) requestLogin();
-  });
+  const { isLoggedIn } = useAuth();
 
   const stored = (() => {
     try {

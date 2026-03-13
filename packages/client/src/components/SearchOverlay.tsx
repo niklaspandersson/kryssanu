@@ -13,7 +13,7 @@ type Props = {
 };
 
 export default function SearchOverlay(props: Props) {
-  const { user, isLoggedIn, requestLogin } = useAuth();
+  const { user, isLoggedIn, showOneTap } = useAuth();
   const [query, setQuery] = createSignal("");
   const [selectedBird, setSelectedBird] = createSignal<Bird | null>(null);
   const [sheetOpen, setSheetOpen] = createSignal(false);
@@ -36,7 +36,7 @@ export default function SearchOverlay(props: Props) {
 
   function handleAdd(bird: Bird) {
     if (!isLoggedIn()) {
-      requestLogin();
+      showOneTap();
       return;
     }
     setSelectedBird(bird);

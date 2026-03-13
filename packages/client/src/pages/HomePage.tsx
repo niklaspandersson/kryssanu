@@ -1,10 +1,15 @@
-import { Show } from "solid-js";
+import { Show, onMount } from "solid-js";
 import { useAuth } from "../lib/auth";
 import { openSearch } from "../components/AppShell";
 import styles from "./HomePage.module.css";
 
 export default function HomePage() {
-  const { isLoggedIn, requestLogin } = useAuth();
+  const { isLoggedIn, renderGoogleButton } = useAuth();
+  let loginRef!: HTMLDivElement;
+
+  onMount(() => {
+    if (!isLoggedIn()) renderGoogleButton(loginRef);
+  });
 
   return (
     <div class={styles.page}>
@@ -61,10 +66,7 @@ export default function HomePage() {
       </div>
 
       <Show when={!isLoggedIn()}>
-        <button class={styles.loginCta} onClick={() => requestLogin()}>
-          <span class="md-icon">login</span>
-          Logga in med Google
-        </button>
+        <div ref={loginRef} />
       </Show>
     </div>
   );

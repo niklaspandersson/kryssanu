@@ -1,4 +1,4 @@
-import { createSignal, createResource, Show, For, onMount } from "solid-js";
+import { createSignal, createResource, Show, For } from "solid-js";
 import { A } from "@solidjs/router";
 import { events as eventsApi } from "../lib/api";
 import { useAuth } from "../lib/auth";
@@ -9,12 +9,8 @@ import styles from "./EventsPage.module.css";
 type Tab = "active" | "upcoming" | "past";
 
 export default function EventsPage() {
-  const { isLoggedIn, requestLogin, user } = useAuth();
+  const { isLoggedIn, user } = useAuth();
   const [tab, setTab] = createSignal<Tab>("active");
-
-  onMount(() => {
-    if (!isLoggedIn()) requestLogin();
-  });
 
   const [allEvents, { refetch }] = createResource(
     () => isLoggedIn(),

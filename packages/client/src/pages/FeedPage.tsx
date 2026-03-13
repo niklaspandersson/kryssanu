@@ -1,4 +1,4 @@
-import { createResource, Show, For, onMount } from "solid-js";
+import { createResource, Show, For } from "solid-js";
 import { A } from "@solidjs/router";
 import { feed, stats as statsApi, events as eventsApi, observations } from "../lib/api";
 import { useAuth } from "../lib/auth";
@@ -9,11 +9,7 @@ import Icon from "../components/Icon";
 import styles from "./FeedPage.module.css";
 
 export default function FeedPage() {
-  const { user, isLoggedIn, requestLogin } = useAuth();
-
-  onMount(() => {
-    if (!isLoggedIn()) requestLogin();
-  });
+  const { user, isLoggedIn } = useAuth();
 
   const [myStats] = createResource(() => isLoggedIn(), () => statsApi.me());
   const [feedData] = createResource(() => isLoggedIn(), () => feed.get());
