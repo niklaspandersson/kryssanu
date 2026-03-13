@@ -76,6 +76,21 @@ router.post('/', asyncHandler(async (req, res) => {
     return;
   }
 
+  if (parsed.data.eventId) {
+    const participant = await prisma.participant.findUnique({
+      where: {
+        userId_eventId: {
+          userId: req.user!.id,
+          eventId: parsed.data.eventId,
+        },
+      },
+    });
+    if (!participant || participant.status !== 'ACCEPTED') {
+      res.status(403).json({ error: 'Not a participant of this event' });
+      return;
+    }
+  }
+
   const observation = await prisma.observation.create({
     data: {
       birdId: parsed.data.birdId,
