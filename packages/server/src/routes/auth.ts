@@ -10,7 +10,8 @@ const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 const SESSION_MAX_AGE_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
 
-router.post("/google", asyncHandler(async (req, res) => {
+router.post("/google", async (req, res) => {
+  try {
     const { credential } = req.body as { credential: string };
 
     const ticket = await googleClient.verifyIdToken({
@@ -64,7 +65,11 @@ router.post("/google", asyncHandler(async (req, res) => {
       city: user.city,
       about: user.about,
     });
-}));
+  } catch (error) {
+    console.error("Google auth error:", error instanceof Error ? error.message : "Unknown error");
+    res.status(500).json({ error: "Authentication failed" });
+  }
+});
 
 router.post("/logout", asyncHandler(async (req, res) => {
   const sessionId = req.cookies?.session;
