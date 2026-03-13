@@ -130,8 +130,8 @@ export default function EventDetailPage() {
               </section>
             </Show>
 
-            {/* Leaderboard (active/upcoming events) */}
-            <Show when={!isPast()}>
+            {/* Leaderboard (active events) */}
+            <Show when={isActive()}>
               <section class={styles.section}>
                 <h2 class={styles.sectionTitle}>Topplista</h2>
                 <Show
