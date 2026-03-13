@@ -5,6 +5,7 @@ import express from 'express';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
 import { sessionMiddleware } from './middleware/auth.js';
+import { prisma } from './db.js';
 import authRoutes from './routes/auth.js';
 import birdsRoutes from './routes/birds.js';
 import observationsRoutes from './routes/observations.js';
@@ -59,6 +60,20 @@ app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
   res.status(500).json({ error: "Internal server error" });
 });
 
+// Clean up expired sessions periodically
+const CLEANUP_INTERVAL_MS = 24 * 60 * 60 * 1000; // 24 hours
+
+async function cleanExpiredSessions() {
+  const { count } = await prisma.session.deleteMany({
+    where: { expiresAt: { lt: new Date() } },
+  });
+  if (count > 0) {
+    console.log(`Cleaned up ${count} expired sessions`);
+  }
+}
+
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
+  cleanExpiredSessions();
+  setInterval(cleanExpiredSessions, CLEANUP_INTERVAL_MS);
 });
