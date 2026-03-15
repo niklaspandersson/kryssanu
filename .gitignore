@@ -19,6 +19,9 @@ tools
 /out/
 next-env.d.ts
 
+# php
+vendor
+
 # production
 /build
 

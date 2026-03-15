@@ -1,53 +1,47 @@
-# --- Build stage ---
-FROM node:22-slim AS build
-
-RUN corepack enable pnpm
+# --- Build frontend ---
+FROM node:22-slim AS frontend-build
 
 WORKDIR /app
 
 # Install dependencies first (layer cache)
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-COPY packages/shared/package.json packages/shared/
-COPY packages/client/package.json packages/client/
-COPY packages/server/package.json packages/server/
-COPY prisma/schema.prisma prisma/
+COPY package.json yarn.lock ./
+RUN yarn install --frozen-lockfile
 
-RUN pnpm install --frozen-lockfile
+# Copy source and build
+COPY src/ src/
+COPY index.html vite.config.ts tsconfig.json ./
+COPY public/ public/
+COPY *.png *.ico ./
 
-# Copy source and build everything
-COPY packages/shared/ packages/shared/
-COPY packages/client/ packages/client/
-COPY packages/server/ packages/server/
+RUN yarn build
 
-RUN pnpm --filter @kryssanu/client build && \
-  pnpm --filter @kryssanu/server build
+# --- Production (PHP on Apache) ---
+FROM php:8.4-apache
 
-# --- Production stage ---
-FROM node:22-slim
+RUN docker-php-ext-install pdo pdo_mysql
 
-RUN corepack enable pnpm
+# Enable mod_rewrite for .htaccess
+RUN a2enmod rewrite
 
-WORKDIR /app
+# Install Composer
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-COPY packages/shared/package.json packages/shared/
-COPY packages/server/package.json packages/server/
-COPY prisma/schema.prisma prisma/
+# Copy PHP server into Apache document root
+COPY packages/server-php/ /var/www/html/api/
+WORKDIR /var/www/html/api
+RUN composer install --no-dev --optimize-autoloader --no-interaction
 
-RUN pnpm install --frozen-lockfile --prod
+# Copy built frontend into document root
+COPY --from=frontend-build /app/dist /var/www/html/
 
-# Copy built server
-COPY --from=build /app/packages/server/dist packages/server/dist
+# Apache config: AllowOverride for .htaccess
+RUN sed -i 's/AllowOverride None/AllowOverride All/g' /etc/apache2/apache2.conf
 
-# Copy shared source (imported at runtime via workspace link)
-COPY --from=build /app/packages/shared/src packages/shared/src
+# Add cron for session cleanup
+RUN echo "0 0 * * * php /var/www/html/api/bin/cleanup-sessions.php" | crontab -
 
-# Copy built frontend
-COPY --from=build /app/packages/client/dist packages/client/dist
+ENV APP_ENV=production
 
-ENV NODE_ENV=production
-ENV CLIENT_DIST_PATH=/app/packages/client/dist
+EXPOSE 80
 
-EXPOSE 3001
-
-CMD ["node", "packages/server/dist/index.js"]
+CMD ["apache2-foreground"]
