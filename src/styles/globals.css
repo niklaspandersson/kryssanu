@@ -1,10 +1,10 @@
 :root {
   /* Nature/earthy palette */
-  --color-primary: #2d6a4f;
-  --color-primary-light: #52b788;
+  --color-primary: #2d6a45;
+  --color-primary-light: #52b772;
   --color-primary-dark: #1b4332;
   --color-bg: #faf8f2;
-  --color-bg-card: #ffffff;
+  --color-bg-card: #fcfdfc;
   --color-bg-elevated: oklch(from var(--color-primary) calc(l + .49) calc(c * .1) h);
   --color-bg-menu-hover: #d6e8df;
   --color-accent: #d4a373;
@@ -13,7 +13,7 @@
   --color-text-secondary: #6b6b6b;
   --color-text-muted: #999999;
   --color-border: #e0dbd2;
-  --color-success: #40916c;
+  --color-success: #409157;
   --color-danger: #c1121f;
   --color-warning: #e9c46a;
 
@@ -67,7 +67,10 @@ body {
   font-family: var(--font-sans);
   font-size: var(--font-size-base);
   color: var(--color-text);
-  background: var(--color-bg);
+  background-image: url(kryssanu-background-70.webp);
+  background-position: center top;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }

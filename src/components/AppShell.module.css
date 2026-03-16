@@ -3,6 +3,7 @@
   grid-template-rows: min-content 1fr min-content;
   grid-template-columns: 1fr;
   margin: 0 auto;
+  background: var(--color-bg);
   min-height: 100dvh;
   position: relative;
 }
