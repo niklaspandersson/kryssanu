@@ -9,9 +9,9 @@ use Kryssanu\Middleware\SessionMiddleware;
 require __DIR__ . '/../vendor/autoload.php';
 
 // Load .env in development
-$envFile = dirname(__DIR__, 3) . '/.env';
+$envFile = dirname(__DIR__, 1) . '/.env';
 if (file_exists($envFile)) {
-    $dotenv = Dotenv\Dotenv::createImmutable(dirname(__DIR__, 3));
+    $dotenv = Dotenv\Dotenv::createImmutable(dirname(__DIR__, 1));
     $dotenv->load();
 }
 
