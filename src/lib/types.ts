@@ -102,6 +102,12 @@ export type LeaderboardEntry = {
   totalObservations: number;
 };
 
+// ── Invite Token ─────────────────────────────────────────────────
+export type InviteTokenResponse = {
+  token: string;
+  url: string;
+};
+
 // ── Feed ──────────────────────────────────────────────────────────
 export type FeedItem = {
   id: string;

@@ -23,7 +23,12 @@ class EventRoutes
             $group->post('/{id}/invite', [self::class, 'invite']);
             $group->post('/{id}/respond', [self::class, 'respond']);
             $group->get('/{id}/leaderboard', [self::class, 'leaderboard']);
+            $group->post('/{id}/invite-token', [self::class, 'createInviteToken']);
+            $group->delete('/{id}/invite-token', [self::class, 'deleteInviteToken']);
         })->add(new AuthMiddleware());
+
+        $app->post('/api/invite/{token}', [self::class, 'acceptInvite'])
+            ->add(new AuthMiddleware());
     }
 
     /**
@@ -379,5 +384,152 @@ class EventRoutes
         usort($leaderboard, fn($a, $b) => $b['uniqueSpecies'] - $a['uniqueSpecies']);
 
         return Helpers::jsonResponse($response, $leaderboard);
+    }
+
+    public static function createInviteToken(Request $request, Response $response, array $args): Response
+    {
+        $user = $request->getAttribute('user');
+        $db = Database::getConnection();
+
+        // Check event exists and user is creator
+        $stmt = $db->prepare('SELECT * FROM Event WHERE id = :id');
+        $stmt->execute(['id' => $args['id']]);
+        $event = $stmt->fetch();
+
+        if (!$event) {
+            return Helpers::jsonResponse($response, ['error' => 'Event not found'], 404);
+        }
+        if ($event['creatorId'] !== $user['id']) {
+            return Helpers::jsonResponse($response, ['error' => 'Only the creator can manage invite tokens'], 403);
+        }
+
+        // Check event is not past
+        $now = new \DateTime('now', new \DateTimeZone('UTC'));
+        $end = new \DateTime($event['endsAt'], new \DateTimeZone('UTC'));
+        if ($end < $now) {
+            return Helpers::jsonResponse($response, ['error' => 'Cannot create invite token for past events'], 400);
+        }
+
+        // Delete any existing tokens for this event
+        $stmt = $db->prepare('DELETE FROM InviteToken WHERE eventId = :eventId');
+        $stmt->execute(['eventId' => $args['id']]);
+
+        // Create new token
+        $tokenId = Helpers::generateCuid();
+        $token = bin2hex(random_bytes(32));
+
+        $stmt = $db->prepare(
+            'INSERT INTO InviteToken (id, token, eventId, createdAt)
+             VALUES (:id, :token, :eventId, :createdAt)'
+        );
+        $stmt->execute([
+            'id' => $tokenId,
+            'token' => $token,
+            'eventId' => $args['id'],
+            'createdAt' => Helpers::nowDatetime(),
+        ]);
+
+        // Build URL from request
+        $uri = $request->getUri();
+        $scheme = $uri->getScheme();
+        $host = $uri->getHost();
+        $port = $uri->getPort();
+        $baseUrl = "{$scheme}://{$host}";
+        if ($port && $port !== 80 && $port !== 443) {
+            $baseUrl .= ":{$port}";
+        }
+        $url = "{$baseUrl}/invite/{$token}";
+
+        return Helpers::jsonResponse($response, ['token' => $token, 'url' => $url], 201);
+    }
+
+    public static function deleteInviteToken(Request $request, Response $response, array $args): Response
+    {
+        $user = $request->getAttribute('user');
+        $db = Database::getConnection();
+
+        // Check event exists and user is creator
+        $stmt = $db->prepare('SELECT * FROM Event WHERE id = :id');
+        $stmt->execute(['id' => $args['id']]);
+        $event = $stmt->fetch();
+
+        if (!$event) {
+            return Helpers::jsonResponse($response, ['error' => 'Event not found'], 404);
+        }
+        if ($event['creatorId'] !== $user['id']) {
+            return Helpers::jsonResponse($response, ['error' => 'Only the creator can manage invite tokens'], 403);
+        }
+
+        $stmt = $db->prepare('DELETE FROM InviteToken WHERE eventId = :eventId');
+        $stmt->execute(['eventId' => $args['id']]);
+
+        return Helpers::jsonResponse($response, ['ok' => true]);
+    }
+
+    public static function acceptInvite(Request $request, Response $response, array $args): Response
+    {
+        $user = $request->getAttribute('user');
+        $db = Database::getConnection();
+
+        // Look up token
+        $stmt = $db->prepare('SELECT * FROM InviteToken WHERE token = :token');
+        $stmt->execute(['token' => $args['token']]);
+        $inviteToken = $stmt->fetch();
+
+        if (!$inviteToken) {
+            return Helpers::jsonResponse($response, ['error' => 'Invite link expired or invalid'], 404);
+        }
+
+        $eventId = $inviteToken['eventId'];
+
+        // Verify event is not past
+        $stmt = $db->prepare('SELECT * FROM Event WHERE id = :id');
+        $stmt->execute(['id' => $eventId]);
+        $event = $stmt->fetch();
+
+        if (!$event) {
+            return Helpers::jsonResponse($response, ['error' => 'Event not found'], 404);
+        }
+
+        $now = new \DateTime('now', new \DateTimeZone('UTC'));
+        $end = new \DateTime($event['endsAt'], new \DateTimeZone('UTC'));
+        if ($end < $now) {
+            return Helpers::jsonResponse($response, ['error' => 'This event has ended'], 400);
+        }
+
+        // Upsert participant as ACCEPTED
+        $stmt = $db->prepare(
+            'SELECT * FROM Participant WHERE userId = :userId AND eventId = :eventId'
+        );
+        $stmt->execute(['userId' => $user['id'], 'eventId' => $eventId]);
+        $existing = $stmt->fetch();
+
+        if ($existing) {
+            if ($existing['status'] !== 'ACCEPTED') {
+                $stmt = $db->prepare(
+                    'UPDATE Participant SET status = :status, joinedAt = :joinedAt WHERE id = :id'
+                );
+                $stmt->execute([
+                    'status' => 'ACCEPTED',
+                    'joinedAt' => Helpers::nowDatetime(),
+                    'id' => $existing['id'],
+                ]);
+            }
+        } else {
+            $participantId = Helpers::generateCuid();
+            $stmt = $db->prepare(
+                'INSERT INTO Participant (id, userId, eventId, status, joinedAt)
+                 VALUES (:id, :userId, :eventId, :status, :joinedAt)'
+            );
+            $stmt->execute([
+                'id' => $participantId,
+                'userId' => $user['id'],
+                'eventId' => $eventId,
+                'status' => 'ACCEPTED',
+                'joinedAt' => Helpers::nowDatetime(),
+            ]);
+        }
+
+        return Helpers::jsonResponse($response, ['eventId' => $eventId]);
     }
 }

@@ -66,6 +66,7 @@ model Event {
   creator      User          @relation("EventCreator", fields: [creatorId], references: [id])
   participants      Participant[]
   observationEvents ObservationEvent[]
+  inviteTokens      InviteToken[]
 
   @@index([creatorId])
 }
@@ -92,6 +93,16 @@ model Participant {
 
   @@unique([userId, eventId])
   @@index([userId])
+  @@index([eventId])
+}
+
+model InviteToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  eventId   String
+  createdAt DateTime @default(now())
+  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
   @@index([eventId])
 }
 

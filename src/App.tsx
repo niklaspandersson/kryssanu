@@ -9,6 +9,7 @@ import FeedPage from "./pages/FeedPage";
 import EventsPage from "./pages/EventsPage";
 import CreateEventPage from "./pages/CreateEventPage";
 import EventDetailPage from "./pages/EventDetailPage";
+import InviteAcceptPage from "./pages/InviteAcceptPage";
 import ProfilePage from "./pages/ProfilePage";
 import MyBirdsPage from "./pages/MyBirdsPage";
 import AboutPage from "./pages/AboutPage";
@@ -73,6 +74,7 @@ export default function App() {
       <Route path="/events" component={protectedPage(EventsPage)} />
       <Route path="/events/new" component={protectedPage(CreateEventPage)} />
       <Route path="/events/:id" component={protectedPage(EventDetailPage)} />
+      <Route path="/invite/:token" component={protectedPage(InviteAcceptPage)} />
       <Route path="/profile" component={protectedPage(ProfilePage)} />
       <Route path="/about" component={AboutPage} />
       <Route path="/help" component={HelpPage} />

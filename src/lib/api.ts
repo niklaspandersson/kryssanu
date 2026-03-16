@@ -13,6 +13,7 @@ import type {
   FeedItem,
   ParticipantWithUser,
   UpdateProfileInput,
+  InviteTokenResponse,
 } from './types';
 
 const BASE = '/api';
@@ -88,6 +89,21 @@ export const events = {
   leaderboard: (eventId: string) =>
     fetchJson<LeaderboardEntry[]>(
       `/events/${encodeURIComponent(eventId)}/leaderboard`
+    ),
+  createInviteToken: (eventId: string) =>
+    fetchJson<InviteTokenResponse>(
+      `/events/${encodeURIComponent(eventId)}/invite-token`,
+      { method: 'POST' }
+    ),
+  deleteInviteToken: (eventId: string) =>
+    fetchJson<{ ok: boolean }>(
+      `/events/${encodeURIComponent(eventId)}/invite-token`,
+      { method: 'DELETE' }
+    ),
+  acceptInvite: (token: string) =>
+    fetchJson<{ eventId: string }>(
+      `/invite/${encodeURIComponent(token)}`,
+      { method: 'POST' }
     ),
 };
 

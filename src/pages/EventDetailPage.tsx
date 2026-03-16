@@ -1,5 +1,6 @@
-import { createSignal, createResource, Show, For } from "solid-js";
+import { createSignal, createResource, Show, For, onCleanup } from "solid-js";
 import { useParams, A } from "@solidjs/router";
+import QRCode from "qrcode";
 import { events as eventsApi } from "../lib/api";
 import { useAuth } from "../lib/auth";
 import { openSearch } from "../components/AppShell";
@@ -12,6 +13,9 @@ export default function EventDetailPage() {
   const params = useParams();
   const { user } = useAuth();
   const [inviteEmail, setInviteEmail] = createSignal("");
+  const [showQr, setShowQr] = createSignal(false);
+  const [qrDataUrl, setQrDataUrl] = createSignal<string | null>(null);
+  const [qrLoading, setQrLoading] = createSignal(false);
 
   const [event, { refetch }] = createResource(() => params.id, eventsApi.getOne);
   const [leaderboard] = createResource(() => params.id, eventsApi.leaderboard);
@@ -52,6 +56,31 @@ export default function EventDetailPage() {
     setInviteEmail("");
     refetch();
   }
+
+  async function handleShowQr() {
+    setQrLoading(true);
+    try {
+      const { url } = await eventsApi.createInviteToken(params.id);
+      const dataUrl = await QRCode.toDataURL(url, { width: 300, margin: 2 });
+      setQrDataUrl(dataUrl);
+      setShowQr(true);
+    } finally {
+      setQrLoading(false);
+    }
+  }
+
+  async function handleCloseQr() {
+    setShowQr(false);
+    setQrDataUrl(null);
+    await eventsApi.deleteInviteToken(params.id).catch(() => {});
+    refetch();
+  }
+
+  onCleanup(() => {
+    if (showQr()) {
+      eventsApi.deleteInviteToken(params.id).catch(() => {});
+    }
+  });
 
   return (
     <div class={styles.page}>
@@ -205,7 +234,33 @@ export default function EventDetailPage() {
                     Bjud in
                   </button>
                 </form>
+                <button
+                  class={styles.qrBtn}
+                  onClick={handleShowQr}
+                  disabled={qrLoading()}
+                >
+                  <Icon name="qr_code_2" size={20} />
+                  {qrLoading() ? "Laddar..." : "Visa QR-kod"}
+                </button>
               </section>
+            </Show>
+
+            {/* QR Code Modal */}
+            <Show when={showQr() && qrDataUrl()}>
+              <div class={styles.qrOverlay} onClick={handleCloseQr}>
+                <div class={styles.qrModal} onClick={(e) => e.stopPropagation()}>
+                  <h3 class={styles.qrTitle}>Skanna för att gå med</h3>
+                  <img
+                    class={styles.qrImage}
+                    src={qrDataUrl()!}
+                    alt="QR-kod för inbjudan"
+                  />
+                  <p class={styles.qrEventName}>{ev().name}</p>
+                  <button class={styles.qrCloseBtn} onClick={handleCloseQr}>
+                    Stäng
+                  </button>
+                </div>
+              </div>
             </Show>
           </>
         )}
