@@ -50,9 +50,14 @@
   text-decoration: none;
 }
 
-.brandIcon {
-  font-size: 24px;
-  color: var(--color-primary);
+.brandLogo {
+  height: 24px;
+  width: auto;
+}
+
+.brandText {
+  font-weight: 800;
+  letter-spacing: -0.03em;
 }
 
 .closeBtn {
@@ -82,7 +87,7 @@
   align-items: center;
   gap: var(--space-md);
   padding: var(--space-md) var(--space-lg);
-  color: var(--color-text);
+  color: var(--color-primary-dark);
   text-decoration: none;
   font-size: var(--font-size-base);
   font-weight: 500;
@@ -102,11 +107,11 @@
 }
 
 .activeLink {
-  color: var(--color-primary);
+  color: var(--color-text);
 }
 
 .activeLink .md-icon {
-  color: var(--color-primary);
+  color: var(--color-text);
 }
 
 /* ===== Rail event link (icon-only, visible only in rail mode) ===== */
@@ -130,7 +135,7 @@
   gap: var(--space-md);
   padding: var(--space-sm) var(--space-lg);
   text-decoration: none;
-  color: var(--color-text);
+  color: var(--color-primary-dark);
   border-radius: var(--radius-md);
   -webkit-tap-highlight-color: transparent;
   transition: background-color 0.15s;

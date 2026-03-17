@@ -32,9 +32,9 @@ export default function TopNav(props: Props) {
           </button>
         </Show>
         <A href="/" class={styles.brand}>
-          <span class={`md-icon ${styles.brandIcon}`}>park</span>
+          <img src="/logo-v2-solid.webp" alt="" class={styles.brandLogo} />
           <Show when={!props.searchOpen}>
-            <span>Kryssa.nu</span>
+            <span class={styles.brandText}>kryssa.nu</span>
           </Show>
         </A>
       </div>

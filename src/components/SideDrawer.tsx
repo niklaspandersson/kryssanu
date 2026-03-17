@@ -63,8 +63,8 @@ export default function SideDrawer(props: Props) {
             <span class="md-icon">close</span>
           </button>
           <A href="/" class={styles.brand}>
-            <span class={`md-icon ${styles.brandIcon}`}>park</span>
-            Kryssa.nu
+            <img src="/logo-v2-solid.webp" alt="" class={styles.brandLogo} />
+            <span class={styles.brandText}>kryssa.nu</span>
           </A>
         </div>
 

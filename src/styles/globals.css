@@ -1,19 +1,19 @@
 :root {
-  /* Nature/earthy palette */
-  --color-primary: #2d6a45;
-  --color-primary-light: #52b772;
-  --color-primary-dark: #1b4332;
+  /* Warm forest palette */
+  --color-primary: #567a42;
+  --color-primary-light: #7da866;
+  --color-primary-dark: #3a5230;
   --color-bg: #faf8f2;
   --color-bg-card: #fcfdfc;
   --color-bg-elevated: oklch(from var(--color-primary) calc(l + .49) calc(c * .1) h);
-  --color-bg-menu-hover: #d6e8df;
+  --color-bg-menu-hover: #dfe4d4;
   --color-accent: #d4a373;
   --color-accent-light: #e9c89b;
   --color-text: #2c2c2c;
   --color-text-secondary: #6b6b6b;
   --color-text-muted: #999999;
-  --color-border: #e0dbd2;
-  --color-success: #409157;
+  --color-border: #ddd8cd;
+  --color-success: #5a8547;
   --color-danger: #c1121f;
   --color-warning: #e9c46a;
 

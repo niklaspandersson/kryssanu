@@ -16,8 +16,8 @@ export default function HomePage() {
       {/* Hero */}
       <section class={styles.hero}>
         <div class={styles.heroContent}>
-          <span class={`md-icon ${styles.heroIcon}`}>park</span>
-          <h1 class={styles.heroTitle}>Kryssa.nu</h1>
+          <h1 class={styles.heroTitle}>kryssa.nu</h1>
+          <img src="/logo-v2.webp" alt="Kryssa.nu" class={styles.heroLogo} />
           <p class={styles.heroSubtitle}>
             Din personliga fågeljournal — kryssa arter, tävla med vänner och följ din statistik.
           </p>

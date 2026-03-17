@@ -24,9 +24,14 @@
   -webkit-tap-highlight-color: transparent;
 }
 
-.brandIcon {
-  font-size: 24px;
-  color: var(--color-primary);
+.brandLogo {
+  height: 24px;
+  width: auto;
+}
+
+.brandText {
+  font-weight: 800;
+  letter-spacing: -0.03em;
 }
 
 .left {
