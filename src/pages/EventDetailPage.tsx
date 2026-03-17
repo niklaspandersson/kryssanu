@@ -222,18 +222,6 @@ export default function EventDetailPage() {
             <Show when={isCreator() && !isPast()}>
               <section class={styles.section}>
                 <h2 class={styles.sectionTitle}>Bjud in</h2>
-                <form class={styles.inviteForm} onSubmit={handleInvite}>
-                  <input
-                    type="email"
-                    class={styles.inviteInput}
-                    placeholder="E-postadress"
-                    value={inviteEmail()}
-                    onInput={(e) => setInviteEmail(e.currentTarget.value)}
-                  />
-                  <button type="submit" class={styles.inviteBtn}>
-                    Bjud in
-                  </button>
-                </form>
                 <button
                   class={styles.qrBtn}
                   onClick={handleShowQr}

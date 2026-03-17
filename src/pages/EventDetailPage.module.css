@@ -157,35 +157,6 @@
   color: var(--color-danger);
 }
 
-.inviteForm {
-  display: flex;
-  gap: var(--space-sm);
-}
-
-.inviteInput {
-  flex: 1;
-  padding: var(--space-md);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  background: var(--color-bg-card);
-  font-size: var(--font-size-sm);
-  outline: none;
-}
-
-.inviteInput:focus {
-  border-color: var(--color-primary-light);
-}
-
-.inviteBtn {
-  padding: var(--space-sm) var(--space-lg);
-  background: var(--color-primary);
-  color: white;
-  border-radius: var(--radius-sm);
-  font-size: var(--font-size-sm);
-  font-weight: 500;
-  white-space: nowrap;
-}
-
 .qrBtn {
   display: flex;
   align-items: center;
