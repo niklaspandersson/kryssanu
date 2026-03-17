@@ -1,0 +1,25 @@
+.results {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.prompt {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-md);
+  padding: var(--space-2xl);
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
+.prompt .md-icon {
+  font-size: 48px;
+  color: var(--color-primary-light);
+  opacity: 0.5;
+}
+
+.promptText {
+  font-size: var(--font-size-sm);
+}

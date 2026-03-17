@@ -77,6 +77,52 @@
   background: var(--color-bg-elevated);
 }
 
+.searchBar {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  background: var(--color-bg-elevated);
+  border-radius: var(--radius-sm);
+  padding: 0 var(--space-xs);
+  margin: 0 var(--space-sm);
+  height: 40px;
+}
+
+.searchBarBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-full);
+  -webkit-tap-highlight-color: transparent;
+  flex-shrink: 0;
+}
+
+.searchBarBtn:hover {
+  background: var(--color-bg);
+}
+
+.searchBarBtn .md-icon {
+  font-size: 20px;
+  color: var(--color-text-muted);
+}
+
+.searchInput {
+  flex: 1;
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: var(--font-size-base);
+  padding: var(--space-xs) 0;
+  min-width: 0;
+}
+
+.searchInput::placeholder {
+  color: var(--color-text-muted);
+}
+
 /* Hide text labels on small screens, show only icons */
 .tabLabel {
   display: none;

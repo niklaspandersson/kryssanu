@@ -1,16 +1,27 @@
-import { Show } from "solid-js";
+import { createEffect, Show } from "solid-js";
 import { A } from "@solidjs/router";
 import { useAuth } from "../lib/auth";
 import Avatar from "./Avatar";
 import styles from "./TopNav.module.css";
 
 type Props = {
+  searchOpen: boolean;
+  query: string;
+  onQueryChange: (q: string) => void;
   onSearchOpen: () => void;
+  onSearchClose: () => void;
   onMenuOpen: () => void;
 };
 
 export default function TopNav(props: Props) {
   const { user, isLoggedIn } = useAuth();
+  let inputRef!: HTMLInputElement;
+
+  createEffect(() => {
+    if (props.searchOpen) {
+      requestAnimationFrame(() => inputRef?.focus());
+    }
+  });
 
   return (
     <nav class={styles.nav}>
@@ -22,14 +33,37 @@ export default function TopNav(props: Props) {
         </Show>
         <A href="/" class={styles.brand}>
           <span class={`md-icon ${styles.brandIcon}`}>park</span>
-          Kryssa.nu
+          <Show when={!props.searchOpen}>
+            <span>Kryssa.nu</span>
+          </Show>
         </A>
       </div>
 
+      <Show when={props.searchOpen}>
+        <div class={styles.searchBar}>
+          <button class={styles.searchBarBtn} onClick={() => props.onSearchClose()} aria-label="Tillbaka">
+            <span class="md-icon">arrow_back</span>
+          </button>
+          <input
+            ref={inputRef}
+            type="text"
+            class={styles.searchInput}
+            placeholder="Sök efter fågel..."
+            value={props.query}
+            onInput={(e) => props.onQueryChange(e.currentTarget.value)}
+          />
+          <button class={styles.searchBarBtn} onClick={() => props.onSearchClose()} aria-label="Stäng sök">
+            <span class="md-icon">close</span>
+          </button>
+        </div>
+      </Show>
+
       <div class={styles.actions}>
-        <button class={styles.iconBtn} onClick={() => props.onSearchOpen()} aria-label="Sök">
-          <span class="md-icon">search</span>
-        </button>
+        <Show when={!props.searchOpen}>
+          <button class={styles.iconBtn} onClick={() => props.onSearchOpen()} aria-label="Sök">
+            <span class="md-icon">search</span>
+          </button>
+        </Show>
         <Show when={isLoggedIn()}>
           <A href="/profile" class={styles.profileBtn}>
             <Avatar name={user()!.name} image={user()!.image} size={28} />
