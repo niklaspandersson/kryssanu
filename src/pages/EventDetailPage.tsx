@@ -20,6 +20,19 @@ export default function EventDetailPage() {
   const [qrLoading, setQrLoading] = createSignal(false);
 
   const [selectedParticipant, setSelectedParticipant] = createSignal<{ id: string; name: string } | null>(null);
+  const [participantPage, setParticipantPage] = createSignal(0);
+  const PARTICIPANTS_PER_PAGE = 10;
+
+  const paginatedParticipants = () => {
+    const all = event()?.participants ?? [];
+    const start = participantPage() * PARTICIPANTS_PER_PAGE;
+    return all.slice(start, start + PARTICIPANTS_PER_PAGE);
+  };
+
+  const totalParticipantPages = () => {
+    const all = event()?.participants ?? [];
+    return Math.ceil(all.length / PARTICIPANTS_PER_PAGE);
+  };
   
   const isActive = () => {
     const ev = event();
@@ -265,7 +278,7 @@ export default function EventDetailPage() {
                 Deltagare ({ev().participants.length})
               </h2>
               <div class={styles.participants}>
-                <For each={ev().participants}>
+                <For each={paginatedParticipants()}>
                   {(p) => (
                     <div
                       class={styles.participant}
@@ -296,6 +309,29 @@ export default function EventDetailPage() {
                   )}
                 </For>
               </div>
+              <Show when={totalParticipantPages() > 1}>
+                <div class={styles.pagination}>
+                  <button
+                    class={styles.pageBtn}
+                    disabled={participantPage() === 0}
+                    onClick={() => setParticipantPage((p) => p - 1)}
+                  >
+                    <Icon name="chevron_left" size={18} />
+                    Föregående
+                  </button>
+                  <span class={styles.pageInfo}>
+                    {participantPage() + 1} / {totalParticipantPages()}
+                  </span>
+                  <button
+                    class={styles.pageBtn}
+                    disabled={participantPage() >= totalParticipantPages() - 1}
+                    onClick={() => setParticipantPage((p) => p + 1)}
+                  >
+                    Nästa
+                    <Icon name="chevron_right" size={18} />
+                  </button>
+                </div>
+              </Show>
             </section>
 
             {/* Invite (creator only, not past events) */}
