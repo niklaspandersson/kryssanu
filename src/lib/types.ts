@@ -56,6 +56,7 @@ export type ChecklistData = {
 export type CreateEventInput = {
   name: string;
   description?: string;
+  isPublic?: boolean;
   startsAt: string;
   endsAt: string;
 };
@@ -64,6 +65,7 @@ export type Event = {
   id: string;
   name: string;
   description: string | null;
+  isPublic: boolean;
   startsAt: string;
   endsAt: string;
   createdAt: string;

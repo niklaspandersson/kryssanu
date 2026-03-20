@@ -59,6 +59,7 @@ model Event {
   id           String        @id @default(cuid())
   name         String
   description  String?
+  isPublic     Boolean       @default(false)
   startsAt     DateTime
   endsAt       DateTime
   createdAt    DateTime      @default(now())

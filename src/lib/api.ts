@@ -86,9 +86,18 @@ export const events = {
       `/events/${encodeURIComponent(eventId)}/respond`,
       { method: 'POST', body: JSON.stringify({ status }) }
     ),
+  join: (eventId: string) =>
+    fetchJson<EventWithParticipants>(
+      `/events/${encodeURIComponent(eventId)}/join`,
+      { method: 'POST' }
+    ),
   leaderboard: (eventId: string) =>
     fetchJson<LeaderboardEntry[]>(
       `/events/${encodeURIComponent(eventId)}/leaderboard`
+    ),
+  participantObservations: (eventId: string, userId: string) =>
+    fetchJson<ObservationWithBird[]>(
+      `/events/${encodeURIComponent(eventId)}/participants/${encodeURIComponent(userId)}/observations`
     ),
   createInviteToken: (eventId: string) =>
     fetchJson<InviteTokenResponse>(

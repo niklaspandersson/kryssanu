@@ -106,7 +106,12 @@ export default function EventsPage() {
             {(event) => (
               <A href={`/events/${event.id}`} class={styles.eventCard}>
                 <div class={styles.eventInfo}>
-                  <span class={styles.eventName}>{event.name}</span>
+                  <span class={styles.eventName}>
+                    {event.name}
+                    <Show when={event.isPublic}>
+                      <span class={styles.publicTag}>Publikt</span>
+                    </Show>
+                  </span>
                   <span class={styles.eventMeta}>
                     {new Date(event.startsAt).toLocaleDateString("sv-SE")}
                     {" - "}

@@ -22,7 +22,9 @@ class EventRoutes
             $group->get('/{id}', [self::class, 'getEvent']);
             $group->post('/{id}/invite', [self::class, 'invite']);
             $group->post('/{id}/respond', [self::class, 'respond']);
+            $group->post('/{id}/join', [self::class, 'join']);
             $group->get('/{id}/leaderboard', [self::class, 'leaderboard']);
+            $group->get('/{id}/participants/{userId}/observations', [self::class, 'participantObservations']);
             $group->post('/{id}/invite-token', [self::class, 'createInviteToken']);
             $group->delete('/{id}/invite-token', [self::class, 'deleteInviteToken']);
         })->add(new AuthMiddleware());
@@ -68,6 +70,7 @@ class EventRoutes
             'id' => $event['id'],
             'name' => $event['name'],
             'description' => $event['description'],
+            'isPublic' => (bool) $event['isPublic'],
             'startsAt' => Helpers::toISOString($event['startsAt']),
             'endsAt' => Helpers::toISOString($event['endsAt']),
             'createdAt' => Helpers::toISOString($event['createdAt']),
@@ -88,7 +91,7 @@ class EventRoutes
         $stmt = $db->prepare(
             'SELECT DISTINCT e.* FROM Event e
              LEFT JOIN Participant p ON p.eventId = e.id AND p.userId = :userId2
-             WHERE e.creatorId = :userId OR (p.userId = :userId3 AND p.status != :declined)
+             WHERE e.creatorId = :userId OR (p.userId = :userId3 AND p.status != :declined) OR e.isPublic = 1
              ORDER BY e.startsAt DESC'
         );
         $stmt->execute([
@@ -147,14 +150,17 @@ class EventRoutes
         $eventId = Helpers::generateCuid();
         $now = Helpers::nowDatetime();
 
+        $isPublic = !empty($body['isPublic']);
+
         $stmt = $db->prepare(
-            'INSERT INTO Event (id, name, description, startsAt, endsAt, createdAt, creatorId)
-             VALUES (:id, :name, :description, :startsAt, :endsAt, :createdAt, :creatorId)'
+            'INSERT INTO Event (id, name, description, isPublic, startsAt, endsAt, createdAt, creatorId)
+             VALUES (:id, :name, :description, :isPublic, :startsAt, :endsAt, :createdAt, :creatorId)'
         );
         $stmt->execute([
             'id' => $eventId,
             'name' => $body['name'],
             'description' => $body['description'] ?? null,
+            'isPublic' => $isPublic ? 1 : 0,
             'startsAt' => gmdate('Y-m-d H:i:s', strtotime($body['startsAt'])),
             'endsAt' => gmdate('Y-m-d H:i:s', strtotime($body['endsAt'])),
             'createdAt' => $now,
@@ -204,7 +210,7 @@ class EventRoutes
         $isParticipant = $stmt->fetch();
         $isCreator = $event['creatorId'] === $user['id'];
 
-        if (!$isCreator && !$isParticipant) {
+        if (!$isCreator && !$isParticipant && !$event['isPublic']) {
             return Helpers::jsonResponse($response, ['error' => 'Not a member of this event'], 403);
         }
 
@@ -314,6 +320,65 @@ class EventRoutes
         return Helpers::jsonResponse($response, ['status' => $status]);
     }
 
+    public static function join(Request $request, Response $response, array $args): Response
+    {
+        $user = $request->getAttribute('user');
+        $db = Database::getConnection();
+
+        $stmt = $db->prepare('SELECT * FROM Event WHERE id = :id');
+        $stmt->execute(['id' => $args['id']]);
+        $event = $stmt->fetch();
+
+        if (!$event) {
+            return Helpers::jsonResponse($response, ['error' => 'Event not found'], 404);
+        }
+
+        if (!$event['isPublic']) {
+            return Helpers::jsonResponse($response, ['error' => 'This event is not public'], 403);
+        }
+
+        $now = new \DateTime('now', new \DateTimeZone('UTC'));
+        $end = new \DateTime($event['endsAt'], new \DateTimeZone('UTC'));
+        if ($end < $now) {
+            return Helpers::jsonResponse($response, ['error' => 'This event has ended'], 400);
+        }
+
+        // Upsert participant as ACCEPTED
+        $stmt = $db->prepare(
+            'SELECT * FROM Participant WHERE userId = :userId AND eventId = :eventId'
+        );
+        $stmt->execute(['userId' => $user['id'], 'eventId' => $args['id']]);
+        $existing = $stmt->fetch();
+
+        if ($existing) {
+            if ($existing['status'] !== 'ACCEPTED') {
+                $stmt = $db->prepare(
+                    'UPDATE Participant SET status = :status, joinedAt = :joinedAt WHERE id = :id'
+                );
+                $stmt->execute([
+                    'status' => 'ACCEPTED',
+                    'joinedAt' => Helpers::nowDatetime(),
+                    'id' => $existing['id'],
+                ]);
+            }
+        } else {
+            $participantId = Helpers::generateCuid();
+            $stmt = $db->prepare(
+                'INSERT INTO Participant (id, userId, eventId, status, joinedAt)
+                 VALUES (:id, :userId, :eventId, :status, :joinedAt)'
+            );
+            $stmt->execute([
+                'id' => $participantId,
+                'userId' => $user['id'],
+                'eventId' => $args['id'],
+                'status' => 'ACCEPTED',
+                'joinedAt' => Helpers::nowDatetime(),
+            ]);
+        }
+
+        return Helpers::jsonResponse($response, self::buildEventResponse($db, $event));
+    }
+
     public static function leaderboard(Request $request, Response $response, array $args): Response
     {
         $user = $request->getAttribute('user');
@@ -342,7 +407,7 @@ class EventRoutes
         $isMember = $event['creatorId'] === $user['id'] ||
             in_array($user['id'], array_column($participants, 'userId'));
 
-        if (!$isMember) {
+        if (!$isMember && !$event['isPublic']) {
             return Helpers::jsonResponse($response, ['error' => 'Not a member of this event'], 403);
         }
 
@@ -384,6 +449,58 @@ class EventRoutes
         usort($leaderboard, fn($a, $b) => $b['uniqueSpecies'] - $a['uniqueSpecies']);
 
         return Helpers::jsonResponse($response, $leaderboard);
+    }
+
+    public static function participantObservations(Request $request, Response $response, array $args): Response
+    {
+        $user = $request->getAttribute('user');
+        $db = Database::getConnection();
+
+        $stmt = $db->prepare('SELECT * FROM Event WHERE id = :id');
+        $stmt->execute(['id' => $args['id']]);
+        $event = $stmt->fetch();
+
+        if (!$event) {
+            return Helpers::jsonResponse($response, ['error' => 'Event not found'], 404);
+        }
+
+        // Check membership (same pattern as leaderboard)
+        $stmt = $db->prepare(
+            'SELECT p.userId FROM Participant p WHERE p.eventId = :eventId AND p.status = :status'
+        );
+        $stmt->execute(['eventId' => $args['id'], 'status' => 'ACCEPTED']);
+        $acceptedUserIds = $stmt->fetchAll(\PDO::FETCH_COLUMN);
+
+        $isMember = $event['creatorId'] === $user['id'] || in_array($user['id'], $acceptedUserIds);
+
+        if (!$isMember && !$event['isPublic']) {
+            return Helpers::jsonResponse($response, ['error' => 'Not a member of this event'], 403);
+        }
+
+        // Fetch observations for this user in this event
+        $stmt = $db->prepare(
+            'SELECT o.*, b.id as b_id, b.swedish as b_swedish, b.family as b_family, b.visitor as b_visitor
+             FROM ObservationEvent oe
+             JOIN Observation o ON o.id = oe.observationId
+             JOIN Bird b ON b.id = o.birdId
+             WHERE oe.eventId = :eventId AND o.userId = :userId
+             ORDER BY o.date DESC'
+        );
+        $stmt->execute(['eventId' => $args['id'], 'userId' => $args['userId']]);
+        $rows = $stmt->fetchAll();
+
+        $observations = array_map(function ($row) {
+            $obs = Helpers::formatObservation($row);
+            $obs['bird'] = Helpers::formatBird([
+                'id' => $row['b_id'],
+                'swedish' => $row['b_swedish'],
+                'family' => $row['b_family'],
+                'visitor' => $row['b_visitor'],
+            ]);
+            return $obs;
+        }, $rows);
+
+        return Helpers::jsonResponse($response, $observations);
     }
 
     public static function createInviteToken(Request $request, Response $response, array $args): Response

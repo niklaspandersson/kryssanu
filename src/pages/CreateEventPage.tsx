@@ -10,6 +10,7 @@ export default function CreateEventPage() {
   const [description, setDescription] = createSignal("");
   const [startsAt, setStartsAt] = createSignal("");
   const [endsAt, setEndsAt] = createSignal("");
+  const [isPublic, setIsPublic] = createSignal(false);
   const [submitting, setSubmitting] = createSignal(false);
 
   async function handleSubmit(e: Event) {
@@ -21,6 +22,7 @@ export default function CreateEventPage() {
       const event = await eventsApi.create({
         name: name(),
         description: description() || undefined,
+        isPublic: isPublic() || undefined,
         startsAt: new Date(startsAt()).toISOString(),
         endsAt: new Date(endsAt()).toISOString(),
       });
@@ -57,6 +59,15 @@ export default function CreateEventPage() {
             onInput={(e) => setDescription(e.currentTarget.value)}
             rows={3}
           />
+        </label>
+        <label class={styles.checkboxLabel}>
+          <input
+            type="checkbox"
+            checked={isPublic()}
+            onChange={(e) => setIsPublic(e.currentTarget.checked)}
+          />
+          Publikt event
+          <span class={styles.checkboxHint}>Alla kan se och gå med i eventet</span>
         </label>
         <label class={styles.label}>
           Startar *

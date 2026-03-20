@@ -127,7 +127,19 @@
 }
 
 .eventName {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
   font-weight: 600;
+}
+
+.publicTag {
+  font-size: var(--font-size-xs);
+  color: var(--color-primary);
+  background: #e3f2fd;
+  padding: 1px var(--space-sm);
+  border-radius: var(--radius-full);
+  font-weight: 400;
 }
 
 .eventMeta {

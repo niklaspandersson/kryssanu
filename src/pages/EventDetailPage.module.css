@@ -19,6 +19,37 @@
   color: var(--color-primary-dark);
 }
 
+.publicBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  font-size: var(--font-size-xs);
+  color: var(--color-primary);
+  background: #e3f2fd;
+  padding: 2px var(--space-sm);
+  border-radius: var(--radius-full);
+  margin-bottom: var(--space-sm);
+}
+
+.joinBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  width: 100%;
+  padding: var(--space-md);
+  background: var(--color-primary);
+  color: white;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  margin-bottom: var(--space-xl);
+}
+
+.joinBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .description {
   margin: 0 0 var(--space-md);
   color: var(--color-text-secondary);
@@ -74,6 +105,7 @@
   padding: var(--space-md);
   border-bottom: 1px solid var(--color-border);
   text-decoration: none;
+  cursor: pointer;
 }
 
 .lbRow:last-child {
@@ -229,4 +261,49 @@
   font-weight: 600;
   font-size: var(--font-size-sm);
   cursor: pointer;
+}
+
+.clickable {
+  cursor: pointer;
+}
+
+.obsList {
+  display: flex;
+  flex-direction: column;
+}
+
+.obsItem {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--space-md) 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.obsItem:last-child {
+  border-bottom: none;
+}
+
+.obsSpecies {
+  font-weight: 600;
+  font-size: var(--font-size-sm);
+}
+
+.obsMeta {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}
+
+.obsNote {
+  margin: 2px 0 0;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  font-style: italic;
+}
+
+.obsLoading {
+  text-align: center;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+  padding: var(--space-lg) 0;
 }

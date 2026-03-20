@@ -53,6 +53,22 @@
   resize: vertical;
 }
 
+.checkboxLabel {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+}
+
+.checkboxHint {
+  font-weight: 400;
+  color: var(--color-text-muted, #999);
+  font-size: var(--font-size-xs);
+}
+
 .submitBtn {
   padding: var(--space-md);
   background: var(--color-primary);
