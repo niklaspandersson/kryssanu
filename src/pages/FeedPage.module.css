@@ -85,72 +85,41 @@
   color: var(--color-text-muted);
 }
 
-/* ── Observation items ────────────────────────────────────────── */
-.obsItem {
-  display: flex;
-  align-items: center;
-  padding: var(--space-md);
-  background: var(--color-bg-card);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  margin-bottom: var(--space-sm);
-  text-decoration: none;
-  transition: box-shadow 0.15s;
-}
-
-.obsItem:hover {
-  box-shadow: var(--shadow-sm);
-}
-
-.obsInfo {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.obsName {
-  font-weight: 600;
-  color: var(--color-text);
-}
-
-.obsMeta {
-  font-size: var(--font-size-xs);
-  color: var(--color-text-muted);
-}
-
 /* ── Feed items ───────────────────────────────────────────────── */
 .feedItem {
   display: flex;
-  gap: var(--space-md);
-  padding: var(--space-md) 0;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-xs) 0;
   border-bottom: 1px solid var(--color-border);
 }
 
 .feedContent {
   display: flex;
-  flex-direction: column;
-  gap: 2px;
+  align-items: baseline;
+  gap: var(--space-sm);
   min-width: 0;
+  flex: 1;
+  font-size: var(--font-size-sm);
 }
 
 .feedUser {
   font-weight: 600;
-  font-size: var(--font-size-sm);
-}
-
-.feedText {
-  font-size: var(--font-size-sm);
-  color: var(--color-text-secondary);
 }
 
 .feedBird {
   color: var(--color-primary);
   font-weight: 500;
-  text-decoration: none;
+}
+
+.feedLocation {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
 }
 
 .feedDate {
   font-size: var(--font-size-xs);
   color: var(--color-text-muted);
+  margin-left: auto;
+  white-space: nowrap;
 }

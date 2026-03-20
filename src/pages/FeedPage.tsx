@@ -85,7 +85,7 @@ export default function FeedPage() {
             />
           }
         >
-          <For each={feedData()!.items}>
+          <For each={feedData()!.items.slice(0, 15)}>
             {(item) => (
               <div class={styles.feedItem}>
                 <Avatar
@@ -94,12 +94,10 @@ export default function FeedPage() {
                   size={32}
                 />
                 <div class={styles.feedContent}>
-                  <span class={styles.feedUser}>{item.user.name}</span>
-                  <span class={styles.feedText}>
-                    kryssade{" "}
-                    <span class={styles.feedBird}>
-                      {item.bird.swedish}
-                    </span>
+                  <span>
+                    <span class={styles.feedUser}>{item.user.name}</span>
+                    {" "}kryssade{" "}
+                    <span class={styles.feedBird}>{item.bird.swedish}</span>
                   </span>
                   <span class={styles.feedDate}>
                     {new Date(item.date).toLocaleDateString("sv-SE")}
@@ -121,12 +119,14 @@ export default function FeedPage() {
           </h2>
           <For each={latestObs()!.slice(0, 5)}>
             {(obs) => (
-              <div class={styles.obsItem}>
-                <div class={styles.obsInfo}>
-                  <span class={styles.obsName}>{obs.bird.swedish}</span>
-                  <span class={styles.obsMeta}>
+              <div class={styles.feedItem}>
+                <div class={styles.feedContent}>
+                  <span>
+                    <span class={styles.feedBird}>{obs.bird.swedish}</span>
+                    {obs.location && <span class={styles.feedLocation}> · {obs.location}</span>}
+                  </span>
+                  <span class={styles.feedDate}>
                     {new Date(obs.date).toLocaleDateString("sv-SE")}
-                    {obs.location && ` · ${obs.location}`}
                   </span>
                 </div>
               </div>

@@ -110,10 +110,9 @@ export const events = {
       { method: 'DELETE' }
     ),
   acceptInvite: (token: string) =>
-    fetchJson<{ eventId: string }>(
-      `/invite/${encodeURIComponent(token)}`,
-      { method: 'POST' }
-    ),
+    fetchJson<{ eventId: string }>(`/invite/${encodeURIComponent(token)}`, {
+      method: 'POST',
+    }),
 };
 
 // ── Stats ───────────────────────────────────────────────────────────
@@ -135,8 +134,7 @@ export const users = {
 
 // ── Export ──────────────────────────────────────────────────────────
 export const exportApi = {
-  getAuthorizeUrl: () =>
-    fetchJson<{ url: string }>('/export/google/authorize'),
+  getAuthorizeUrl: () => fetchJson<{ url: string }>('/export/google/authorize'),
   exportToSheets: () =>
     fetchJson<{ spreadsheetId: string; spreadsheetUrl: string }>(
       '/export/google/sheets',
@@ -146,8 +144,11 @@ export const exportApi = {
 
 // ── Feed ────────────────────────────────────────────────────────────
 export const feed = {
-  get: (cursor?: string) =>
-    fetchJson<{ items: FeedItem[]; nextCursor: string | null }>(
-      `/feed${cursor ? `?cursor=${encodeURIComponent(cursor)}` : ''}`
-    ),
+  get: (opts: { limit?: number; cursor?: string; eventId?: string } = {}) => {
+    const { limit = 10, cursor, eventId } = opts;
+    const params = new URLSearchParams({ limit: String(limit) });
+    if (cursor) params.set('cursor', cursor);
+    if (eventId) params.set('eventId', eventId);
+    return fetchJson<{ items: FeedItem[]; nextCursor: string | null }>(`/feed?${params}`);
+  },
 };

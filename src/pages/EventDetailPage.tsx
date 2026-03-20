@@ -1,7 +1,7 @@
 import { createSignal, createResource, Show, For, onCleanup } from "solid-js";
 import { useParams, A } from "@solidjs/router";
 import QRCode from "qrcode";
-import { events as eventsApi } from "../lib/api";
+import { events as eventsApi, feed } from "../lib/api";
 import { useAuth } from "../lib/auth";
 import { openSearch } from "../components/AppShell";
 import Icon from "../components/Icon";
@@ -20,9 +20,20 @@ export default function EventDetailPage() {
   const [qrLoading, setQrLoading] = createSignal(false);
 
   const [selectedParticipant, setSelectedParticipant] = createSignal<{ id: string; name: string } | null>(null);
+  
+  const isActive = () => {
+    const ev = event();
+    if (!ev) return false;
+    const now = Date.now();
+    return new Date(ev.startsAt).getTime() <= now && new Date(ev.endsAt).getTime() >= now;
+  };
 
   const [event, { refetch }] = createResource(() => params.id, eventsApi.getOne);
   const [leaderboard] = createResource(() => params.id, eventsApi.leaderboard);
+  const [recentActivity] = createResource(
+    () => (isActive() ? params.id : null),
+    (eventId) => feed.get({ eventId, limit: 10 })
+  );
   const [participantObs] = createResource(
     () => {
       const p = selectedParticipant();
@@ -38,13 +49,6 @@ export default function EventDetailPage() {
     const uid = user()?.id;
     if (!ev || !uid) return false;
     return ev.participants.some((p) => p.user.id === uid && p.status === "ACCEPTED");
-  };
-
-  const isActive = () => {
-    const ev = event();
-    if (!ev) return false;
-    const now = Date.now();
-    return new Date(ev.startsAt).getTime() <= now && new Date(ev.endsAt).getTime() >= now;
   };
 
   const isPast = () => {
@@ -228,6 +232,30 @@ export default function EventDetailPage() {
                     </For>
                   </div>
                 </Show>
+              </section>
+            </Show>
+
+            {/* Recent activity (active events) */}
+            <Show when={isActive() && (recentActivity()?.items ?? []).length > 0}>
+              <section class={styles.section}>
+                <h2 class={styles.sectionTitle}>Senaste aktivitet</h2>
+                <For each={recentActivity()!.items}>
+                  {(item) => (
+                    <div class={styles.activityItem}>
+                      <Avatar name={item.user.name} image={item.user.image} size={28} />
+                      <div class={styles.activityContent}>
+                        <span>
+                          <span class={styles.activityUser}>{item.user.name}</span>
+                          {" "}kryssade{" "}
+                          <span class={styles.activityBird}>{item.bird.swedish}</span>
+                        </span>
+                        <span class={styles.activityDate}>
+                          {new Date(item.date).toLocaleDateString("sv-SE")}
+                        </span>
+                      </div>
+                    </div>
+                  )}
+                </For>
               </section>
             </Show>
 

@@ -26,49 +26,46 @@ class FeedRoutes
         $user = $request->getAttribute('user');
         $db = Database::getConnection();
         $cursor = $request->getQueryParams()['cursor'] ?? null;
-        $limit = 20;
+        $limit = min((int) ($request->getQueryParams()['limit'] ?? 20), 20);
 
-        // Find event IDs user participates in
-        $stmt = $db->prepare(
-            'SELECT eventId FROM Participant WHERE userId = :userId AND status = :status'
-        );
-        $stmt->execute(['userId' => $user['id'], 'status' => 'ACCEPTED']);
-        $eventIds = array_column($stmt->fetchAll(), 'eventId');
+        $eventId = $request->getQueryParams()['eventId'] ?? null;
+
+        if ($eventId) {
+            // Filter to a specific event
+            $eventIds = [$eventId];
+        } else {
+            // Find active event IDs user participates in
+            $stmt = $db->prepare(
+                'SELECT p.eventId FROM Participant p
+                 JOIN Event e ON e.id = p.eventId
+                 WHERE p.userId = :userId AND p.status = :status
+                 AND e.startsAt <= NOW() AND e.endsAt >= NOW()'
+            );
+            $stmt->execute(['userId' => $user['id'], 'status' => 'ACCEPTED']);
+            $eventIds = array_column($stmt->fetchAll(), 'eventId');
+        }
 
         if (empty($eventIds)) {
             return Helpers::jsonResponse($response, ['items' => [], 'nextCursor' => null]);
         }
 
-        // Find co-participant user IDs (excluding self)
+        // Fetch observations from all participants in user's active events
         $placeholders = implode(',', array_fill(0, count($eventIds), '?'));
-        $stmt = $db->prepare(
-            "SELECT DISTINCT userId FROM Participant
-             WHERE eventId IN ({$placeholders}) AND status = 'ACCEPTED' AND userId != ?"
-        );
-        $params = [...$eventIds, $user['id']];
-        $stmt->execute($params);
-        $peerIds = array_column($stmt->fetchAll(), 'userId');
-
-        if (empty($peerIds)) {
-            return Helpers::jsonResponse($response, ['items' => [], 'nextCursor' => null]);
-        }
-
-        // Fetch observations from peers
-        $peerPlaceholders = implode(',', array_fill(0, count($peerIds), '?'));
         $cursorCondition = $cursor ? 'AND o.id < ?' : '';
 
-        $sql = "SELECT o.id, o.date,
+        $sql = "SELECT DISTINCT o.id, o.date,
                        u.id as u_id, u.name as u_name, u.email as u_email, u.image as u_image,
                        b.id as b_id, b.swedish as b_swedish, b.family as b_family, b.visitor as b_visitor
                 FROM Observation o
                 JOIN User u ON u.id = o.userId
                 JOIN Bird b ON b.id = o.birdId
-                WHERE o.userId IN ({$peerPlaceholders})
+                JOIN ObservationEvent oe ON oe.observationId = o.id
+                WHERE oe.eventId IN ({$placeholders})
                 {$cursorCondition}
                 ORDER BY o.date DESC
                 LIMIT ?";
 
-        $queryParams = [...$peerIds];
+        $queryParams = [...$eventIds];
         if ($cursor) {
             $queryParams[] = $cursor;
         }
