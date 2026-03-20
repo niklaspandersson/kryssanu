@@ -14,8 +14,8 @@
   },
   "extra": {
     "google/apiclient-services": [
-      "",
-      "OAuth2"
+      "Oauth2",
+      "Sheets"
     ]
   },
   "autoload": {

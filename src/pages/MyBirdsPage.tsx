@@ -1,5 +1,5 @@
-import { createSignal, createResource, createMemo, Show, For } from "solid-js";
-import { observations } from "../lib/api";
+import { createSignal, createResource, createMemo, Show, For, onMount } from "solid-js";
+import { observations, exportApi } from "../lib/api";
 import { useAuth } from "../lib/auth";
 import Icon from "../components/Icon";
 import EmptyState from "../components/EmptyState";
@@ -34,10 +34,50 @@ export default function MyBirdsPage() {
   function updateTimeFilter(v: TimeFilter) { setTimeFilter(v); persistFilters(showMode(), v, sortMode()); }
   function updateSortMode(v: SortMode) { setSortMode(v); persistFilters(showMode(), timeFilter(), v); }
   const [quickAddBird, setQuickAddBird] = createSignal<Bird | null>(null);
+  const [exportState, setExportState] = createSignal<"idle" | "exporting" | "success" | "error">("idle");
+  const [exportUrl, setExportUrl] = createSignal<string | null>(null);
 
   const [data, { refetch }] = createResource(() => isLoggedIn(), (loggedIn) =>
     loggedIn ? observations.checklist() : undefined
   );
+
+  async function doExport() {
+    setExportState("exporting");
+    try {
+      const result = await exportApi.exportToSheets();
+      setExportUrl(result.spreadsheetUrl);
+      setExportState("success");
+      window.open(result.spreadsheetUrl, "_blank");
+      setTimeout(() => setExportState("idle"), 4000);
+    } catch (e: any) {
+      if (e.message?.startsWith("403")) {
+        // Not authorized – redirect to Google consent
+        try {
+          const { url } = await exportApi.getAuthorizeUrl();
+          window.location.href = url;
+        } catch {
+          setExportState("error");
+          setTimeout(() => setExportState("idle"), 3000);
+        }
+      } else {
+        setExportState("error");
+        setTimeout(() => setExportState("idle"), 3000);
+      }
+    }
+  }
+
+  onMount(() => {
+    const params = new URLSearchParams(window.location.search);
+    const exportParam = params.get("export");
+    if (exportParam === "ready") {
+      history.replaceState(null, "", window.location.pathname);
+      doExport();
+    } else if (exportParam === "denied" || exportParam === "error") {
+      history.replaceState(null, "", window.location.pathname);
+      setExportState("error");
+      setTimeout(() => setExportState("idle"), 3000);
+    }
+  });
   const currentYear = new Date().getFullYear();
 
   const observedSet = createMemo(() => {
@@ -207,6 +247,29 @@ export default function MyBirdsPage() {
               Familj
             </button>
           </div>
+
+          <button
+            class={styles.exportBtn}
+            classList={{
+              [styles.exportBtnSuccess]: exportState() === "success",
+              [styles.exportBtnError]: exportState() === "error",
+            }}
+            onClick={doExport}
+            disabled={exportState() === "exporting"}
+          >
+            <Icon
+              name={
+                exportState() === "success" ? "check" :
+                exportState() === "error" ? "error_outline" :
+                "download"
+              }
+              size={16}
+            />
+            {exportState() === "exporting" ? "Exporterar..." :
+             exportState() === "success" ? "Exporterad!" :
+             exportState() === "error" ? "Fel" :
+             "Exportera"}
+          </button>
         </div>
         </div>
 

@@ -133,6 +133,17 @@ export const users = {
     }),
 };
 
+// ── Export ──────────────────────────────────────────────────────────
+export const exportApi = {
+  getAuthorizeUrl: () =>
+    fetchJson<{ url: string }>('/export/google/authorize'),
+  exportToSheets: () =>
+    fetchJson<{ spreadsheetId: string; spreadsheetUrl: string }>(
+      '/export/google/sheets',
+      { method: 'POST' }
+    ),
+};
+
 // ── Feed ────────────────────────────────────────────────────────────
 export const feed = {
   get: (cursor?: string) =>

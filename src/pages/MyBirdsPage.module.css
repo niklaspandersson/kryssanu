@@ -70,6 +70,44 @@
   color: white !important;
 }
 
+/* ── Export button ───────────────────────────────────────────── */
+.exportBtn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: var(--space-sm) var(--space-md);
+  font-size: var(--font-size-xs);
+  font-weight: 500;
+  color: var(--color-primary);
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+
+.exportBtn:hover:not(:disabled) {
+  background: var(--color-primary);
+  color: white;
+  border-color: var(--color-primary);
+}
+
+.exportBtn:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.exportBtnSuccess {
+  color: var(--color-success);
+  border-color: var(--color-success);
+}
+
+.exportBtnError {
+  color: var(--color-error, #d32f2f);
+  border-color: var(--color-error, #d32f2f);
+}
+
 /* ── Bird list ───────────────────────────────────────────────── */
 .birdList {
   display: flex;
