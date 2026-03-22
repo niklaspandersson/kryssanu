@@ -17,16 +17,8 @@ class StatsRoutes
     public static function register(App $app): void
     {
         $app->group('/api/stats', function (RouteCollectorProxy $group) {
-            $group->get('/me', [self::class, 'myStats']);
             $group->get('/user/{userId}', [self::class, 'userStats']);
         })->add(new AuthMiddleware());
-    }
-
-    public static function myStats(Request $request, Response $response): Response
-    {
-        $user = $request->getAttribute('user');
-        $stats = self::getUserStats($user['id']);
-        return Helpers::jsonResponse($response, $stats);
     }
 
     public static function userStats(Request $request, Response $response, array $args): Response
@@ -40,10 +32,11 @@ class StatsRoutes
         }
 
         $stats = self::getUserStats($args['userId']);
+        $response = $response->withHeader('Cache-Control', 'private, max-age=300');
         return Helpers::jsonResponse($response, $stats);
     }
 
-    private static function getUserStats(string $userId): array
+    public static function getUserStats(string $userId): array
     {
         $db = Database::getConnection();
         $now = new \DateTime('now', new \DateTimeZone('UTC'));

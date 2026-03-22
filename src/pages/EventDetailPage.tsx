@@ -1,7 +1,7 @@
 import { createSignal, createResource, Show, For, onCleanup } from "solid-js";
 import { useParams, A } from "@solidjs/router";
 import QRCode from "qrcode";
-import { events as eventsApi, feed } from "../lib/api";
+import { events as eventsApi, feed, me as meApi } from "../lib/api";
 import { useAuth } from "../lib/auth";
 import { openSearch } from "../components/AppShell";
 import Icon from "../components/Icon";
@@ -23,17 +23,6 @@ export default function EventDetailPage() {
   const [participantPage, setParticipantPage] = createSignal(0);
   const PARTICIPANTS_PER_PAGE = 10;
 
-  const paginatedParticipants = () => {
-    const all = event()?.participants ?? [];
-    const start = participantPage() * PARTICIPANTS_PER_PAGE;
-    return all.slice(start, start + PARTICIPANTS_PER_PAGE);
-  };
-
-  const totalParticipantPages = () => {
-    const all = event()?.participants ?? [];
-    return Math.ceil(all.length / PARTICIPANTS_PER_PAGE);
-  };
-  
   const isActive = () => {
     const ev = event();
     if (!ev) return false;
@@ -43,6 +32,11 @@ export default function EventDetailPage() {
 
   const [event, { refetch }] = createResource(() => params.id, eventsApi.getOne);
   const [leaderboard] = createResource(() => params.id, eventsApi.leaderboard);
+  const [memberships] = createResource(() => user(), () => meApi.memberships());
+  const [participants, { refetch: refetchParticipants }] = createResource(
+    () => params.id ? { eventId: params.id, offset: participantPage() * PARTICIPANTS_PER_PAGE } : null,
+    (source) => eventsApi.participants(source.eventId, { limit: PARTICIPANTS_PER_PAGE, offset: source.offset })
+  );
   const [recentActivity] = createResource(
     () => (isActive() ? params.id : null),
     (eventId) => feed.get({ eventId, limit: 10 })
@@ -58,16 +52,22 @@ export default function EventDetailPage() {
   const isCreator = () => event()?.creatorId === user()?.id;
 
   const isParticipant = () => {
-    const ev = event();
-    const uid = user()?.id;
-    if (!ev || !uid) return false;
-    return ev.participants.some((p) => p.user.id === uid && p.status === "ACCEPTED");
+    const m = memberships();
+    const eid = params.id;
+    if (!m || !eid) return false;
+    return m[eid] === "ACCEPTED";
   };
 
   const isPast = () => {
     const ev = event();
     if (!ev) return false;
     return new Date(ev.endsAt).getTime() < Date.now();
+  };
+
+  const totalParticipantPages = () => {
+    const ev = event();
+    if (!ev) return 1;
+    return Math.ceil(ev.participantCount / PARTICIPANTS_PER_PAGE);
   };
 
   const resultsTop10 = () => {
@@ -90,6 +90,7 @@ export default function EventDetailPage() {
     await eventsApi.invite(params.id, inviteEmail());
     setInviteEmail("");
     refetch();
+    refetchParticipants();
   }
 
   async function handleShowQr() {
@@ -275,10 +276,10 @@ export default function EventDetailPage() {
             {/* Participants */}
             <section class={styles.section}>
               <h2 class={styles.sectionTitle}>
-                Deltagare ({ev().participants.length})
+                Deltagare ({ev().participantCount})
               </h2>
               <div class={styles.participants}>
-                <For each={paginatedParticipants()}>
+                <For each={participants() ?? []}>
                   {(p) => (
                     <div
                       class={styles.participant}

@@ -21,9 +21,10 @@ class EventRoutes
             $group->post('', [self::class, 'create']);
             $group->get('/{id}', [self::class, 'getEvent']);
             $group->post('/{id}/invite', [self::class, 'invite']);
-            $group->post('/{id}/respond', [self::class, 'respond']);
-            $group->post('/{id}/join', [self::class, 'join']);
+            $group->patch('/{id}/respond', [self::class, 'respond']);
+            $group->put('/{id}/join', [self::class, 'join']);
             $group->get('/{id}/leaderboard', [self::class, 'leaderboard']);
+            $group->get('/{id}/participants', [self::class, 'participants']);
             $group->get('/{id}/participants/{userId}/observations', [self::class, 'participantObservations']);
             $group->post('/{id}/invite-token', [self::class, 'createInviteToken']);
             $group->delete('/{id}/invite-token', [self::class, 'deleteInviteToken']);
@@ -34,7 +35,7 @@ class EventRoutes
     }
 
     /**
-     * Build a full event response with participants and observation count.
+     * Build an event response with creator and observation count (no participants).
      */
     private static function buildEventResponse(\PDO $db, array $event): array
     {
@@ -43,21 +44,12 @@ class EventRoutes
         $stmt->execute(['id' => $event['creatorId']]);
         $creator = Helpers::formatUserMinimal($stmt->fetch());
 
-        // Get participants with user info
+        // Get participant count (non-declined)
         $stmt = $db->prepare(
-            'SELECT p.status, u.id, u.name, u.email, u.image
-             FROM Participant p
-             JOIN User u ON u.id = p.userId
-             WHERE p.eventId = :eventId'
+            'SELECT COUNT(*) FROM Participant WHERE eventId = :eventId AND status != :declined'
         );
-        $stmt->execute(['eventId' => $event['id']]);
-        $participants = [];
-        while ($row = $stmt->fetch()) {
-            $participants[] = [
-                'user' => Helpers::formatUserMinimal($row),
-                'status' => $row['status'],
-            ];
-        }
+        $stmt->execute(['eventId' => $event['id'], 'declined' => 'DECLINED']);
+        $participantCount = (int) $stmt->fetchColumn();
 
         // Get observation count
         $stmt = $db->prepare(
@@ -76,7 +68,7 @@ class EventRoutes
             'createdAt' => Helpers::toISOString($event['createdAt']),
             'creatorId' => $event['creatorId'],
             'creator' => $creator,
-            'participants' => $participants,
+            'participantCount' => $participantCount,
             'observationCount' => $obsCount,
         ];
     }
@@ -86,39 +78,39 @@ class EventRoutes
         $user = $request->getAttribute('user');
         $db = Database::getConnection();
         $status = $request->getQueryParams()['status'] ?? null;
+        $limit = min((int) ($request->getQueryParams()['limit'] ?? 50), 100);
+        $offset = max((int) ($request->getQueryParams()['offset'] ?? 0), 0);
 
-        // Get events where user is creator or non-declined participant
-        $stmt = $db->prepare(
-            'SELECT DISTINCT e.* FROM Event e
-             LEFT JOIN Participant p ON p.eventId = e.id AND p.userId = :userId2
-             WHERE e.creatorId = :userId OR (p.userId = :userId3 AND p.status != :declined) OR e.isPublic = 1
-             ORDER BY e.startsAt DESC'
-        );
-        $stmt->execute([
-            'userId' => $user['id'],
-            'userId2' => $user['id'],
-            'userId3' => $user['id'],
-            'declined' => 'DECLINED',
-        ]);
+        // Build status filter in SQL
+        $statusCondition = '';
+        if ($status === 'active') {
+            $statusCondition = 'AND e.startsAt <= NOW() AND e.endsAt >= NOW()';
+        } elseif ($status === 'upcoming') {
+            $statusCondition = 'AND e.startsAt > NOW()';
+        } elseif ($status === 'past') {
+            $statusCondition = 'AND e.endsAt < NOW()';
+        }
+
+        $sql = "SELECT DISTINCT e.* FROM Event e
+                LEFT JOIN Participant p ON p.eventId = e.id AND p.userId = :userId2
+                WHERE (e.creatorId = :userId OR (p.userId = :userId3 AND p.status != :declined) OR e.isPublic = 1)
+                {$statusCondition}
+                ORDER BY e.startsAt DESC
+                LIMIT :limit OFFSET :offset";
+
+        $stmt = $db->prepare($sql);
+        $stmt->bindValue('userId', $user['id']);
+        $stmt->bindValue('userId2', $user['id']);
+        $stmt->bindValue('userId3', $user['id']);
+        $stmt->bindValue('declined', 'DECLINED');
+        $stmt->bindValue('limit', $limit, \PDO::PARAM_INT);
+        $stmt->bindValue('offset', $offset, \PDO::PARAM_INT);
+        $stmt->execute();
         $events = $stmt->fetchAll();
 
-        $now = new \DateTime('now', new \DateTimeZone('UTC'));
         $result = [];
-
         foreach ($events as $event) {
-            $mapped = self::buildEventResponse($db, $event);
-
-            // Apply status filter
-            if ($status) {
-                $start = new \DateTime($event['startsAt']);
-                $end = new \DateTime($event['endsAt']);
-
-                if ($status === 'active' && !($start <= $now && $end >= $now)) continue;
-                if ($status === 'upcoming' && !($start > $now)) continue;
-                if ($status === 'past' && !($end < $now)) continue;
-            }
-
-            $result[] = $mapped;
+            $result[] = self::buildEventResponse($db, $event);
         }
 
         return Helpers::jsonResponse($response, $result);
@@ -141,6 +133,21 @@ class EventRoutes
         if (empty($body['endsAt'])) {
             $errors['endsAt'] = ['Required'];
         }
+
+        // Validate date formats
+        $startsAtTs = !empty($body['startsAt']) ? strtotime($body['startsAt']) : false;
+        $endsAtTs = !empty($body['endsAt']) ? strtotime($body['endsAt']) : false;
+
+        if (!empty($body['startsAt']) && $startsAtTs === false) {
+            $errors['startsAt'] = ['Invalid date format'];
+        }
+        if (!empty($body['endsAt']) && $endsAtTs === false) {
+            $errors['endsAt'] = ['Invalid date format'];
+        }
+        if ($startsAtTs && $endsAtTs && $endsAtTs <= $startsAtTs) {
+            $errors['endsAt'] = ['End date must be after start date'];
+        }
+
         if (!empty($errors)) {
             return Helpers::jsonResponse($response, [
                 'error' => ['fieldErrors' => $errors, 'formErrors' => []],
@@ -161,8 +168,8 @@ class EventRoutes
             'name' => $body['name'],
             'description' => $body['description'] ?? null,
             'isPublic' => $isPublic ? 1 : 0,
-            'startsAt' => gmdate('Y-m-d H:i:s', strtotime($body['startsAt'])),
-            'endsAt' => gmdate('Y-m-d H:i:s', strtotime($body['endsAt'])),
+            'startsAt' => gmdate('Y-m-d H:i:s', $startsAtTs),
+            'endsAt' => gmdate('Y-m-d H:i:s', $endsAtTs),
             'createdAt' => $now,
             'creatorId' => $user['id'],
         ]);
@@ -384,7 +391,6 @@ class EventRoutes
         $user = $request->getAttribute('user');
         $db = Database::getConnection();
 
-        // Get event with accepted participants
         $stmt = $db->prepare('SELECT * FROM Event WHERE id = :id');
         $stmt->execute(['id' => $args['id']]);
         $event = $stmt->fetch();
@@ -448,7 +454,60 @@ class EventRoutes
         // Sort by unique species descending
         usort($leaderboard, fn($a, $b) => $b['uniqueSpecies'] - $a['uniqueSpecies']);
 
+        $response = $response->withHeader('Cache-Control', 'private, max-age=60');
         return Helpers::jsonResponse($response, $leaderboard);
+    }
+
+    public static function participants(Request $request, Response $response, array $args): Response
+    {
+        $user = $request->getAttribute('user');
+        $db = Database::getConnection();
+
+        $stmt = $db->prepare('SELECT * FROM Event WHERE id = :id');
+        $stmt->execute(['id' => $args['id']]);
+        $event = $stmt->fetch();
+
+        if (!$event) {
+            return Helpers::jsonResponse($response, ['error' => 'Event not found'], 404);
+        }
+
+        // Check membership
+        $stmt = $db->prepare(
+            'SELECT 1 FROM Participant WHERE eventId = :eventId AND userId = :userId'
+        );
+        $stmt->execute(['eventId' => $args['id'], 'userId' => $user['id']]);
+        $isParticipant = $stmt->fetch();
+        $isCreator = $event['creatorId'] === $user['id'];
+
+        if (!$isCreator && !$isParticipant && !$event['isPublic']) {
+            return Helpers::jsonResponse($response, ['error' => 'Not a member of this event'], 403);
+        }
+
+        $limit = min((int) ($request->getQueryParams()['limit'] ?? 20), 50);
+        $offset = max((int) ($request->getQueryParams()['offset'] ?? 0), 0);
+
+        $stmt = $db->prepare(
+            'SELECT p.status, u.id, u.name, u.email, u.image
+             FROM Participant p
+             JOIN User u ON u.id = p.userId
+             WHERE p.eventId = :eventId
+             LIMIT :limit OFFSET :offset'
+        );
+        $stmt->bindValue('eventId', $args['id']);
+        $stmt->bindValue('limit', $limit, \PDO::PARAM_INT);
+        $stmt->bindValue('offset', $offset, \PDO::PARAM_INT);
+        $stmt->execute();
+
+        $participants = [];
+        while ($row = $stmt->fetch()) {
+            $participants[] = [
+                'user' => Helpers::formatUserMinimal($row),
+                'status' => $row['status'],
+            ];
+        }
+
+        $response = $response->withHeader('Cache-Control', 'private, max-age=60');
+        return Helpers::jsonResponse($response, $participants);
     }
 
     public static function participantObservations(Request $request, Response $response, array $args): Response
@@ -464,7 +523,7 @@ class EventRoutes
             return Helpers::jsonResponse($response, ['error' => 'Event not found'], 404);
         }
 
-        // Check membership (same pattern as leaderboard)
+        // Check membership
         $stmt = $db->prepare(
             'SELECT p.userId FROM Participant p WHERE p.eventId = :eventId AND p.status = :status'
         );
@@ -477,16 +536,23 @@ class EventRoutes
             return Helpers::jsonResponse($response, ['error' => 'Not a member of this event'], 403);
         }
 
-        // Fetch observations for this user in this event
+        $limit = min((int) ($request->getQueryParams()['limit'] ?? 50), 100);
+        $offset = max((int) ($request->getQueryParams()['offset'] ?? 0), 0);
+
         $stmt = $db->prepare(
             'SELECT o.*, b.id as b_id, b.swedish as b_swedish, b.family as b_family, b.visitor as b_visitor
              FROM ObservationEvent oe
              JOIN Observation o ON o.id = oe.observationId
              JOIN Bird b ON b.id = o.birdId
              WHERE oe.eventId = :eventId AND o.userId = :userId
-             ORDER BY o.date DESC'
+             ORDER BY o.date DESC
+             LIMIT :limit OFFSET :offset'
         );
-        $stmt->execute(['eventId' => $args['id'], 'userId' => $args['userId']]);
+        $stmt->bindValue('eventId', $args['id']);
+        $stmt->bindValue('userId', $args['userId']);
+        $stmt->bindValue('limit', $limit, \PDO::PARAM_INT);
+        $stmt->bindValue('offset', $offset, \PDO::PARAM_INT);
+        $stmt->execute();
         $rows = $stmt->fetchAll();
 
         $observations = array_map(function ($row) {
@@ -508,7 +574,6 @@ class EventRoutes
         $user = $request->getAttribute('user');
         $db = Database::getConnection();
 
-        // Check event exists and user is creator
         $stmt = $db->prepare('SELECT * FROM Event WHERE id = :id');
         $stmt->execute(['id' => $args['id']]);
         $event = $stmt->fetch();
@@ -520,18 +585,15 @@ class EventRoutes
             return Helpers::jsonResponse($response, ['error' => 'Only the creator can manage invite tokens'], 403);
         }
 
-        // Check event is not past
         $now = new \DateTime('now', new \DateTimeZone('UTC'));
         $end = new \DateTime($event['endsAt'], new \DateTimeZone('UTC'));
         if ($end < $now) {
             return Helpers::jsonResponse($response, ['error' => 'Cannot create invite token for past events'], 400);
         }
 
-        // Delete any existing tokens for this event
         $stmt = $db->prepare('DELETE FROM InviteToken WHERE eventId = :eventId');
         $stmt->execute(['eventId' => $args['id']]);
 
-        // Create new token
         $tokenId = Helpers::generateCuid();
         $token = bin2hex(random_bytes(32));
 
@@ -546,7 +608,6 @@ class EventRoutes
             'createdAt' => Helpers::nowDatetime(),
         ]);
 
-        // Build URL from request
         $uri = $request->getUri();
         $scheme = $uri->getScheme();
         $host = $uri->getHost();
@@ -565,7 +626,6 @@ class EventRoutes
         $user = $request->getAttribute('user');
         $db = Database::getConnection();
 
-        // Check event exists and user is creator
         $stmt = $db->prepare('SELECT * FROM Event WHERE id = :id');
         $stmt->execute(['id' => $args['id']]);
         $event = $stmt->fetch();
@@ -588,7 +648,6 @@ class EventRoutes
         $user = $request->getAttribute('user');
         $db = Database::getConnection();
 
-        // Look up token
         $stmt = $db->prepare('SELECT * FROM InviteToken WHERE token = :token');
         $stmt->execute(['token' => $args['token']]);
         $inviteToken = $stmt->fetch();
@@ -599,7 +658,6 @@ class EventRoutes
 
         $eventId = $inviteToken['eventId'];
 
-        // Verify event is not past
         $stmt = $db->prepare('SELECT * FROM Event WHERE id = :id');
         $stmt->execute(['id' => $eventId]);
         $event = $stmt->fetch();

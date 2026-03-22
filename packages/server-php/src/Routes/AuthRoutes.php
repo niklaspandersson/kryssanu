@@ -6,7 +6,6 @@ namespace Kryssanu\Routes;
 
 use Kryssanu\Database;
 use Kryssanu\Helpers;
-use Kryssanu\Middleware\AuthMiddleware;
 use Slim\App;
 use Slim\Routing\RouteCollectorProxy;
 use Psr\Http\Message\ResponseInterface as Response;
@@ -21,7 +20,6 @@ class AuthRoutes
         $app->group('/api/auth', function (RouteCollectorProxy $group) {
             $group->post('/google', [self::class, 'google']);
             $group->post('/logout', [self::class, 'logout']);
-            $group->get('/me', [self::class, 'me'])->add(new AuthMiddleware());
         });
     }
 
@@ -96,14 +94,7 @@ class AuthRoutes
 
             $response = $response->withHeader('Set-Cookie', implode('; ', $cookieParts));
 
-            return Helpers::jsonResponse($response, [
-                'id' => $user['id'],
-                'name' => $user['name'],
-                'email' => $user['email'],
-                'image' => $user['image'],
-                'city' => $user['city'],
-                'about' => $user['about'],
-            ]);
+            return Helpers::jsonResponse($response, Helpers::formatUser($user));
         } catch (\Exception $e) {
             error_log("Google auth error: " . $e->getMessage());
             return Helpers::jsonResponse($response, ['error' => 'Authentication failed'], 500);
@@ -134,9 +125,4 @@ class AuthRoutes
         return Helpers::jsonResponse($response, ['ok' => true]);
     }
 
-    public static function me(Request $request, Response $response): Response
-    {
-        $user = $request->getAttribute('user');
-        return Helpers::jsonResponse($response, $user);
-    }
 }

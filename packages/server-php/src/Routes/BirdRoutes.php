@@ -26,6 +26,7 @@ class BirdRoutes
         $db = Database::getConnection();
         $stmt = $db->query('SELECT * FROM Bird WHERE visitor = 0 ORDER BY swedish ASC');
         $birds = array_map([Helpers::class, 'formatBird'], $stmt->fetchAll());
+        $response = $response->withHeader('Cache-Control', 'public, max-age=86400');
         return Helpers::jsonResponse($response, $birds);
     }
 
@@ -40,6 +41,7 @@ class BirdRoutes
             return Helpers::jsonResponse($response, ['error' => 'Bird not found'], 404);
         }
 
+        $response = $response->withHeader('Cache-Control', 'public, max-age=86400');
         return Helpers::jsonResponse($response, Helpers::formatBird($bird));
     }
 }

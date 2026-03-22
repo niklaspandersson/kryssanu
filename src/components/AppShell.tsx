@@ -3,7 +3,7 @@ import type { RouteSectionProps } from "@solidjs/router";
 import { A } from "@solidjs/router";
 import { useAuth } from "../lib/auth";
 import type { Bird } from "../lib/types";
-import { birds, observations } from "../lib/api";
+import { birds, me as meApi } from "../lib/api";
 import TopNav from "./TopNav";
 import SearchResults from "./SearchResults";
 import QuickAddSheet from "./search/QuickAddSheet";
@@ -27,7 +27,7 @@ export default function AppShell(props: RouteSectionProps) {
   const [allBirds] = createResource(() => searchOpen(), (open) => open ? birds.getAll() : undefined);
   const [observedBirds, { mutate: setObserved }] = createResource(
     () => searchOpen() && user(),
-    () => observations.getObserved()
+    () => meApi.observed()
   );
 
   const filtered = createMemo(() => {
@@ -53,7 +53,7 @@ export default function AppShell(props: RouteSectionProps) {
   async function handleConfirm(data: { note?: string; location?: string }) {
     const bird = selectedBird();
     if (!bird) return;
-    await observations.create({ birdId: bird.id, ...data });
+    await meApi.createObservation({ birdId: bird.id, ...data });
     setObserved((prev) => ({ ...prev, [bird.id]: true }));
     setSheetOpen(false);
     setSelectedBird(null);

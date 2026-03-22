@@ -1,6 +1,6 @@
 import { createSignal, createResource, Show, For } from "solid-js";
 import { A } from "@solidjs/router";
-import { events as eventsApi } from "../lib/api";
+import { events as eventsApi, me as meApi } from "../lib/api";
 import { useAuth } from "../lib/auth";
 import Icon from "../components/Icon";
 import EmptyState from "../components/EmptyState";
@@ -9,12 +9,16 @@ import styles from "./EventsPage.module.css";
 type Tab = "active" | "upcoming" | "past";
 
 export default function EventsPage() {
-  const { isLoggedIn, user } = useAuth();
+  const { isLoggedIn } = useAuth();
   const [tab, setTab] = createSignal<Tab>("active");
 
   const [allEvents, { refetch }] = createResource(
     () => isLoggedIn(),
     () => eventsApi.getAll()
+  );
+  const [memberships] = createResource(
+    () => isLoggedIn(),
+    () => meApi.memberships()
   );
 
   const filtered = () => {
@@ -31,11 +35,8 @@ export default function EventsPage() {
 
   const pendingInvites = () => {
     const list = allEvents() ?? [];
-    const userId = user()?.id;
-    if (!userId) return [];
-    return list.filter((e) =>
-      e.participants.some((p) => p.user.id === userId && p.status === "INVITED")
-    );
+    const m = memberships() ?? {};
+    return list.filter((e) => m[e.id] === "INVITED");
   };
 
   async function handleRespond(eventId: string, status: "ACCEPTED" | "DECLINED") {
@@ -118,7 +119,7 @@ export default function EventsPage() {
                     {new Date(event.endsAt).toLocaleDateString("sv-SE")}
                   </span>
                   <span class={styles.eventMeta}>
-                    {event.participants.length} deltagare · {event.observationCount} obs
+                    {event.participantCount} deltagare · {event.observationCount} obs
                   </span>
                 </div>
                 <Icon name="chevron_right" />

@@ -80,11 +80,17 @@ export type ParticipantWithUser = {
   status: ParticipantStatus;
 };
 
-export type EventWithParticipants = Event & {
+export type EventWithDetails = Event & {
   creator: User;
-  participants: ParticipantWithUser[];
+  participantCount: number;
   observationCount: number;
 };
+
+/** @deprecated Use EventWithDetails */
+export type EventWithParticipants = EventWithDetails;
+
+// ── Memberships ─────────────────────────────────────────────────────
+export type Memberships = Record<string, ParticipantStatus>;
 
 // ── User Stats ────────────────────────────────────────────────────
 export type UserStats = {

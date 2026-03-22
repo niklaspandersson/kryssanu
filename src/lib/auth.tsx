@@ -7,7 +7,7 @@ import {
 } from "solid-js";
 import { useNavigate } from "@solidjs/router";
 import type { User } from "./types";
-import { auth } from "./api";
+import { auth, me } from "./api";
 
 type AuthContextValue = {
   user: () => User | null;
@@ -50,8 +50,8 @@ export function AuthProvider(props: { children: JSX.Element }) {
 
   onMount(async () => {
     try {
-      const me = await auth.me();
-      setUser(me);
+      const user = await me.get();
+      setUser(user);
     } catch {
       // Not logged in
     } finally {

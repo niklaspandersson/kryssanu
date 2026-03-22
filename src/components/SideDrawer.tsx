@@ -2,7 +2,7 @@ import { Show, For, createResource } from "solid-js";
 import { A } from "@solidjs/router";
 import { events as eventsApi } from "../lib/api";
 import { useAuth } from "../lib/auth";
-import type { EventWithParticipants } from "../lib/types";
+import type { EventWithDetails } from "../lib/types";
 import styles from "./SideDrawer.module.css";
 
 type Props = {
@@ -10,11 +10,11 @@ type Props = {
   onClose: () => void;
 };
 
-function categorizeEvents(list: EventWithParticipants[]) {
+function categorizeEvents(list: EventWithDetails[]) {
   const now = Date.now();
-  const ongoing: EventWithParticipants[] = [];
-  const upcoming: EventWithParticipants[] = [];
-  const past: EventWithParticipants[] = [];
+  const ongoing: EventWithDetails[] = [];
+  const upcoming: EventWithDetails[] = [];
+  const past: EventWithDetails[] = [];
 
   for (const e of list) {
     const start = new Date(e.startsAt).getTime();
@@ -25,7 +25,7 @@ function categorizeEvents(list: EventWithParticipants[]) {
   }
 
   // Prioritize: ongoing first, then upcoming, then past — max 5 total
-  const result: { event: EventWithParticipants; status: "ongoing" | "upcoming" | "past" }[] = [];
+  const result: { event: EventWithDetails; status: "ongoing" | "upcoming" | "past" }[] = [];
   for (const e of ongoing) {
     if (result.length >= 5) break;
     result.push({ event: e, status: "ongoing" });

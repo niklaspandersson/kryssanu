@@ -50,12 +50,10 @@ $app->addErrorMiddleware(
 // Register routes
 $routeFiles = [
     'AuthRoutes',
+    'MeRoutes',
     'BirdRoutes',
-    'UserRoutes',
-    'ObservationRoutes',
     'StatsRoutes',
     'EventRoutes',
-    'FeedRoutes',
     'ExportRoutes',
 ];
 foreach ($routeFiles as $routeClass) {

@@ -1,6 +1,6 @@
 import { createResource, Show, For } from "solid-js";
 import { A } from "@solidjs/router";
-import { feed, stats as statsApi, events as eventsApi, observations } from "../lib/api";
+import { feed, me as meApi, events as eventsApi } from "../lib/api";
 import { useAuth } from "../lib/auth";
 import StatCard from "../components/StatCard";
 import Avatar from "../components/Avatar";
@@ -11,10 +11,10 @@ import styles from "./FeedPage.module.css";
 export default function FeedPage() {
   const { user, isLoggedIn } = useAuth();
 
-  const [myStats] = createResource(() => isLoggedIn(), () => statsApi.me());
+  const [myStats] = createResource(() => isLoggedIn(), () => meApi.stats());
   const [feedData] = createResource(() => isLoggedIn(), () => feed.get());
   const [activeEvents] = createResource(() => isLoggedIn(), () => eventsApi.getAll("active"));
-  const [latestObs] = createResource(() => isLoggedIn(), () => observations.latest());
+  const [latestObs] = createResource(() => isLoggedIn(), () => meApi.observations());
 
   function remaining(endsAt: string) {
     const diff = new Date(endsAt).getTime() - Date.now();
@@ -60,7 +60,7 @@ export default function FeedPage() {
                 <div class={styles.eventInfo}>
                   <span class={styles.eventName}>{event.name}</span>
                   <span class={styles.eventMeta}>
-                    {event.participants.length} deltagare · {remaining(event.endsAt)}
+                    {event.participantCount} deltagare · {remaining(event.endsAt)}
                   </span>
                 </div>
                 <Icon name="chevron_right" />

@@ -8,12 +8,13 @@ import type {
   UserStats,
   CreateObservationInput,
   CreateEventInput,
-  EventWithParticipants,
+  EventWithDetails,
   LeaderboardEntry,
   FeedItem,
   ParticipantWithUser,
   UpdateProfileInput,
   InviteTokenResponse,
+  Memberships,
 } from './types';
 
 const BASE = '/api';
@@ -32,7 +33,6 @@ async function fetchJson<T>(url: string, init?: RequestInit): Promise<T> {
 
 // ── Auth ────────────────────────────────────────────────────────────
 export const auth = {
-  me: () => fetchJson<User>('/auth/me'),
   loginWithGoogle: (credential: string) =>
     fetchJson<User>('/auth/google', {
       method: 'POST',
@@ -41,38 +41,52 @@ export const auth = {
   logout: () => fetchJson<{ ok: boolean }>('/auth/logout', { method: 'POST' }),
 };
 
+// ── Me (current user) ──────────────────────────────────────────────
+export const me = {
+  get: () => fetchJson<User>('/me'),
+  update: (input: UpdateProfileInput) =>
+    fetchJson<User>('/me', {
+      method: 'PATCH',
+      body: JSON.stringify(input),
+    }),
+  stats: () => fetchJson<UserStats>('/me/stats'),
+  checklist: () => fetchJson<ChecklistData>('/me/checklist'),
+  observed: () => fetchJson<ObservedBirds>('/me/observed'),
+  observations: (opts: { limit?: number; offset?: number } = {}) => {
+    const params = new URLSearchParams();
+    if (opts.limit != null) params.set('limit', String(opts.limit));
+    if (opts.offset != null) params.set('offset', String(opts.offset));
+    const qs = params.toString();
+    return fetchJson<ObservationWithBird[]>(`/me/observations${qs ? `?${qs}` : ''}`);
+  },
+  observationsForBird: (birdId: string) =>
+    fetchJson<Observation[]>(
+      `/me/observations/bird/${encodeURIComponent(birdId)}`
+    ),
+  createObservation: (input: CreateObservationInput) =>
+    fetchJson<Observation>('/me/observations', {
+      method: 'POST',
+      body: JSON.stringify(input),
+    }),
+  memberships: () => fetchJson<Memberships>('/me/memberships'),
+};
+
 // ── Birds ───────────────────────────────────────────────────────────
 export const birds = {
   getAll: () => fetchJson<Bird[]>('/birds'),
   getOne: (id: string) => fetchJson<Bird>(`/birds/${encodeURIComponent(id)}`),
 };
 
-// ── Observations ────────────────────────────────────────────────────
-export const observations = {
-  getObserved: () => fetchJson<ObservedBirds>('/observations/observed'),
-  checklist: () => fetchJson<ChecklistData>('/observations/checklist'),
-  getForBird: (birdId: string) =>
-    fetchJson<Observation[]>(
-      `/observations/bird/${encodeURIComponent(birdId)}`
-    ),
-  latest: () => fetchJson<ObservationWithBird[]>('/observations/latest'),
-  create: (input: CreateObservationInput) =>
-    fetchJson<Observation>('/observations', {
-      method: 'POST',
-      body: JSON.stringify(input),
-    }),
-};
-
 // ── Events ──────────────────────────────────────────────────────────
 export const events = {
   getAll: (status?: string) =>
-    fetchJson<EventWithParticipants[]>(
+    fetchJson<EventWithDetails[]>(
       `/events${status ? `?status=${status}` : ''}`
     ),
   getOne: (id: string) =>
-    fetchJson<EventWithParticipants>(`/events/${encodeURIComponent(id)}`),
+    fetchJson<EventWithDetails>(`/events/${encodeURIComponent(id)}`),
   create: (input: CreateEventInput) =>
-    fetchJson<EventWithParticipants>('/events', {
+    fetchJson<EventWithDetails>('/events', {
       method: 'POST',
       body: JSON.stringify(input),
     }),
@@ -84,17 +98,26 @@ export const events = {
   respond: (eventId: string, status: 'ACCEPTED' | 'DECLINED') =>
     fetchJson<{ status: string }>(
       `/events/${encodeURIComponent(eventId)}/respond`,
-      { method: 'POST', body: JSON.stringify({ status }) }
+      { method: 'PATCH', body: JSON.stringify({ status }) }
     ),
   join: (eventId: string) =>
-    fetchJson<EventWithParticipants>(
+    fetchJson<EventWithDetails>(
       `/events/${encodeURIComponent(eventId)}/join`,
-      { method: 'POST' }
+      { method: 'PUT' }
     ),
   leaderboard: (eventId: string) =>
     fetchJson<LeaderboardEntry[]>(
       `/events/${encodeURIComponent(eventId)}/leaderboard`
     ),
+  participants: (eventId: string, opts: { limit?: number; offset?: number } = {}) => {
+    const params = new URLSearchParams();
+    if (opts.limit != null) params.set('limit', String(opts.limit));
+    if (opts.offset != null) params.set('offset', String(opts.offset));
+    const qs = params.toString();
+    return fetchJson<ParticipantWithUser[]>(
+      `/events/${encodeURIComponent(eventId)}/participants${qs ? `?${qs}` : ''}`
+    );
+  },
   participantObservations: (eventId: string, userId: string) =>
     fetchJson<ObservationWithBird[]>(
       `/events/${encodeURIComponent(eventId)}/participants/${encodeURIComponent(userId)}/observations`
@@ -117,19 +140,8 @@ export const events = {
 
 // ── Stats ───────────────────────────────────────────────────────────
 export const stats = {
-  me: () => fetchJson<UserStats>('/stats/me'),
   user: (userId: string) =>
     fetchJson<UserStats>(`/stats/user/${encodeURIComponent(userId)}`),
-};
-
-// ── Users ───────────────────────────────────────────────────────────
-export const users = {
-  getOne: (id: string) => fetchJson<User>(`/users/${encodeURIComponent(id)}`),
-  updateProfile: (input: UpdateProfileInput) =>
-    fetchJson<User>('/users/me', {
-      method: 'PATCH',
-      body: JSON.stringify(input),
-    }),
 };
 
 // ── Export ──────────────────────────────────────────────────────────
@@ -149,6 +161,6 @@ export const feed = {
     const params = new URLSearchParams({ limit: String(limit) });
     if (cursor) params.set('cursor', cursor);
     if (eventId) params.set('eventId', eventId);
-    return fetchJson<{ items: FeedItem[]; nextCursor: string | null }>(`/feed?${params}`);
+    return fetchJson<{ items: FeedItem[]; nextCursor: string | null }>(`/me/feed?${params}`);
   },
 };

@@ -1,6 +1,6 @@
 import { Show, For, createResource, createSignal } from "solid-js";
 import { useAuth } from "../lib/auth";
-import { stats as statsApi, users as usersApi } from "../lib/api";
+import { me as meApi } from "../lib/api";
 import Avatar from "../components/Avatar";
 import StatCard from "../components/StatCard";
 import EmptyState from "../components/EmptyState";
@@ -13,7 +13,7 @@ export default function ProfilePage() {
   const [about, setAbout] = createSignal("");
   const [saving, setSaving] = createSignal(false);
 
-  const [myStats] = createResource(() => isLoggedIn(), () => statsApi.me());
+  const [myStats] = createResource(() => isLoggedIn(), () => meApi.stats());
 
   function startEditing() {
     const u = user();
@@ -27,7 +27,7 @@ export default function ProfilePage() {
   async function saveProfile() {
     setSaving(true);
     try {
-      const updated = await usersApi.updateProfile({
+      const updated = await meApi.update({
         city: city() || undefined,
         about: about() || undefined,
       });
