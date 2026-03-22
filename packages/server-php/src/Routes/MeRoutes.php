@@ -97,9 +97,6 @@ class MeRoutes
         $user = $request->getAttribute('user');
         $db = Database::getConnection();
 
-        $birds = $db->query('SELECT * FROM Bird WHERE visitor = 0 ORDER BY swedish ASC')->fetchAll();
-        $birds = array_map([Helpers::class, 'formatBird'], $birds);
-
         $stmt = $db->prepare(
             'SELECT birdId, date FROM Observation WHERE userId = :userId ORDER BY date ASC'
         );
@@ -116,7 +113,6 @@ class MeRoutes
         }
 
         return Helpers::jsonResponse($response, [
-            'birds' => $birds,
             'observed' => (object) $observed,
         ]);
     }

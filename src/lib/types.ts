@@ -48,7 +48,6 @@ export type ObservedBirds = Record<string, boolean>;
 
 // ── Checklist ───────────────────────────────────────────────────────
 export type ChecklistData = {
-  birds: Bird[];
   observed: Record<string, string[]>;
 };
 
@@ -114,6 +113,16 @@ export type LeaderboardEntry = {
 export type InviteTokenResponse = {
   token: string;
   url: string;
+};
+
+// ── Pending (offline) observation ─────────────────────────────────
+export type PendingObservation = {
+  id: string;
+  birdId: string;
+  birdName: string;
+  note?: string;
+  location?: string;
+  createdAt: string;
 };
 
 // ── Feed ──────────────────────────────────────────────────────────

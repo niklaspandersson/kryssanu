@@ -1,6 +1,10 @@
 import { createSignal, createResource, createMemo, Show, For, onMount } from "solid-js";
 import { me as meApi, exportApi } from "../lib/api";
 import { useAuth } from "../lib/auth";
+import { allBirds, birdsReady } from "../lib/birdStore";
+import { isOnline } from "../lib/useOnlineStatus";
+import { pendingObs } from "../lib/offlineDb";
+import { refreshPendingCount } from "../lib/offlineSync";
 import Icon from "../components/Icon";
 import EmptyState from "../components/EmptyState";
 import QuickAddSheet from "../components/search/QuickAddSheet";
@@ -37,7 +41,7 @@ export default function MyBirdsPage() {
   const [exportState, setExportState] = createSignal<"idle" | "exporting" | "success" | "error">("idle");
   const [exportUrl, setExportUrl] = createSignal<string | null>(null);
 
-  const [data, { refetch }] = createResource(() => isLoggedIn(), (loggedIn) =>
+  const [observed, { refetch }] = createResource(() => isLoggedIn(), (loggedIn) =>
     loggedIn ? meApi.checklist() : undefined
   );
 
@@ -81,7 +85,7 @@ export default function MyBirdsPage() {
   const currentYear = new Date().getFullYear();
 
   const observedSet = createMemo(() => {
-    const d = data();
+    const d = observed();
     if (!d) return new Set<string>();
     const set = new Set<string>();
     for (const [birdId, dates] of Object.entries(d.observed)) {
@@ -97,10 +101,10 @@ export default function MyBirdsPage() {
   });
 
   const filteredBirds = createMemo(() => {
-    const d = data();
-    if (!d) return [];
+    const birds = allBirds();
+    if (birds.length === 0) return [];
     const obs = observedSet();
-    let list = d.birds;
+    let list = birds;
     if (showMode() === "observed") {
       list = list.filter(b => obs.has(b.id));
     }
@@ -122,22 +126,36 @@ export default function MyBirdsPage() {
   });
 
   const observedCount = createMemo(() => observedSet().size);
-  const totalCount = createMemo(() => data()?.birds.length ?? 0);
+  const totalCount = createMemo(() => allBirds().length);
 
   async function handleQuickAdd(addData: { note?: string; location?: string }) {
     const bird = quickAddBird();
     if (!bird) return;
-    await meApi.createObservation({
-      birdId: bird.id,
-      note: addData.note,
-      location: addData.location,
-    });
+
+    if (isOnline()) {
+      await meApi.createObservation({
+        birdId: bird.id,
+        note: addData.note,
+        location: addData.location,
+      });
+    } else {
+      await pendingObs.add({
+        id: crypto.randomUUID(),
+        birdId: bird.id,
+        birdName: bird.swedish,
+        note: addData.note,
+        location: addData.location,
+        createdAt: new Date().toISOString(),
+      });
+      await refreshPendingCount();
+    }
+
     setQuickAddBird(null);
     refetch();
   }
 
   function firstObsDate(birdId: string): string | null {
-    const d = data();
+    const d = observed();
     if (!d || !d.observed[birdId]) return null;
     const dates = d.observed[birdId];
     if (timeFilter() === "year") {
@@ -188,7 +206,7 @@ export default function MyBirdsPage() {
     <div class={styles.page}>
       <h1 class={styles.heading}>Mina kryss</h1>
 
-      <Show when={data()}>
+      <Show when={birdsReady() && allBirds().length > 0}>
         <div class={styles.toolbar}>
           <div class={styles.summary}>
             <span class={styles.summaryCount}>{observedCount()}</span>
@@ -309,7 +327,7 @@ export default function MyBirdsPage() {
         </Show>
       </Show>
 
-      <Show when={!data() && isLoggedIn()}>
+      <Show when={!birdsReady() && isLoggedIn()}>
         <EmptyState icon="checklist" message="Laddar artlista..." />
       </Show>
 

@@ -17,8 +17,17 @@ class BirdRoutes
     {
         $app->group('/api/birds', function (RouteCollectorProxy $group) {
             $group->get('', [self::class, 'list']);
+            $group->get('/version', [self::class, 'version']);
             $group->get('/{id}', [self::class, 'get']);
         });
+    }
+
+    public static function version(Request $request, Response $response): Response
+    {
+        $db = Database::getConnection();
+        $count = (int) $db->query('SELECT COUNT(*) FROM Bird WHERE visitor = 0')->fetchColumn();
+        $response = $response->withHeader('Cache-Control', 'public, max-age=300');
+        return Helpers::jsonResponse($response, ['version' => $count]);
     }
 
     public static function list(Request $request, Response $response): Response

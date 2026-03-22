@@ -1,5 +1,4 @@
 import type {
-  Bird,
   Observation,
   ObservationWithBird,
   ObservedBirds,
@@ -69,12 +68,6 @@ export const me = {
       body: JSON.stringify(input),
     }),
   memberships: () => fetchJson<Memberships>('/me/memberships'),
-};
-
-// ── Birds ───────────────────────────────────────────────────────────
-export const birds = {
-  getAll: () => fetchJson<Bird[]>('/birds'),
-  getOne: (id: string) => fetchJson<Bird>(`/birds/${encodeURIComponent(id)}`),
 };
 
 // ── Events ──────────────────────────────────────────────────────────

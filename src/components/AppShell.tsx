@@ -1,13 +1,18 @@
-import { createSignal, createResource, createMemo, Show } from "solid-js";
+import { createSignal, createResource, createMemo, Show, ErrorBoundary } from "solid-js";
 import type { RouteSectionProps } from "@solidjs/router";
 import { A } from "@solidjs/router";
 import { useAuth } from "../lib/auth";
 import type { Bird } from "../lib/types";
-import { birds, me as meApi } from "../lib/api";
+import { me as meApi } from "../lib/api";
+import { allBirds } from "../lib/birdStore";
+import { isOnline } from "../lib/useOnlineStatus";
+import { pendingObs } from "../lib/offlineDb";
+import { refreshPendingCount } from "../lib/offlineSync";
 import TopNav from "./TopNav";
 import SearchResults from "./SearchResults";
 import QuickAddSheet from "./search/QuickAddSheet";
 import SideDrawer from "./SideDrawer";
+import OfflineBanner from "./OfflineBanner";
 import styles from "./AppShell.module.css";
 
 const [searchOpen, setSearchOpen] = createSignal(false);
@@ -24,14 +29,19 @@ export default function AppShell(props: RouteSectionProps) {
   const [selectedBird, setSelectedBird] = createSignal<Bird | null>(null);
   const [sheetOpen, setSheetOpen] = createSignal(false);
 
-  const [allBirds] = createResource(() => searchOpen(), (open) => open ? birds.getAll() : undefined);
   const [observedBirds, { mutate: setObserved }] = createResource(
     () => searchOpen() && user(),
-    () => meApi.observed()
+    async () => {
+      try {
+        return await meApi.observed();
+      } catch {
+        return {};
+      }
+    }
   );
 
   const filtered = createMemo(() => {
-    const list = allBirds() ?? [];
+    const list = allBirds();
     const q = query().toLowerCase().trim();
     if (!q) return [];
     return list.filter(
@@ -53,7 +63,21 @@ export default function AppShell(props: RouteSectionProps) {
   async function handleConfirm(data: { note?: string; location?: string }) {
     const bird = selectedBird();
     if (!bird) return;
-    await meApi.createObservation({ birdId: bird.id, ...data });
+
+    if (isOnline()) {
+      await meApi.createObservation({ birdId: bird.id, ...data });
+    } else {
+      await pendingObs.add({
+        id: crypto.randomUUID(),
+        birdId: bird.id,
+        birdName: bird.swedish,
+        note: data.note,
+        location: data.location,
+        createdAt: new Date().toISOString(),
+      });
+      await refreshPendingCount();
+    }
+
     setObserved((prev) => ({ ...prev, [bird.id]: true }));
     setSheetOpen(false);
     setSelectedBird(null);
@@ -78,15 +102,22 @@ export default function AppShell(props: RouteSectionProps) {
         <SideDrawer open={menuOpen()} onClose={() => setMenuOpen(false)} />
       </Show>
       <div class={styles.mainArea}>
+        <OfflineBanner />
         <main class={styles.content}>
-          <Show when={searchOpen()} fallback={props.children}>
-            <SearchResults
-              query={query()}
-              filtered={filtered()}
-              observedBirds={observedBirds() ?? {}}
-              onAdd={handleAdd}
-            />
-          </Show>
+          <ErrorBoundary fallback={
+            <div style={{ padding: '2rem', "text-align": 'center', color: 'var(--text-secondary, #666)' }}>
+              <p>Kunde inte ladda sidan. Kontrollera din internetanslutning och försök igen.</p>
+            </div>
+          }>
+            <Show when={searchOpen()} fallback={props.children}>
+              <SearchResults
+                query={query()}
+                filtered={filtered()}
+                observedBirds={observedBirds() ?? {}}
+                onAdd={handleAdd}
+              />
+            </Show>
+          </ErrorBoundary>
         </main>
       </div>
       <Show when={!searchOpen()}>

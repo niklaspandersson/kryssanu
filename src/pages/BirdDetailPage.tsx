@@ -1,6 +1,7 @@
-import { createResource, Show, For } from "solid-js";
+import { createResource, createMemo, Show, For } from "solid-js";
 import { useParams, A } from "@solidjs/router";
-import { birds, me as meApi } from "../lib/api";
+import { me as meApi } from "../lib/api";
+import { allBirds } from "../lib/birdStore";
 import { useAuth } from "../lib/auth";
 import Icon from "../components/Icon";
 import EmptyState from "../components/EmptyState";
@@ -10,7 +11,7 @@ export default function BirdDetailPage() {
   const params = useParams();
   const { isLoggedIn } = useAuth();
 
-  const [bird] = createResource(() => params.id, birds.getOne);
+  const bird = createMemo(() => allBirds().find(b => b.id === params.id));
   const [obs] = createResource(
     () => (isLoggedIn() ? params.id : null),
     (id) => meApi.observationsForBird(id)
