@@ -108,6 +108,16 @@ export type InviteTokenResponse = {
   url: string;
 };
 
+// ── Pending (offline) observation ─────────────────────────────────
+export type PendingObservation = {
+  id: string;
+  birdId: string;
+  birdName: string;
+  note?: string;
+  location?: string;
+  createdAt: string;
+};
+
 // ── Feed ──────────────────────────────────────────────────────────
 export type FeedItem = {
   id: string;

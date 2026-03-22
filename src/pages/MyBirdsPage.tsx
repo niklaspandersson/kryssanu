@@ -1,6 +1,9 @@
 import { createSignal, createResource, createMemo, Show, For } from "solid-js";
 import { observations } from "../lib/api";
 import { useAuth } from "../lib/auth";
+import { isOnline } from "../lib/useOnlineStatus";
+import { pendingObs } from "../lib/offlineDb";
+import { refreshPendingCount } from "../lib/offlineSync";
 import Icon from "../components/Icon";
 import EmptyState from "../components/EmptyState";
 import QuickAddSheet from "../components/search/QuickAddSheet";
@@ -87,11 +90,25 @@ export default function MyBirdsPage() {
   async function handleQuickAdd(addData: { note?: string; location?: string }) {
     const bird = quickAddBird();
     if (!bird) return;
-    await observations.create({
-      birdId: bird.id,
-      note: addData.note,
-      location: addData.location,
-    });
+
+    if (isOnline()) {
+      await observations.create({
+        birdId: bird.id,
+        note: addData.note,
+        location: addData.location,
+      });
+    } else {
+      await pendingObs.add({
+        id: crypto.randomUUID(),
+        birdId: bird.id,
+        birdName: bird.swedish,
+        note: addData.note,
+        location: addData.location,
+        createdAt: new Date().toISOString(),
+      });
+      await refreshPendingCount();
+    }
+
     setQuickAddBird(null);
     refetch();
   }

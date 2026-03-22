@@ -15,10 +15,14 @@ import type {
   UpdateProfileInput,
   InviteTokenResponse,
 } from './types';
+import { birdCache } from './offlineDb';
 
 const BASE = '/api';
 
 async function fetchJson<T>(url: string, init?: RequestInit): Promise<T> {
+  if (!navigator.onLine) {
+    throw new Error('offline');
+  }
   const res = await fetch(`${BASE}${url}`, {
     credentials: 'include',
     headers: { 'Content-Type': 'application/json' },
@@ -43,7 +47,17 @@ export const auth = {
 
 // ── Birds ───────────────────────────────────────────────────────────
 export const birds = {
-  getAll: () => fetchJson<Bird[]>('/birds'),
+  getAll: async (): Promise<Bird[]> => {
+    try {
+      const list = await fetchJson<Bird[]>('/birds');
+      birdCache.set(list).catch(() => {});
+      return list;
+    } catch (e) {
+      const cached = await birdCache.get();
+      if (cached) return cached;
+      throw e;
+    }
+  },
   getOne: (id: string) => fetchJson<Bird>(`/birds/${encodeURIComponent(id)}`),
 };
 

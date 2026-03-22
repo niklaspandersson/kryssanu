@@ -4,10 +4,14 @@ import { A } from "@solidjs/router";
 import { useAuth } from "../lib/auth";
 import type { Bird } from "../lib/types";
 import { birds, observations } from "../lib/api";
+import { isOnline } from "../lib/useOnlineStatus";
+import { pendingObs } from "../lib/offlineDb";
+import { refreshPendingCount } from "../lib/offlineSync";
 import TopNav from "./TopNav";
 import SearchResults from "./SearchResults";
 import QuickAddSheet from "./search/QuickAddSheet";
 import SideDrawer from "./SideDrawer";
+import OfflineBanner from "./OfflineBanner";
 import styles from "./AppShell.module.css";
 
 const [searchOpen, setSearchOpen] = createSignal(false);
@@ -53,7 +57,21 @@ export default function AppShell(props: RouteSectionProps) {
   async function handleConfirm(data: { note?: string; location?: string }) {
     const bird = selectedBird();
     if (!bird) return;
-    await observations.create({ birdId: bird.id, ...data });
+
+    if (isOnline()) {
+      await observations.create({ birdId: bird.id, ...data });
+    } else {
+      await pendingObs.add({
+        id: crypto.randomUUID(),
+        birdId: bird.id,
+        birdName: bird.swedish,
+        note: data.note,
+        location: data.location,
+        createdAt: new Date().toISOString(),
+      });
+      await refreshPendingCount();
+    }
+
     setObserved((prev) => ({ ...prev, [bird.id]: true }));
     setSheetOpen(false);
     setSelectedBird(null);
@@ -78,6 +96,7 @@ export default function AppShell(props: RouteSectionProps) {
         <SideDrawer open={menuOpen()} onClose={() => setMenuOpen(false)} />
       </Show>
       <div class={styles.mainArea}>
+        <OfflineBanner />
         <main class={styles.content}>
           <Show when={searchOpen()} fallback={props.children}>
             <SearchResults
