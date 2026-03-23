@@ -105,7 +105,7 @@ class ExportRoutes
 
         if ($error) {
             return $response
-                ->withHeader('Location', $appUrl . '/my-birds?export=denied')
+                ->withHeader('Location', $appUrl . '/profile?export=denied')
                 ->withStatus(302);
         }
 
@@ -125,7 +125,7 @@ class ExportRoutes
         $user = $request->getAttribute('user');
         if (!$user) {
             return $response
-                ->withHeader('Location', $appUrl . '/my-birds?export=error')
+                ->withHeader('Location', $appUrl . '/profile?export=error')
                 ->withStatus(302);
         }
 
@@ -140,7 +140,7 @@ class ExportRoutes
             if (isset($token['error'])) {
                 error_log("Google token exchange error: " . ($token['error_description'] ?? $token['error']));
                 return $response
-                    ->withHeader('Location', $appUrl . '/my-birds?export=error')
+                    ->withHeader('Location', $appUrl . '/profile?export=error')
                     ->withStatus(302);
             }
 
@@ -153,7 +153,7 @@ class ExportRoutes
             if (!$refreshToken) {
                 error_log("No refresh token received for user {$userId}");
                 return $response
-                    ->withHeader('Location', $appUrl . '/my-birds?export=error')
+                    ->withHeader('Location', $appUrl . '/profile?export=error')
                     ->withStatus(302);
             }
 
@@ -190,12 +190,12 @@ class ExportRoutes
             }
 
             return $response
-                ->withHeader('Location', $appUrl . '/my-birds?export=ready')
+                ->withHeader('Location', $appUrl . '/profile?export=ready')
                 ->withStatus(302);
         } catch (\Exception $e) {
             error_log("Google OAuth callback error: " . $e->getMessage());
             return $response
-                ->withHeader('Location', $appUrl . '/my-birds?export=error')
+                ->withHeader('Location', $appUrl . '/profile?export=error')
                 ->withStatus(302);
         }
     }

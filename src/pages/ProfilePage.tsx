@@ -1,20 +1,71 @@
-import { Show, For, createResource, createSignal } from "solid-js";
+import { Show, For, createResource, createSignal, createEffect, onMount } from "solid-js";
+import { useLocation } from "@solidjs/router";
 import { useAuth } from "../lib/auth";
-import { me as meApi } from "../lib/api";
+import { me as meApi, exportApi } from "../lib/api";
 import { isOnline } from "../lib/useOnlineStatus";
 import Avatar from "../components/Avatar";
 import StatCard from "../components/StatCard";
 import EmptyState from "../components/EmptyState";
+import Icon from "../components/Icon";
 import styles from "./ProfilePage.module.css";
 
 export default function ProfilePage() {
   const { user, isLoggedIn, signOut, updateUser } = useAuth();
+  const location = useLocation();
   const [editing, setEditing] = createSignal(false);
   const [city, setCity] = createSignal("");
   const [about, setAbout] = createSignal("");
   const [saving, setSaving] = createSignal(false);
 
   const [myStats] = createResource(() => isLoggedIn(), () => meApi.stats());
+  const [exportState, setExportState] = createSignal<"idle" | "exporting" | "success" | "error">("idle");
+
+  async function doExport() {
+    setExportState("exporting");
+    try {
+      const result = await exportApi.exportToSheets();
+      setExportState("success");
+      window.open(result.spreadsheetUrl, "_blank");
+      setTimeout(() => setExportState("idle"), 4000);
+    } catch (e: any) {
+      if (e.message?.startsWith("403")) {
+        try {
+          const { url } = await exportApi.getAuthorizeUrl();
+          window.location.href = url;
+        } catch {
+          setExportState("error");
+          setTimeout(() => setExportState("idle"), 3000);
+        }
+      } else {
+        setExportState("error");
+        setTimeout(() => setExportState("idle"), 3000);
+      }
+    }
+  }
+
+  onMount(() => {
+    const params = new URLSearchParams(window.location.search);
+    const exportParam = params.get("export");
+    if (exportParam === "ready") {
+      history.replaceState(null, "", window.location.pathname);
+      doExport();
+    } else if (exportParam === "denied" || exportParam === "error") {
+      history.replaceState(null, "", window.location.pathname);
+      setExportState("error");
+      setTimeout(() => setExportState("idle"), 3000);
+    }
+
+  });
+
+  createEffect(() => {
+    const hash = location.hash.slice(1);
+    if (!hash) return;
+    // Track myStats so we re-run after async content renders
+    myStats();
+    requestAnimationFrame(() => {
+      document.getElementById(hash)?.scrollIntoView({ behavior: "smooth" });
+    });
+  });
 
   function startEditing() {
     const u = user();
@@ -144,6 +195,36 @@ export default function ProfilePage() {
           </>
         )}
       </Show>
+
+      {/* Export */}
+      <div id="export" class={styles.exportSection}>
+        <h2 class={styles.sectionTitle}>Exportera</h2>
+        <p class={styles.exportDescription}>
+          Exportera dina observationer till ett Google Kalkylark. Arket skapas automatiskt på ditt Google-konto och öppnas i en ny flik.
+        </p>
+        <button
+          class={styles.exportBtn}
+          classList={{
+            [styles.exportBtnSuccess]: exportState() === "success",
+            [styles.exportBtnError]: exportState() === "error",
+          }}
+          onClick={doExport}
+          disabled={exportState() === "exporting" || !isOnline()}
+        >
+          <Icon
+            name={
+              exportState() === "success" ? "check" :
+              exportState() === "error" ? "error_outline" :
+              "download"
+            }
+            size={18}
+          />
+          {exportState() === "exporting" ? "Exporterar..." :
+           exportState() === "success" ? "Exporterad!" :
+           exportState() === "error" ? "Fel vid export" :
+           "Exportera till Google Kalkylark"}
+        </button>
+      </div>
 
     </div>
   );
