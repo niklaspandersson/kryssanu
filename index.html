@@ -16,7 +16,8 @@
   <meta name="apple-mobile-web-app-title" content="Kryssa.nu" />
   <meta name="theme-color" content="#2d6a4f" />
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <script>window.__googleGsiReady = new Promise(r => window.__onGsiLoad = r);</script>
+  <script src="https://accounts.google.com/gsi/client" async defer onload="window.__onGsiLoad()"></script>
 </head>
 <body>
   <div id="root"></div>

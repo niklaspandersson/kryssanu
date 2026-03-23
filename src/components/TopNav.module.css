@@ -128,6 +128,11 @@
   color: var(--color-text-muted);
 }
 
+.loginBtn {
+  display: flex;
+  align-items: center;
+}
+
 /* Hide text labels on small screens, show only icons */
 .tabLabel {
   display: none;

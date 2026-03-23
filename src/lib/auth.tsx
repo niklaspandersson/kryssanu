@@ -79,12 +79,16 @@ export function AuthProvider(props: { children: JSX.Element }) {
   }
 
   function renderGoogleButton(container: HTMLElement) {
-    initGoogle();
-    const google = (window as any).google;
-    if (!google) return;
-    google.accounts.id.renderButton(container, {
-      type: "standard",
-      size: "large",
+    const ready = (window as any).__googleGsiReady as Promise<void> | undefined;
+    if (!ready) return;
+    ready.then(() => {
+      initGoogle();
+      const google = (window as any).google;
+      if (!google) return;
+      google.accounts.id.renderButton(container, {
+        type: "icon",
+        size: "medium",
+      });
     });
   }
 

@@ -1,4 +1,4 @@
-import { createEffect, Show } from "solid-js";
+import { createEffect, onMount, Show } from "solid-js";
 import { A } from "@solidjs/router";
 import { useAuth } from "../lib/auth";
 import Avatar from "./Avatar";
@@ -14,12 +14,23 @@ type Props = {
 };
 
 export default function TopNav(props: Props) {
-  const { user, isLoggedIn } = useAuth();
+  const { user, isLoggedIn, loading, renderGoogleButton } = useAuth();
   let inputRef!: HTMLInputElement;
+  let loginRef!: HTMLDivElement;
 
   createEffect(() => {
     if (props.searchOpen) {
       requestAnimationFrame(() => inputRef?.focus());
+    }
+  });
+
+  onMount(() => {
+    if (!isLoggedIn() && !loading()) renderGoogleButton(loginRef);
+  });
+
+  createEffect(() => {
+    if (!loading() && !isLoggedIn() && loginRef) {
+      renderGoogleButton(loginRef);
     }
   });
 
@@ -64,7 +75,11 @@ export default function TopNav(props: Props) {
             <span class="md-icon">search</span>
           </button>
         </Show>
-        <Show when={isLoggedIn()}>
+        <Show when={isLoggedIn()} fallback={
+          <Show when={!loading()}>
+            <div ref={loginRef} class={styles.loginBtn} />
+          </Show>
+        }>
           <A href="/profile" class={styles.profileBtn}>
             <Avatar name={user()!.name} image={user()!.image} size={28} />
           </A>

@@ -1,16 +1,7 @@
-import { Show, onMount } from "solid-js";
-import { useAuth } from "../lib/auth";
 import { openSearch } from "../components/AppShell";
 import styles from "./HomePage.module.css";
 
 export default function HomePage() {
-  const { isLoggedIn, renderGoogleButton } = useAuth();
-  let loginRef!: HTMLDivElement;
-
-  onMount(() => {
-    if (!isLoggedIn()) renderGoogleButton(loginRef);
-  });
-
   return (
     <div class={styles.page}>
       {/* Hero */}
@@ -64,10 +55,6 @@ export default function HomePage() {
           </div>
         </div>
       </div>
-
-      <Show when={!isLoggedIn()}>
-        <div ref={loginRef} />
-      </Show>
     </div>
   );
 }
