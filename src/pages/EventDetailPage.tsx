@@ -3,6 +3,7 @@ import { useParams, A } from "@solidjs/router";
 import QRCode from "qrcode";
 import { events as eventsApi, feed, me as meApi } from "../lib/api";
 import { useAuth } from "../lib/auth";
+import { isOnline } from "../lib/useOnlineStatus";
 import { openSearch } from "../components/AppShell";
 import Icon from "../components/Icon";
 import Avatar from "../components/Avatar";
@@ -157,10 +158,10 @@ export default function EventDetailPage() {
                     setJoining(false);
                   }
                 }}
-                disabled={joining()}
+                disabled={joining() || !isOnline()}
               >
-                <Icon name="group_add" size={20} />
-                {joining() ? "Går med..." : "Gå med i eventet"}
+                <Icon name={isOnline() ? "group_add" : "cloud_off"} size={20} />
+                {!isOnline() ? "Offline – kan inte gå med" : joining() ? "Går med..." : "Gå med i eventet"}
               </button>
             </Show>
 
@@ -335,8 +336,8 @@ export default function EventDetailPage() {
               </Show>
             </section>
 
-            {/* Invite (creator only, not past events) */}
-            <Show when={isCreator() && !isPast()}>
+            {/* Invite (creator only, not past events, online only) */}
+            <Show when={isCreator() && !isPast() && isOnline()}>
               <section class={styles.section}>
                 <h2 class={styles.sectionTitle}>Bjud in</h2>
                 <button

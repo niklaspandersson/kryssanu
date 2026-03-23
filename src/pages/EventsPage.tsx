@@ -2,6 +2,7 @@ import { createSignal, createResource, Show, For } from "solid-js";
 import { A } from "@solidjs/router";
 import { events as eventsApi, me as meApi } from "../lib/api";
 import { useAuth } from "../lib/auth";
+import { isOnline } from "../lib/useOnlineStatus";
 import Icon from "../components/Icon";
 import EmptyState from "../components/EmptyState";
 import styles from "./EventsPage.module.css";
@@ -48,10 +49,20 @@ export default function EventsPage() {
     <div class={styles.page}>
       <div class={styles.header}>
         <h1 class={styles.heading}>Event</h1>
-        <A href="/events/new" class={styles.createBtn}>
-          <Icon name="add" size={20} />
-          Skapa
-        </A>
+        <Show
+          when={isOnline()}
+          fallback={
+            <span class={styles.createBtnDisabled}>
+              <Icon name="cloud_off" size={20} />
+              Offline
+            </span>
+          }
+        >
+          <A href="/events/new" class={styles.createBtn}>
+            <Icon name="add" size={20} />
+            Skapa
+          </A>
+        </Show>
       </div>
 
       {/* Pending invites */}
@@ -68,12 +79,14 @@ export default function EventsPage() {
                   <button
                     class={styles.acceptBtn}
                     onClick={() => handleRespond(event.id, "ACCEPTED")}
+                    disabled={!isOnline()}
                   >
                     Acceptera
                   </button>
                   <button
                     class={styles.declineBtn}
                     onClick={() => handleRespond(event.id, "DECLINED")}
+                    disabled={!isOnline()}
                   >
                     Avböj
                   </button>

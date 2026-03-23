@@ -8,6 +8,7 @@ import {
 import { useNavigate } from "@solidjs/router";
 import type { User } from "./types";
 import { auth, me } from "./api";
+import { apiCache } from "./offlineDb";
 
 type AuthContextValue = {
   user: () => User | null;
@@ -50,10 +51,19 @@ export function AuthProvider(props: { children: JSX.Element }) {
 
   onMount(async () => {
     try {
-      const user = await me.get();
-      setUser(user);
+      const u = await me.get();
+      setUser(u);
+      localStorage.setItem("kryssanu-user", JSON.stringify(u));
     } catch {
-      // Not logged in
+      // Offline or not logged in — try localStorage
+      const cached = localStorage.getItem("kryssanu-user");
+      if (cached) {
+        try {
+          setUser(JSON.parse(cached));
+        } catch {
+          // Invalid cached data
+        }
+      }
     } finally {
       setLoading(false);
     }
@@ -79,6 +89,8 @@ export function AuthProvider(props: { children: JSX.Element }) {
   }
 
   async function signOut() {
+    localStorage.removeItem("kryssanu-user");
+    await apiCache.clear();
     await auth.logout();
     window.location.href = "/";
   }

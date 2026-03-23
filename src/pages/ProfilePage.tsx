@@ -1,6 +1,7 @@
 import { Show, For, createResource, createSignal } from "solid-js";
 import { useAuth } from "../lib/auth";
 import { me as meApi } from "../lib/api";
+import { isOnline } from "../lib/useOnlineStatus";
 import Avatar from "../components/Avatar";
 import StatCard from "../components/StatCard";
 import EmptyState from "../components/EmptyState";
@@ -99,7 +100,7 @@ export default function ProfilePage() {
                   <button
                     class={styles.saveBtn}
                     onClick={saveProfile}
-                    disabled={saving()}
+                    disabled={saving() || !isOnline()}
                   >
                     {saving() ? "Sparar..." : "Spara"}
                   </button>
@@ -107,8 +108,8 @@ export default function ProfilePage() {
               </div>
             </Show>
 
-            <button class={styles.signOutBtn} onClick={signOut}>
-              Logga ut
+            <button class={styles.signOutBtn} onClick={signOut} disabled={!isOnline()}>
+              {isOnline() ? "Logga ut" : "Logga ut (offline)"}
             </button>
           </div>
         )}

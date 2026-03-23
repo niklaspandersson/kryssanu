@@ -2,6 +2,7 @@ import { Router, Route } from "@solidjs/router";
 import type { RouteSectionProps } from "@solidjs/router";
 import { Show, onMount, type JSX } from "solid-js";
 import { AuthProvider, useAuth } from "./lib/auth";
+import { isOnline } from "./lib/useOnlineStatus";
 import EmptyState from "./components/EmptyState";
 import AppShell from "./components/AppShell";
 import HomePage from "./pages/HomePage";
@@ -29,17 +30,22 @@ function LoginFallback() {
   let loginRef!: HTMLDivElement;
 
   onMount(() => {
-    showOneTap();
-    renderGoogleButton(loginRef);
+    if (isOnline()) {
+      showOneTap();
+      renderGoogleButton(loginRef);
+    }
   });
 
   return (
-    <>
+    <Show
+      when={isOnline()}
+      fallback={<EmptyState icon="cloud_off" message="Du måste vara online för att logga in" />}
+    >
       <EmptyState icon="login" message="Logga in för att fortsätta" />
       <div style={{ display: "flex", "justify-content": "center", "margin-top": "1rem" }}>
         <div ref={loginRef} />
       </div>
-    </>
+    </Show>
   );
 }
 

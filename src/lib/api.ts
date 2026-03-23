@@ -15,19 +15,41 @@ import type {
   InviteTokenResponse,
   Memberships,
 } from './types';
+import { apiCache } from './offlineDb';
+import { isOnline } from './useOnlineStatus';
 
 const BASE = '/api';
 
 async function fetchJson<T>(url: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(`${BASE}${url}`, {
-    credentials: 'include',
-    headers: { 'Content-Type': 'application/json' },
-    ...init,
-  });
-  if (!res.ok) {
-    throw new Error(`${res.status} ${res.statusText}`);
+  const isGet = !init?.method || init.method === 'GET';
+
+  if (isGet && !isOnline()) {
+    const cached = await apiCache.get<T>(url);
+    if (cached) return cached.data;
+    throw new Error('Offline och ingen cachad data tillgänglig');
   }
-  return res.json() as Promise<T>;
+
+  try {
+    const res = await fetch(`${BASE}${url}`, {
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      ...init,
+    });
+    if (!res.ok) {
+      throw new Error(`${res.status} ${res.statusText}`);
+    }
+    const data = await res.json() as T;
+    if (isGet) {
+      apiCache.set(url, data).catch(() => {});
+    }
+    return data;
+  } catch (e) {
+    if (isGet) {
+      const cached = await apiCache.get<T>(url);
+      if (cached) return cached.data;
+    }
+    throw e;
+  }
 }
 
 // ── Auth ────────────────────────────────────────────────────────────

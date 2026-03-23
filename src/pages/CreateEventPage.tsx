@@ -1,6 +1,7 @@
-import { createSignal } from "solid-js";
+import { createSignal, Show } from "solid-js";
 import { useNavigate, A } from "@solidjs/router";
 import { events as eventsApi } from "../lib/api";
+import { isOnline } from "../lib/useOnlineStatus";
 import Icon from "../components/Icon";
 import styles from "./CreateEventPage.module.css";
 
@@ -39,6 +40,13 @@ export default function CreateEventPage() {
         Tillbaka
       </A>
       <h1 class={styles.heading}>Skapa event</h1>
+
+      <Show when={!isOnline()}>
+        <div class={styles.offlineNotice}>
+          <Icon name="cloud_off" size={20} />
+          Du måste vara online för att skapa event.
+        </div>
+      </Show>
 
       <form class={styles.form} onSubmit={handleSubmit}>
         <label class={styles.label}>
@@ -92,7 +100,7 @@ export default function CreateEventPage() {
         <button
           type="submit"
           class={styles.submitBtn}
-          disabled={submitting() || !name() || !startsAt() || !endsAt()}
+          disabled={submitting() || !isOnline() || !name() || !startsAt() || !endsAt()}
         >
           {submitting() ? "Skapar..." : "Skapa event"}
         </button>
