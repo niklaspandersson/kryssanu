@@ -54,6 +54,39 @@ export default function HomePage() {
             </span>
           </div>
         </div>
+        <div class={styles.featureCard}>
+          <div class={styles.featureIconWrapper}>
+            <span class="md-icon">wifi_off</span>
+          </div>
+          <div class={styles.featureText}>
+            <span class={styles.featureTitle}>Fungerar offline</span>
+            <span class={styles.featureDesc}>
+              Kryssa fåglar även utan internet. Dina observationer synkas automatiskt när du är online igen.
+            </span>
+          </div>
+        </div>
+        <div class={styles.featureCard}>
+          <div class={styles.featureIconWrapper}>
+            <span class="md-icon">login</span>
+          </div>
+          <div class={styles.featureText}>
+            <span class={styles.featureTitle}>Logga in med Google</span>
+            <span class={styles.featureDesc}>
+              Snabb och säker inloggning med ditt Google-konto. Inga lösenord att komma ihåg.
+            </span>
+          </div>
+        </div>
+        <div class={styles.featureCard}>
+          <div class={styles.featureIconWrapper}>
+            <span class="md-icon">table_chart</span>
+          </div>
+          <div class={styles.featureText}>
+            <span class={styles.featureTitle}>Exportera till Google Kalkylark</span>
+            <span class={styles.featureDesc}>
+              Exportera dina observationer till Google Kalkylark för att analysera och dela din data.
+            </span>
+          </div>
+        </div>
       </div>
     </div>
   );
