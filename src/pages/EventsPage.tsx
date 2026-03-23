@@ -66,7 +66,7 @@ export default function EventsPage() {
       </div>
 
       {/* Pending invites */}
-      <Show when={pendingInvites().length > 0}>
+      <Show when={isOnline() && pendingInvites().length > 0}>
         <div class={styles.invites}>
           <For each={pendingInvites()}>
             {(event) => (

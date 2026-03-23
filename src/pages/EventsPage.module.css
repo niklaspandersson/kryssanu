@@ -2,6 +2,22 @@
   padding: var(--space-lg);
 }
 
+.offlineBox {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: var(--space-lg) 0;
+}
+
+.offlineText {
+  margin: 0;
+  font-size: var(--font-size-base);
+  color: var(--color-text-muted);
+  font-style: italic;
+  text-align: center;
+}
+
 .header {
   display: flex;
   justify-content: space-between;

@@ -181,43 +181,48 @@ export default function EventDetailPage() {
               <section class={styles.section}>
                 <h2 class={styles.sectionTitle}>Resultat</h2>
                 <Show
-                  when={resultsTop10().length > 0}
-                  fallback={<EmptyState icon="emoji_events" message="Inga observationer registrerades" />}
+                  when={isOnline()}
+                  fallback={<div class={styles.offlineBox}><Icon name="cloud_off" size={24} /><p class={styles.offlineText}>Resultat är inte tillgängliga offline.</p></div>}
                 >
-                  <div class={styles.leaderboard}>
-                    <For each={resultsTop10()}>
-                      {(entry, i) => (
-                        <div class={styles.lbRow} onClick={() => setSelectedParticipant({ id: entry.user.id, name: entry.user.name ?? "Deltagare" })}>
-                          <span class={styles.lbRank}>{i() + 1}</span>
-                          <Avatar name={entry.user.name} image={entry.user.image} size={32} />
-                          <div class={styles.lbInfo}>
-                            <span class={styles.lbName}>{entry.user.name}</span>
-                            <span class={styles.lbMeta}>
-                              {entry.uniqueSpecies} arter · {entry.totalObservations} obs
-                            </span>
-                          </div>
-                        </div>
-                      )}
-                    </For>
-                    {/* Current user if outside top 10 */}
-                    <Show when={currentUserEntry()}>
-                      {(cu) => (
-                        <>
-                          <div class={styles.lbDivider}>···</div>
-                          <div class={`${styles.lbRow} ${styles.lbRowHighlight}`} onClick={() => setSelectedParticipant({ id: cu().entry.user.id, name: cu().entry.user.name ?? "Deltagare" })}>
-                            <span class={styles.lbRank}>{cu().rank}</span>
-                            <Avatar name={cu().entry.user.name} image={cu().entry.user.image} size={32} />
+                  <Show
+                    when={resultsTop10().length > 0}
+                    fallback={<EmptyState icon="emoji_events" message="Inga observationer registrerades" />}
+                  >
+                    <div class={styles.leaderboard}>
+                      <For each={resultsTop10()}>
+                        {(entry, i) => (
+                          <div class={styles.lbRow} onClick={() => setSelectedParticipant({ id: entry.user.id, name: entry.user.name ?? "Deltagare" })}>
+                            <span class={styles.lbRank}>{i() + 1}</span>
+                            <Avatar name={entry.user.name} image={entry.user.image} size={32} />
                             <div class={styles.lbInfo}>
-                              <span class={styles.lbName}>{cu().entry.user.name}</span>
+                              <span class={styles.lbName}>{entry.user.name}</span>
                               <span class={styles.lbMeta}>
-                                {cu().entry.uniqueSpecies} arter · {cu().entry.totalObservations} obs
+                                {entry.uniqueSpecies} arter · {entry.totalObservations} obs
                               </span>
                             </div>
                           </div>
-                        </>
-                      )}
-                    </Show>
-                  </div>
+                        )}
+                      </For>
+                      {/* Current user if outside top 10 */}
+                      <Show when={currentUserEntry()}>
+                        {(cu) => (
+                          <>
+                            <div class={styles.lbDivider}>···</div>
+                            <div class={`${styles.lbRow} ${styles.lbRowHighlight}`} onClick={() => setSelectedParticipant({ id: cu().entry.user.id, name: cu().entry.user.name ?? "Deltagare" })}>
+                              <span class={styles.lbRank}>{cu().rank}</span>
+                              <Avatar name={cu().entry.user.name} image={cu().entry.user.image} size={32} />
+                              <div class={styles.lbInfo}>
+                                <span class={styles.lbName}>{cu().entry.user.name}</span>
+                                <span class={styles.lbMeta}>
+                                  {cu().entry.uniqueSpecies} arter · {cu().entry.totalObservations} obs
+                                </span>
+                              </div>
+                            </div>
+                          </>
+                        )}
+                      </Show>
+                    </div>
+                  </Show>
                 </Show>
               </section>
             </Show>
@@ -227,50 +232,62 @@ export default function EventDetailPage() {
               <section class={styles.section}>
                 <h2 class={styles.sectionTitle}>Topplista</h2>
                 <Show
-                  when={(leaderboard() ?? []).length > 0}
-                  fallback={<EmptyState icon="emoji_events" message="Inga observationer annu" />}
+                  when={isOnline()}
+                  fallback={<div class={styles.offlineBox}><Icon name="cloud_off" size={24} /><p class={styles.offlineText}>Topplistan är inte tillgänglig offline.</p></div>}
                 >
-                  <div class={styles.leaderboard}>
-                    <For each={leaderboard()}>
-                      {(entry, i) => (
-                        <div class={styles.lbRow} onClick={() => setSelectedParticipant({ id: entry.user.id, name: entry.user.name ?? "Deltagare" })}>
-                          <span class={styles.lbRank}>{i() + 1}</span>
-                          <Avatar name={entry.user.name} image={entry.user.image} size={32} />
-                          <div class={styles.lbInfo}>
-                            <span class={styles.lbName}>{entry.user.name}</span>
-                            <span class={styles.lbMeta}>
-                              {entry.uniqueSpecies} arter · {entry.totalObservations} obs
-                            </span>
+                  <Show
+                    when={(leaderboard() ?? []).length > 0}
+                    fallback={<EmptyState icon="emoji_events" message="Inga observationer annu" />}
+                  >
+                    <div class={styles.leaderboard}>
+                      <For each={leaderboard()}>
+                        {(entry, i) => (
+                          <div class={styles.lbRow} onClick={() => setSelectedParticipant({ id: entry.user.id, name: entry.user.name ?? "Deltagare" })}>
+                            <span class={styles.lbRank}>{i() + 1}</span>
+                            <Avatar name={entry.user.name} image={entry.user.image} size={32} />
+                            <div class={styles.lbInfo}>
+                              <span class={styles.lbName}>{entry.user.name}</span>
+                              <span class={styles.lbMeta}>
+                                {entry.uniqueSpecies} arter · {entry.totalObservations} obs
+                              </span>
+                            </div>
                           </div>
-                        </div>
-                      )}
-                    </For>
-                  </div>
+                        )}
+                      </For>
+                    </div>
+                  </Show>
                 </Show>
               </section>
             </Show>
 
             {/* Recent activity (active events) */}
-            <Show when={isActive() && (recentActivity()?.items ?? []).length > 0}>
+            <Show when={isActive()}>
               <section class={styles.section}>
                 <h2 class={styles.sectionTitle}>Senaste aktivitet</h2>
-                <For each={recentActivity()!.items}>
-                  {(item) => (
-                    <div class={styles.activityItem}>
-                      <Avatar name={item.user.name} image={item.user.image} size={28} />
-                      <div class={styles.activityContent}>
-                        <span>
-                          <span class={styles.activityUser}>{item.user.name}</span>
-                          {" "}kryssade{" "}
-                          <span class={styles.activityBird}>{item.bird.swedish}</span>
-                        </span>
-                        <span class={styles.activityDate}>
-                          {new Date(item.date).toLocaleDateString("sv-SE")}
-                        </span>
-                      </div>
-                    </div>
-                  )}
-                </For>
+                <Show
+                  when={isOnline()}
+                  fallback={<div class={styles.offlineBox}><Icon name="cloud_off" size={24} /><p class={styles.offlineText}>Senaste aktivitet är inte tillgänglig offline.</p></div>}
+                >
+                  <Show when={(recentActivity()?.items ?? []).length > 0}>
+                    <For each={recentActivity()!.items}>
+                      {(item) => (
+                        <div class={styles.activityItem}>
+                          <Avatar name={item.user.name} image={item.user.image} size={28} />
+                          <div class={styles.activityContent}>
+                            <span>
+                              <span class={styles.activityUser}>{item.user.name}</span>
+                              {" "}kryssade{" "}
+                              <span class={styles.activityBird}>{item.bird.swedish}</span>
+                            </span>
+                            <span class={styles.activityDate}>
+                              {new Date(item.date).toLocaleDateString("sv-SE")}
+                            </span>
+                          </div>
+                        </div>
+                      )}
+                    </For>
+                  </Show>
+                </Show>
               </section>
             </Show>
 

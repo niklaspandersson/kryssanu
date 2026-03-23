@@ -2,6 +2,7 @@ import { createResource, Show, For } from "solid-js";
 import { A } from "@solidjs/router";
 import { feed, me as meApi, events as eventsApi } from "../lib/api";
 import { useAuth } from "../lib/auth";
+import { isOnline } from "../lib/useOnlineStatus";
 import StatCard from "../components/StatCard";
 import Avatar from "../components/Avatar";
 import EmptyState from "../components/EmptyState";
@@ -48,26 +49,39 @@ export default function FeedPage() {
       </Show>
 
       {/* Active events */}
-      <Show when={(activeEvents() ?? []).length > 0}>
-        <section class={styles.section}>
-          <h2 class={styles.sectionTitle}>
-            <Icon name="event" size={20} />
-            Aktiva event
-          </h2>
-          <For each={activeEvents()}>
-            {(event) => (
-              <A href={`/events/${event.id}`} class={styles.eventCard}>
-                <div class={styles.eventInfo}>
-                  <span class={styles.eventName}>{event.name}</span>
-                  <span class={styles.eventMeta}>
-                    {event.participantCount} deltagare · {remaining(event.endsAt)}
-                  </span>
-                </div>
-                <Icon name="chevron_right" />
-              </A>
-            )}
-          </For>
-        </section>
+      <Show
+        when={isOnline()}
+        fallback={
+          <section class={styles.section}>
+            <h2 class={styles.sectionTitle}>
+              <Icon name="event" size={20} />
+              Aktiva event
+            </h2>
+            <div class={styles.offlineBox}><Icon name="cloud_off" size={24} /><p class={styles.offlineText}>Eventinformation är inte tillgänglig offline.</p></div>
+          </section>
+        }
+      >
+        <Show when={(activeEvents() ?? []).length > 0}>
+          <section class={styles.section}>
+            <h2 class={styles.sectionTitle}>
+              <Icon name="event" size={20} />
+              Aktiva event
+            </h2>
+            <For each={activeEvents()}>
+              {(event) => (
+                <A href={`/events/${event.id}`} class={styles.eventCard}>
+                  <div class={styles.eventInfo}>
+                    <span class={styles.eventName}>{event.name}</span>
+                    <span class={styles.eventMeta}>
+                      {event.participantCount} deltagare · {remaining(event.endsAt)}
+                    </span>
+                  </div>
+                  <Icon name="chevron_right" />
+                </A>
+              )}
+            </For>
+          </section>
+        </Show>
       </Show>
 
       {/* Recent activity */}
@@ -77,35 +91,42 @@ export default function FeedPage() {
           Senaste aktivitet
         </h2>
         <Show
-          when={(feedData()?.items ?? []).length > 0}
+          when={isOnline()}
           fallback={
-            <EmptyState
-              icon="group"
-              message="Inga observationer från andra ännu. Ga med i ett event!"
-            />
+            <div class={styles.offlineBox}><Icon name="cloud_off" size={24} /><p class={styles.offlineText}>Senaste aktivitet är inte tillgänglig offline.</p></div>
           }
         >
-          <For each={feedData()!.items.slice(0, 15)}>
-            {(item) => (
-              <div class={styles.feedItem}>
-                <Avatar
-                  name={item.user.name}
-                  image={item.user.image}
-                  size={32}
-                />
-                <div class={styles.feedContent}>
-                  <span>
-                    <span class={styles.feedUser}>{item.user.name}</span>
-                    {" "}kryssade{" "}
-                    <span class={styles.feedBird}>{item.bird.swedish}</span>
-                  </span>
-                  <span class={styles.feedDate}>
-                    {new Date(item.date).toLocaleDateString("sv-SE")}
-                  </span>
+          <Show
+            when={(feedData()?.items ?? []).length > 0}
+            fallback={
+              <EmptyState
+                icon="group"
+                message="Inga observationer från andra ännu. Ga med i ett event!"
+              />
+            }
+          >
+            <For each={feedData()!.items.slice(0, 15)}>
+              {(item) => (
+                <div class={styles.feedItem}>
+                  <Avatar
+                    name={item.user.name}
+                    image={item.user.image}
+                    size={32}
+                  />
+                  <div class={styles.feedContent}>
+                    <span>
+                      <span class={styles.feedUser}>{item.user.name}</span>
+                      {" "}kryssade{" "}
+                      <span class={styles.feedBird}>{item.bird.swedish}</span>
+                    </span>
+                    <span class={styles.feedDate}>
+                      {new Date(item.date).toLocaleDateString("sv-SE")}
+                    </span>
+                  </div>
                 </div>
-              </div>
-            )}
-          </For>
+              )}
+            </For>
+          </Show>
         </Show>
       </section>      
 
