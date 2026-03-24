@@ -53,7 +53,10 @@ export default function AppShell(props: RouteSectionProps) {
 
   function handleAdd(bird: Bird) {
     if (!isLoggedIn()) {
-      showOneTap();
+      showOneTap(() => {
+        setSelectedBird(bird);
+        setSheetOpen(true);
+      });
       return;
     }
     setSelectedBird(bird);

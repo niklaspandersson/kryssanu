@@ -14,7 +14,7 @@ type AuthContextValue = {
   user: () => User | null;
   loading: () => boolean;
   isLoggedIn: () => boolean;
-  showOneTap: () => void;
+  showOneTap: (onLogin?: () => void) => void;
   renderGoogleButton: (container: HTMLElement) => void;
   signOut: () => Promise<void>;
   updateUser: (updated: User) => void;
@@ -27,13 +27,20 @@ export function AuthProvider(props: { children: JSX.Element }) {
   const [loading, setLoading] = createSignal(true);
   const navigate = useNavigate();
   let googleInitialized = false;
+  let pendingLoginCallback: (() => void) | undefined;
 
   function handleCredentialResponse(response: { credential: string }) {
     auth
       .loginWithGoogle(response.credential)
       .then((u) => {
         setUser(u);
-        navigate("/feed");
+        const cb = pendingLoginCallback;
+        pendingLoginCallback = undefined;
+        if (cb) {
+          cb();
+        } else {
+          navigate("/feed");
+        }
       })
       .catch(console.error);
   }
@@ -70,8 +77,9 @@ export function AuthProvider(props: { children: JSX.Element }) {
     initGoogle();
   });
 
-  function showOneTap() {
+  function showOneTap(onLogin?: () => void) {
     if (loading()) return;
+    pendingLoginCallback = onLogin;
     initGoogle();
     const google = (window as any).google;
     if (!google) return;
