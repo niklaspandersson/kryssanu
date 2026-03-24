@@ -247,17 +247,17 @@ class ExportRoutes
 
             // Fetch all observations with bird data
             $stmt = $db->prepare(
-                'SELECT o.date, o.location, o.note, b.swedish, b.id as birdId, b.family
+                'SELECT o.date, o.location, o.latitude, o.longitude, o.note, b.swedish, b.id as birdId, b.family
                  FROM Observation o
                  JOIN Bird b ON b.id = o.birdId
                  WHERE o.userId = :userId
-                 ORDER BY b.swedish ASC, o.date ASC'
+                 ORDER BY o.date ASC, b.swedish ASC'
             );
             $stmt->execute(['userId' => $user['id']]);
             $observations = $stmt->fetchAll();
 
             // Build spreadsheet data
-            $header = ['Svenskt namn', 'Latinskt namn', 'Familj', 'Datum', 'Plats', 'Anteckning'];
+            $header = ['Svenskt namn', 'Latinskt namn', 'Familj', 'Datum', 'Plats', 'Latitud', 'Longitud', 'Anteckning'];
             $rows = [$header];
             foreach ($observations as $obs) {
                 $date = (new \DateTime($obs['date'], new \DateTimeZone('UTC')))->format('Y-m-d');
@@ -267,6 +267,8 @@ class ExportRoutes
                     $obs['family'],
                     $date,
                     $obs['location'] ?? '',
+                    $obs['latitude'] ?? '',
+                    $obs['longitude'] ?? '',
                     $obs['note'] ?? '',
                 ];
             }
