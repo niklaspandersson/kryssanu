@@ -29,6 +29,8 @@ export async function syncPendingObservations(): Promise<{
           birdId: obs.birdId,
           note: obs.note,
           location: obs.location,
+          latitude: obs.latitude,
+          longitude: obs.longitude,
         });
         await pendingObs.remove(obs.id);
         synced++;

@@ -213,6 +213,19 @@ class MeRoutes
             }
         }
 
+        if (isset($body['latitude'])) {
+            $lat = filter_var($body['latitude'], FILTER_VALIDATE_FLOAT);
+            if ($lat === false || $lat < -90 || $lat > 90) {
+                $errors['latitude'] = ['Must be between -90 and 90'];
+            }
+        }
+        if (isset($body['longitude'])) {
+            $lng = filter_var($body['longitude'], FILTER_VALIDATE_FLOAT);
+            if ($lng === false || $lng < -180 || $lng > 180) {
+                $errors['longitude'] = ['Must be between -180 and 180'];
+            }
+        }
+
         if (!empty($errors)) {
             return Helpers::jsonResponse($response, [
                 'error' => [
@@ -242,8 +255,8 @@ class MeRoutes
         $date = !empty($body['date']) ? gmdate('Y-m-d H:i:s', strtotime($body['date'])) : $now;
 
         $stmt = $db->prepare(
-            'INSERT INTO Observation (id, birdId, userId, note, location, date, createdAt, updatedAt)
-             VALUES (:id, :birdId, :userId, :note, :location, :date, :createdAt, :updatedAt)'
+            'INSERT INTO Observation (id, birdId, userId, note, location, latitude, longitude, date, createdAt, updatedAt)
+             VALUES (:id, :birdId, :userId, :note, :location, :latitude, :longitude, :date, :createdAt, :updatedAt)'
         );
         $stmt->execute([
             'id' => $obsId,
@@ -251,6 +264,8 @@ class MeRoutes
             'userId' => $user['id'],
             'note' => $body['note'] ?? null,
             'location' => $body['location'] ?? null,
+            'latitude' => isset($body['latitude']) ? (float) $body['latitude'] : null,
+            'longitude' => isset($body['longitude']) ? (float) $body['longitude'] : null,
             'date' => $date,
             'createdAt' => $now,
             'updatedAt' => $now,

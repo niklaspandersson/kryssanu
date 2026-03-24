@@ -60,7 +60,7 @@ export default function AppShell(props: RouteSectionProps) {
     setSheetOpen(true);
   }
 
-  async function handleConfirm(data: { note?: string; location?: string }) {
+  async function handleConfirm(data: { note?: string; location?: string; latitude?: number; longitude?: number }) {
     const bird = selectedBird();
     if (!bird) return;
 
@@ -73,6 +73,8 @@ export default function AppShell(props: RouteSectionProps) {
         birdName: bird.swedish,
         note: data.note,
         location: data.location,
+        latitude: data.latitude,
+        longitude: data.longitude,
         createdAt: new Date().toISOString(),
       });
       await refreshPendingCount();

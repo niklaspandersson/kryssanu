@@ -56,6 +56,8 @@ model Observation {
   id        String   @id @default(cuid())
   date      DateTime @default(now())
   location  String?
+  latitude  Float?
+  longitude Float?
   note      String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

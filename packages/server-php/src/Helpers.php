@@ -96,6 +96,8 @@ class Helpers
             'id' => $row['id'],
             'date' => self::toISOString($row['date']),
             'location' => $row['location'],
+            'latitude' => isset($row['latitude']) ? (float) $row['latitude'] : null,
+            'longitude' => isset($row['longitude']) ? (float) $row['longitude'] : null,
             'note' => $row['note'],
             'createdAt' => self::toISOString($row['createdAt']),
             'updatedAt' => self::toISOString($row['updatedAt']),

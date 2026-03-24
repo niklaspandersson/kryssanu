@@ -11,6 +11,8 @@ export type Observation = {
   id: string;
   date: string;
   location: string | null;
+  latitude: number | null;
+  longitude: number | null;
   note: string | null;
   createdAt: string;
   updatedAt: string;
@@ -26,6 +28,8 @@ export type CreateObservationInput = {
   birdId: string;
   note?: string;
   location?: string;
+  latitude?: number;
+  longitude?: number;
 };
 
 // ── User (public-facing) ───────────────────────────────────────────
@@ -122,6 +126,8 @@ export type PendingObservation = {
   birdName: string;
   note?: string;
   location?: string;
+  latitude?: number;
+  longitude?: number;
   createdAt: string;
 };
 

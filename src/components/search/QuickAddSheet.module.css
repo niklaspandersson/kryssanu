@@ -20,6 +20,36 @@
   border-color: var(--color-primary-light);
 }
 
+.locationRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.locationRow .input {
+  flex: 1;
+}
+
+.geoIcon {
+  color: var(--color-primary);
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.geoLoading {
+  animation: pulse 1.2s ease-in-out infinite;
+}
+
+.geoError {
+  color: var(--color-text-secondary, #999);
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
 .confirmBtn {
   width: 100%;
   padding: var(--space-md);
