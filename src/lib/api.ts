@@ -14,6 +14,9 @@ import type {
   UpdateProfileInput,
   InviteTokenResponse,
   Memberships,
+  ListWithDetails,
+  CreateListInput,
+  UpdateListInput,
 } from './types';
 import { apiCache } from './offlineDb';
 import { isOnline } from './useOnlineStatus';
@@ -90,6 +93,41 @@ export const me = {
       body: JSON.stringify(input),
     }),
   memberships: () => fetchJson<Memberships>('/me/memberships'),
+};
+
+// ── Lists ───────────────────────────────────────────────────────────
+export const lists = {
+  getAll: () => fetchJson<ListWithDetails[]>('/me/lists'),
+  getOne: (id: string) =>
+    fetchJson<ListWithDetails>(`/lists/${encodeURIComponent(id)}`),
+  create: (input: CreateListInput) =>
+    fetchJson<ListWithDetails>('/lists', {
+      method: 'POST',
+      body: JSON.stringify(input),
+    }),
+  update: (id: string, input: UpdateListInput) =>
+    fetchJson<ListWithDetails>(`/lists/${encodeURIComponent(id)}`, {
+      method: 'PATCH',
+      body: JSON.stringify(input),
+    }),
+  remove: (id: string) =>
+    fetchJson<{ ok: boolean }>(`/lists/${encodeURIComponent(id)}`, {
+      method: 'DELETE',
+    }),
+  observations: (id: string) =>
+    fetchJson<ObservationWithBird[]>(
+      `/lists/${encodeURIComponent(id)}/observations`
+    ),
+  addObservation: (id: string, observationId: string) =>
+    fetchJson<{ ok: boolean }>(
+      `/lists/${encodeURIComponent(id)}/observations`,
+      { method: 'POST', body: JSON.stringify({ observationId }) }
+    ),
+  removeObservation: (id: string, observationId: string) =>
+    fetchJson<{ ok: boolean }>(
+      `/lists/${encodeURIComponent(id)}/observations/${encodeURIComponent(observationId)}`,
+      { method: 'DELETE' }
+    ),
 };
 
 // ── Events ──────────────────────────────────────────────────────────

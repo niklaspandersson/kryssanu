@@ -30,6 +30,7 @@ export type CreateObservationInput = {
   location?: string;
   latitude?: number;
   longitude?: number;
+  listIds?: string[];
 };
 
 // ── User (public-facing) ───────────────────────────────────────────
@@ -111,6 +112,29 @@ export type LeaderboardEntry = {
   user: User;
   uniqueSpecies: number;
   totalObservations: number;
+};
+
+// ── List ──────────────────────────────────────────────────────────
+export type CreateListInput = {
+  name: string;
+  description?: string;
+};
+
+export type UpdateListInput = {
+  name?: string;
+  description?: string | null;
+};
+
+export type List = {
+  id: string;
+  name: string;
+  description: string | null;
+  createdAt: string;
+  userId: string;
+};
+
+export type ListWithDetails = List & {
+  observationCount: number;
 };
 
 // ── Invite Token ─────────────────────────────────────────────────

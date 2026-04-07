@@ -1,5 +1,5 @@
-import { createSignal, createEffect, Show } from "solid-js";
-import type { Bird } from "../../lib/types";
+import { createSignal, createEffect, Show, For } from "solid-js";
+import type { Bird, ListWithDetails } from "../../lib/types";
 import { useGeolocation } from "../../lib/useGeolocation";
 import { reverseGeocode } from "../../lib/reverseGeocode";
 import BottomSheet from "../BottomSheet";
@@ -9,12 +9,14 @@ import styles from "./QuickAddSheet.module.css";
 type Props = {
   bird: Bird | null;
   open: boolean;
+  lists?: ListWithDetails[];
   onClose: () => void;
   onConfirm: (data: {
     note?: string;
     location?: string;
     latitude?: number;
     longitude?: number;
+    listIds?: string[];
   }) => void;
 };
 
@@ -23,18 +25,28 @@ export default function QuickAddSheet(props: Props) {
   const [location, setLocation] = createSignal("");
   const [reverseLoading, setReverseLoading] = createSignal(false);
   const [userEdited, setUserEdited] = createSignal(false);
+  const [selectedListIds, setSelectedListIds] = createSignal<string[]>([]);
   const { geo, setGeo, requestPosition } = useGeolocation();
+
+  function toggleList(id: string) {
+    setSelectedListIds((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+    );
+  }
 
   function handleConfirm() {
     const g = geo();
+    const ids = selectedListIds();
     props.onConfirm({
       note: note() || undefined,
       location: location() || undefined,
       latitude: g.latitude ?? undefined,
       longitude: g.longitude ?? undefined,
+      listIds: ids.length > 0 ? ids : undefined,
     });
     setNote("");
     setLocation("");
+    setSelectedListIds([]);
     setUserEdited(false);
   }
 
@@ -47,6 +59,7 @@ export default function QuickAddSheet(props: Props) {
     } else {
       setNote("");
       setLocation("");
+      setSelectedListIds([]);
       setUserEdited(false);
       setGeo({ latitude: null, longitude: null, loading: false, error: null });
     }
@@ -105,6 +118,24 @@ export default function QuickAddSheet(props: Props) {
           value={note()}
           onInput={(e) => setNote(e.currentTarget.value)}
         />
+        <Show when={(props.lists ?? []).length > 0}>
+          <div class={styles.listChips}>
+            <For each={props.lists}>
+              {(list) => (
+                <button
+                  type="button"
+                  class={styles.listChip}
+                  classList={{
+                    [styles.listChipActive]: selectedListIds().includes(list.id),
+                  }}
+                  onClick={() => toggleList(list.id)}
+                >
+                  {list.name}
+                </button>
+              )}
+            </For>
+          </div>
+        </Show>
         <button class={styles.confirmBtn} onClick={handleConfirm}>
           Kryssa!
         </button>

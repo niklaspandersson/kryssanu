@@ -54,6 +54,7 @@ $routeFiles = [
     'BirdRoutes',
     'StatsRoutes',
     'EventRoutes',
+    'ListRoutes',
     'ExportRoutes',
 ];
 foreach ($routeFiles as $routeClass) {

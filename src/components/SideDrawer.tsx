@@ -123,6 +123,21 @@ export default function SideDrawer(props: Props) {
               </For>
             </Show>
           </div>
+
+          <div class={styles.divider} />
+
+          {/* Icon-only lists link for rail mode */}
+          <A href="/lists" class={styles.railEventLink} onClick={() => props.onClose()}>
+            <span class="md-icon">format_list_bulleted</span>
+          </A>
+
+          {/* Full lists link for expanded/desktop mode */}
+          <div class={styles.eventsSection}>
+            <A href="/lists" class={styles.navLink} activeClass={styles.activeLink} onClick={() => props.onClose()}>
+              <span class="md-icon">format_list_bulleted</span>
+              <span class={styles.navLabel}>Listor</span>
+            </A>
+          </div>
         </div>
       </aside>
     </>

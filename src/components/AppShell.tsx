@@ -3,7 +3,7 @@ import type { RouteSectionProps } from "@solidjs/router";
 import { A } from "@solidjs/router";
 import { useAuth } from "../lib/auth";
 import type { Bird } from "../lib/types";
-import { me as meApi } from "../lib/api";
+import { me as meApi, lists as listsApi } from "../lib/api";
 import { allBirds } from "../lib/birdStore";
 import { isOnline } from "../lib/useOnlineStatus";
 import { pendingObs } from "../lib/offlineDb";
@@ -40,6 +40,17 @@ export default function AppShell(props: RouteSectionProps) {
     }
   );
 
+  const [userLists] = createResource(
+    () => isLoggedIn(),
+    async () => {
+      try {
+        return await listsApi.getAll();
+      } catch {
+        return [];
+      }
+    }
+  );
+
   const filtered = createMemo(() => {
     const list = allBirds();
     const q = query().toLowerCase().trim();
@@ -63,7 +74,7 @@ export default function AppShell(props: RouteSectionProps) {
     setSheetOpen(true);
   }
 
-  async function handleConfirm(data: { note?: string; location?: string; latitude?: number; longitude?: number }) {
+  async function handleConfirm(data: { note?: string; location?: string; latitude?: number; longitude?: number; listIds?: string[] }) {
     const bird = selectedBird();
     if (!bird) return;
 
@@ -137,6 +148,7 @@ export default function AppShell(props: RouteSectionProps) {
       <QuickAddSheet
         bird={selectedBird()}
         open={sheetOpen()}
+        lists={userLists() ?? []}
         onClose={() => setSheetOpen(false)}
         onConfirm={handleConfirm}
       />

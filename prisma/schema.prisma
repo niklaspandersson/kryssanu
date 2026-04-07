@@ -27,6 +27,7 @@ model User {
   observations  Observation[]
   createdEvents Event[]       @relation("EventCreator")
   participants  Participant[]
+  lists         List[]
   googleToken   GoogleToken?
 }
 
@@ -66,6 +67,7 @@ model Observation {
   bird      Bird     @relation(fields: [birdId], references: [id])
   user      User     @relation(fields: [userId], references: [id])
   events    ObservationEvent[]
+  lists     ObservationList[]
 
   @@index([userId])
   @@index([birdId])
@@ -111,6 +113,30 @@ model Participant {
   @@unique([userId, eventId])
   @@index([userId])
   @@index([eventId])
+}
+
+model List {
+  id           String            @id @default(cuid())
+  name         String
+  description  String?
+  createdAt    DateTime          @default(now())
+  userId       String
+  user         User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  observations ObservationList[]
+
+  @@index([userId])
+}
+
+model ObservationList {
+  observationId String
+  listId        String
+  addedAt       DateTime    @default(now())
+  observation   Observation @relation(fields: [observationId], references: [id], onDelete: Cascade)
+  list          List        @relation(fields: [listId], references: [id], onDelete: Cascade)
+
+  @@id([observationId, listId])
+  @@index([listId])
+  @@index([observationId])
 }
 
 model InviteToken {

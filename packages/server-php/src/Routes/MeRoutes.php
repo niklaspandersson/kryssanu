@@ -27,6 +27,7 @@ class MeRoutes
             $group->post('/observations', [self::class, 'createObservation']);
             $group->get('/memberships', [self::class, 'memberships']);
             $group->get('/feed', [self::class, 'feed']);
+            $group->get('/lists', [self::class, 'lists']);
         })->add(new AuthMiddleware());
     }
 
@@ -295,6 +296,27 @@ class MeRoutes
             }
         }
 
+        // Link to user-selected lists
+        if (!empty($body['listIds']) && is_array($body['listIds'])) {
+            $checkStmt = $db->prepare('SELECT id FROM `List` WHERE id = :id AND userId = :userId');
+            $insertStmt = $db->prepare(
+                'INSERT INTO ObservationList (observationId, listId, addedAt) VALUES (:obsId, :listId, :addedAt)'
+            );
+            foreach ($body['listIds'] as $listId) {
+                if (!is_string($listId)) {
+                    continue;
+                }
+                $checkStmt->execute(['id' => $listId, 'userId' => $user['id']]);
+                if ($checkStmt->fetch()) {
+                    $insertStmt->execute([
+                        'obsId' => $obsId,
+                        'listId' => $listId,
+                        'addedAt' => $now,
+                    ]);
+                }
+            }
+        }
+
         // Fetch the created observation
         $stmt = $db->prepare('SELECT * FROM Observation WHERE id = :id');
         $stmt->execute(['id' => $obsId]);
@@ -400,5 +422,31 @@ class MeRoutes
             'items' => $formatted,
             'nextCursor' => $nextCursor,
         ]);
+    }
+
+    public static function lists(Request $request, Response $response): Response
+    {
+        $user = $request->getAttribute('user');
+        $db = Database::getConnection();
+
+        $stmt = $db->prepare(
+            'SELECT l.*, (SELECT COUNT(*) FROM ObservationList ol WHERE ol.listId = l.id) AS observationCount
+             FROM `List` l
+             WHERE l.userId = :userId
+             ORDER BY l.createdAt DESC'
+        );
+        $stmt->execute(['userId' => $user['id']]);
+        $rows = $stmt->fetchAll();
+
+        $result = array_map(fn($row) => [
+            'id' => $row['id'],
+            'name' => $row['name'],
+            'description' => $row['description'],
+            'createdAt' => Helpers::toISOString($row['createdAt']),
+            'userId' => $row['userId'],
+            'observationCount' => (int) $row['observationCount'],
+        ], $rows);
+
+        return Helpers::jsonResponse($response, $result);
     }
 }
