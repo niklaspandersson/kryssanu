@@ -1,4 +1,4 @@
-import { createSignal, createEffect, Show, For } from "solid-js";
+import { createSignal, createEffect, onCleanup, Show, For } from "solid-js";
 import type { Bird, ListWithDetails } from "../../lib/types";
 import { useGeolocation } from "../../lib/useGeolocation";
 import { reverseGeocode } from "../../lib/reverseGeocode";
@@ -51,12 +51,22 @@ export default function QuickAddSheet(props: Props) {
   }
 
   let locationRef!: HTMLInputElement;
+  let geocodeAbort: AbortController | null = null;
+
+  function cancelGeocode() {
+    geocodeAbort?.abort();
+    geocodeAbort = null;
+    setReverseLoading(false);
+  }
+
+  onCleanup(cancelGeocode);
 
   createEffect(() => {
     if (props.open) {
       requestPosition();
       requestAnimationFrame(() => locationRef?.focus());
     } else {
+      cancelGeocode();
       setNote("");
       setLocation("");
       setSelectedListIds([]);
@@ -67,11 +77,17 @@ export default function QuickAddSheet(props: Props) {
 
   createEffect(() => {
     const g = geo();
+    if (!props.open) return;
     if (g.latitude && g.longitude && !userEdited()) {
+      cancelGeocode();
+      const ctrl = new AbortController();
+      geocodeAbort = ctrl;
       setReverseLoading(true);
-      reverseGeocode(g.latitude, g.longitude).then((name) => {
-        if (name && !userEdited()) setLocation(name);
+      reverseGeocode(g.latitude, g.longitude, ctrl.signal).then((name) => {
+        if (ctrl.signal.aborted || geocodeAbort !== ctrl) return;
+        geocodeAbort = null;
         setReverseLoading(false);
+        if (name && !userEdited() && props.open) setLocation(name);
       });
     }
   });

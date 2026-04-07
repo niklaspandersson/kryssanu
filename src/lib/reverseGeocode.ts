@@ -1,11 +1,12 @@
 export async function reverseGeocode(
   lat: number,
-  lng: number
+  lng: number,
+  signal?: AbortSignal
 ): Promise<string | null> {
   try {
     const res = await fetch(
       `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&accept-language=sv&zoom=14`,
-      { headers: { 'User-Agent': 'kryssa.nu/1.0' } }
+      { headers: { 'User-Agent': 'kryssa.nu/1.0' }, signal }
     );
     if (!res.ok) return null;
     const data = await res.json();

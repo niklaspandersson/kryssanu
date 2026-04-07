@@ -9,10 +9,20 @@ type Props = {
 };
 
 export default function BottomSheet(props: Props) {
+  let downOnOverlay = false;
   return (
     <Show when={props.open}>
-      <div class={styles.overlay} onClick={props.onClose}>
-        <div class={styles.sheet} onClick={(e) => e.stopPropagation()}>
+      <div
+        class={styles.overlay}
+        onPointerDown={(e) => {
+          downOnOverlay = e.target === e.currentTarget;
+        }}
+        onClick={(e) => {
+          if (downOnOverlay && e.target === e.currentTarget) props.onClose();
+          downOnOverlay = false;
+        }}
+      >
+        <div class={styles.sheet}>
           <div class={styles.handle} />
           <Show when={props.title}>
             <h3 class={styles.title}>{props.title}</h3>
