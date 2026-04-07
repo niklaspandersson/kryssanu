@@ -94,6 +94,16 @@
   height: 40px;
 }
 
+.searchBarHidden {
+  position: absolute;
+  width: 0;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+  margin: 0;
+  padding: 0;
+}
+
 .searchBarBtn {
   display: flex;
   align-items: center;

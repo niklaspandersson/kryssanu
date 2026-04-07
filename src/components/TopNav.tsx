@@ -18,12 +18,6 @@ export default function TopNav(props: Props) {
   let inputRef!: HTMLInputElement;
   let loginRef!: HTMLDivElement;
 
-  createEffect(() => {
-    if (props.searchOpen) {
-      requestAnimationFrame(() => inputRef?.focus());
-    }
-  });
-
   onMount(() => {
     if (!isLoggedIn() && !loading()) renderGoogleButton(loginRef);
   });
@@ -50,28 +44,24 @@ export default function TopNav(props: Props) {
         </A>
       </div>
 
-      <Show when={props.searchOpen}>
-        <div class={styles.searchBar}>
-          <button class={styles.searchBarBtn} onClick={() => props.onSearchClose()} aria-label="Tillbaka">
-            <span class="md-icon">arrow_back</span>
-          </button>
-          <input
-            ref={inputRef}
-            type="text"
-            class={styles.searchInput}
-            placeholder="Sök efter fågel..."
-            value={props.query}
-            onInput={(e) => props.onQueryChange(e.currentTarget.value)}
-          />
-          <button class={styles.searchBarBtn} onClick={() => props.onSearchClose()} aria-label="Stäng sök">
-            <span class="md-icon">close</span>
-          </button>
-        </div>
-      </Show>
+      <div class={styles.searchBar} classList={{ [styles.searchBarHidden]: !props.searchOpen }}>
+        <input
+          ref={inputRef}
+          type="text"
+          class={styles.searchInput}
+          placeholder="Sök efter fågel..."
+          value={props.query}
+          onInput={(e) => props.onQueryChange(e.currentTarget.value)}
+          tabIndex={props.searchOpen ? 0 : -1}
+        />
+        <button class={styles.searchBarBtn} onClick={() => props.onSearchClose()} aria-label="Stäng sök" tabIndex={props.searchOpen ? 0 : -1}>
+          <span class="md-icon">close</span>
+        </button>
+      </div>
 
       <div class={styles.actions}>
         <Show when={!props.searchOpen}>
-          <button class={styles.iconBtn} onClick={() => props.onSearchOpen()} aria-label="Sök">
+          <button class={styles.iconBtn} onClick={() => { props.onSearchOpen(); inputRef?.focus(); }} aria-label="Sök">
             <span class="md-icon">search</span>
           </button>
         </Show>
