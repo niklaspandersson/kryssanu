@@ -8,13 +8,14 @@ import { pendingObs } from "../lib/offlineDb";
 import { refreshPendingCount } from "../lib/offlineSync";
 import Icon from "../components/Icon";
 import EmptyState from "../components/EmptyState";
+import BottomSheet from "../components/BottomSheet";
 import QuickAddSheet from "../components/search/QuickAddSheet";
 import type { Bird } from "../lib/types";
 import styles from "./MyBirdsPage.module.css";
 
 type ShowMode = "all" | "observed";
 type TimeFilter = "all" | "year";
-type SortMode = "alpha" | "family";
+type SortMode = "alpha" | "family" | "chrono";
 
 export default function MyBirdsPage() {
   const { isLoggedIn } = useAuth();
@@ -30,6 +31,7 @@ export default function MyBirdsPage() {
   const [showMode, setShowMode] = createSignal<ShowMode>(stored.show ?? "all");
   const [timeFilter, setTimeFilter] = createSignal<TimeFilter>(stored.time ?? "all");
   const [sortMode, setSortMode] = createSignal<SortMode>(stored.sort ?? "alpha");
+  const [filtersOpen, setFiltersOpen] = createSignal(false);
 
   function persistFilters(show: ShowMode, time: TimeFilter, sort: SortMode) {
     localStorage.setItem("mybirds-filters", JSON.stringify({ show, time, sort }));
@@ -61,6 +63,17 @@ export default function MyBirdsPage() {
     return set;
   });
 
+  function latestObsDate(birdId: string): string | null {
+    const d = observed();
+    if (!d || !d.observed[birdId]) return null;
+    const dates = d.observed[birdId];
+    if (timeFilter() === "year") {
+      const yearDates = dates.filter(date => new Date(date).getFullYear() === currentYear);
+      return yearDates.length > 0 ? yearDates[yearDates.length - 1] : null;
+    }
+    return dates[dates.length - 1] ?? null;
+  }
+
   const filteredBirds = createMemo(() => {
     const birds = allBirds();
     if (birds.length === 0) return [];
@@ -71,6 +84,24 @@ export default function MyBirdsPage() {
     }
     if (sortMode() === "alpha") {
       return [...list].sort((a, b) => a.swedish.localeCompare(b.swedish, "sv"));
+    }
+    if (sortMode() === "chrono") {
+      const observedBirds: Bird[] = [];
+      const unobservedBirds: Bird[] = [];
+      for (const b of list) {
+        if (obs.has(b.id)) observedBirds.push(b);
+        else unobservedBirds.push(b);
+      }
+      observedBirds.sort((a, b) => {
+        const da = latestObsDate(a.id);
+        const db = latestObsDate(b.id);
+        if (!da && !db) return 0;
+        if (!da) return 1;
+        if (!db) return -1;
+        return db.localeCompare(da);
+      });
+      unobservedBirds.sort((a, b) => a.swedish.localeCompare(b.swedish, "sv"));
+      return [...observedBirds, ...unobservedBirds];
     }
     return list;
   });
@@ -115,20 +146,30 @@ export default function MyBirdsPage() {
     refetch();
   }
 
-  function firstObsDate(birdId: string): string | null {
+  function displayObsDate(birdId: string): string | null {
     const d = observed();
     if (!d || !d.observed[birdId]) return null;
     const dates = d.observed[birdId];
-    if (timeFilter() === "year") {
-      const yearDates = dates.filter(date => new Date(date).getFullYear() === currentYear);
-      return yearDates.length > 0 ? yearDates[0] : null;
-    }
-    return dates[0] ?? null;
+    const pool = timeFilter() === "year"
+      ? dates.filter(date => new Date(date).getFullYear() === currentYear)
+      : dates;
+    if (pool.length === 0) return null;
+    return sortMode() === "chrono" ? pool[pool.length - 1] : pool[0];
+  }
+
+  const filtersActive = createMemo(
+    () => showMode() !== "all" || timeFilter() !== "all" || sortMode() !== "alpha"
+  );
+
+  function sortLabel(mode: SortMode): string {
+    if (mode === "alpha") return "A–Ö";
+    if (mode === "family") return "Familj";
+    return "Senast först";
   }
 
   function renderBirdRow(bird: Bird) {
     const isObserved = () => observedSet().has(bird.id);
-    const date = () => firstObsDate(bird.id);
+    const date = () => displayObsDate(bird.id);
     return (
       <div
         class={styles.birdRow}
@@ -176,61 +217,25 @@ export default function MyBirdsPage() {
             </span>
           </div>
 
-          {/* Controls */}
-          <div class={styles.controls}>
-          <div class={styles.controlGroup}>
+          <div class={styles.toolbarActions}>
             <button
-              class={styles.controlBtn}
-              classList={{ [styles.controlActive]: showMode() === "all" }}
-              onClick={() => updateShowMode("all")}
+              type="button"
+              class={styles.filterBtn}
+              classList={{ [styles.filterBtnActive]: filtersActive() }}
+              onClick={() => setFiltersOpen(true)}
+              aria-label="Filtrera och sortera"
             >
-              Alla
+              <Icon name="tune" size={18} />
+              <span class={styles.filterBtnLabel}>Filter</span>
+              <Show when={filtersActive()}>
+                <span class={styles.filterDot} aria-hidden="true" />
+              </Show>
             </button>
-            <button
-              class={styles.controlBtn}
-              classList={{ [styles.controlActive]: showMode() === "observed" }}
-              onClick={() => updateShowMode("observed")}
-            >
-              Observerade
-            </button>
-          </div>
-          <div class={styles.controlGroup}>
-            <button
-              class={styles.controlBtn}
-              classList={{ [styles.controlActive]: timeFilter() === "all" }}
-              onClick={() => updateTimeFilter("all")}
-            >
-              Alla år
-            </button>
-            <button
-              class={styles.controlBtn}
-              classList={{ [styles.controlActive]: timeFilter() === "year" }}
-              onClick={() => updateTimeFilter("year")}
-            >
-              {currentYear}
-            </button>
-          </div>
-          <div class={styles.controlGroup}>
-            <button
-              class={styles.controlBtn}
-              classList={{ [styles.controlActive]: sortMode() === "alpha" }}
-              onClick={() => updateSortMode("alpha")}
-            >
-              A-Ö
-            </button>
-            <button
-              class={styles.controlBtn}
-              classList={{ [styles.controlActive]: sortMode() === "family" }}
-              onClick={() => updateSortMode("family")}
-            >
-              Familj
-            </button>
-          </div>
 
-          <A href="/profile#export" class={styles.exportLink} title="Exportera">
-            <Icon name="download" size={18} />
-          </A>
-        </div>
+            <A href="/profile#export" class={styles.exportLink} title="Exportera">
+              <Icon name="download" size={18} />
+            </A>
+          </div>
         </div>
 
         {/* Bird list */}
@@ -272,6 +277,96 @@ export default function MyBirdsPage() {
       <Show when={!birdsReady() && isLoggedIn()}>
         <EmptyState icon="checklist" message="Laddar artlista..." />
       </Show>
+
+      <BottomSheet
+        open={filtersOpen()}
+        onClose={() => setFiltersOpen(false)}
+        title="Filtrera & sortera"
+      >
+        <div class={styles.sheetContent}>
+          <div class={styles.sheetSection}>
+            <div class={styles.sheetLabel}>Visa</div>
+            <div class={styles.sheetSegmented}>
+              <button
+                type="button"
+                class={styles.controlBtn}
+                classList={{ [styles.controlActive]: showMode() === "all" }}
+                onClick={() => updateShowMode("all")}
+              >
+                Alla
+              </button>
+              <button
+                type="button"
+                class={styles.controlBtn}
+                classList={{ [styles.controlActive]: showMode() === "observed" }}
+                onClick={() => updateShowMode("observed")}
+              >
+                Observerade
+              </button>
+            </div>
+          </div>
+
+          <div class={styles.sheetSection}>
+            <div class={styles.sheetLabel}>Tidsperiod</div>
+            <div class={styles.sheetSegmented}>
+              <button
+                type="button"
+                class={styles.controlBtn}
+                classList={{ [styles.controlActive]: timeFilter() === "all" }}
+                onClick={() => updateTimeFilter("all")}
+              >
+                Alla år
+              </button>
+              <button
+                type="button"
+                class={styles.controlBtn}
+                classList={{ [styles.controlActive]: timeFilter() === "year" }}
+                onClick={() => updateTimeFilter("year")}
+              >
+                {currentYear}
+              </button>
+            </div>
+          </div>
+
+          <div class={styles.sheetSection}>
+            <div class={styles.sheetLabel}>Sortering</div>
+            <div class={styles.sheetSegmented}>
+              <button
+                type="button"
+                class={styles.controlBtn}
+                classList={{ [styles.controlActive]: sortMode() === "alpha" }}
+                onClick={() => updateSortMode("alpha")}
+              >
+                {sortLabel("alpha")}
+              </button>
+              <button
+                type="button"
+                class={styles.controlBtn}
+                classList={{ [styles.controlActive]: sortMode() === "family" }}
+                onClick={() => updateSortMode("family")}
+              >
+                {sortLabel("family")}
+              </button>
+              <button
+                type="button"
+                class={styles.controlBtn}
+                classList={{ [styles.controlActive]: sortMode() === "chrono" }}
+                onClick={() => updateSortMode("chrono")}
+              >
+                {sortLabel("chrono")}
+              </button>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            class={styles.sheetDoneBtn}
+            onClick={() => setFiltersOpen(false)}
+          >
+            Klar
+          </button>
+        </div>
+      </BottomSheet>
 
       <QuickAddSheet
         bird={quickAddBird()}

@@ -35,15 +35,75 @@
   color: var(--color-text-muted);
 }
 
-/* ── Controls ────────────────────────────────────────────────── */
-.controls {
+/* ── Toolbar actions (filter trigger + export) ───────────────── */
+.toolbarActions {
   display: flex;
-  flex-wrap: wrap;
+  align-items: center;
   gap: var(--space-sm);
   margin-left: auto;
 }
 
-.controlGroup {
+.filterBtn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: var(--space-sm) var(--space-md);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+
+.filterBtn:hover {
+  color: var(--color-text);
+}
+
+.filterBtnActive {
+  color: var(--color-primary-dark);
+  border-color: var(--color-primary);
+}
+
+.filterBtnLabel {
+  font-size: var(--font-size-xs);
+}
+
+.filterDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  margin-left: 2px;
+}
+
+/* ── Filter sheet content ────────────────────────────────────── */
+.sheetContent {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+  padding-bottom: var(--space-md);
+}
+
+.sheetSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.sheetLabel {
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-muted);
+}
+
+.sheetSegmented {
   display: flex;
   background: var(--color-bg-elevated);
   border-radius: var(--radius-full);
@@ -51,14 +111,19 @@
   border: 1px solid var(--color-border);
 }
 
+.sheetSegmented .controlBtn {
+  flex: 1;
+}
+
 .controlBtn {
   padding: var(--space-sm) var(--space-md);
-  font-size: var(--font-size-xs);
+  font-size: var(--font-size-sm);
   font-weight: 500;
   color: var(--color-text-secondary);
   cursor: pointer;
   transition: all 0.15s;
   white-space: nowrap;
+  text-align: center;
 }
 
 .controlBtn:hover {
@@ -68,6 +133,23 @@
 .controlActive {
   background: var(--color-primary);
   color: white !important;
+}
+
+.sheetDoneBtn {
+  margin-top: var(--space-sm);
+  padding: var(--space-md);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: white;
+  background: var(--color-primary);
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.sheetDoneBtn:hover {
+  background: var(--color-primary-dark);
 }
 
 /* ── Export link ─────────────────────────────────────────────── */
