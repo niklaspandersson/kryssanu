@@ -5,17 +5,11 @@ import Avatar from "./Avatar";
 import styles from "./TopNav.module.css";
 
 type Props = {
-  searchOpen: boolean;
-  query: string;
-  onQueryChange: (q: string) => void;
-  onSearchOpen: () => void;
-  onSearchClose: () => void;
   onMenuOpen: () => void;
 };
 
 export default function TopNav(props: Props) {
   const { user, isLoggedIn, loading, renderGoogleButton } = useAuth();
-  let inputRef!: HTMLInputElement;
   let loginRef!: HTMLDivElement;
 
   onMount(() => {
@@ -38,33 +32,11 @@ export default function TopNav(props: Props) {
         </Show>
         <A href="/" class={styles.brand}>
           <img src="/logo-v2-solid.webp" alt="" class={styles.brandLogo} />
-          <Show when={!props.searchOpen}>
-            <span class={styles.brandText}>kryssa.nu</span>
-          </Show>
+          <span class={styles.brandText}>kryssa.nu</span>
         </A>
       </div>
 
-      <div class={styles.searchBar} classList={{ [styles.searchBarHidden]: !props.searchOpen }}>
-        <input
-          ref={inputRef}
-          type="text"
-          class={styles.searchInput}
-          placeholder="Sök efter fågel..."
-          value={props.query}
-          onInput={(e) => props.onQueryChange(e.currentTarget.value)}
-          tabIndex={props.searchOpen ? 0 : -1}
-        />
-        <button class={styles.searchBarBtn} onClick={() => props.onSearchClose()} aria-label="Stäng sök" tabIndex={props.searchOpen ? 0 : -1}>
-          <span class="md-icon">close</span>
-        </button>
-      </div>
-
       <div class={styles.actions}>
-        <Show when={!props.searchOpen}>
-          <button class={styles.iconBtn} onClick={() => { props.onSearchOpen(); inputRef?.focus(); }} aria-label="Sök">
-            <span class="md-icon">search</span>
-          </button>
-        </Show>
         <Show when={isLoggedIn()} fallback={
           <Show when={!loading()}>
             <div ref={loginRef} class={styles.loginBtn} />

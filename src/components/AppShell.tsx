@@ -9,7 +9,7 @@ import { isOnline } from "../lib/useOnlineStatus";
 import { pendingObs } from "../lib/offlineDb";
 import { refreshPendingCount } from "../lib/offlineSync";
 import TopNav from "./TopNav";
-import SearchResults from "./SearchResults";
+import SearchSheet from "./search/SearchSheet";
 import QuickAddSheet from "./search/QuickAddSheet";
 import SideDrawer from "./SideDrawer";
 import OfflineBanner from "./OfflineBanner";
@@ -106,14 +106,7 @@ export default function AppShell(props: RouteSectionProps) {
 
   return (
     <div class={styles.shell} classList={{ [styles.noSidebar]: !isLoggedIn() }}>
-      <TopNav
-        searchOpen={searchOpen()}
-        query={query()}
-        onQueryChange={setQuery}
-        onSearchOpen={() => setSearchOpen(true)}
-        onSearchClose={handleSearchClose}
-        onMenuOpen={() => setMenuOpen(true)}
-      />
+      <TopNav onMenuOpen={() => setMenuOpen(true)} />
       <Show when={isLoggedIn()}>
         <SideDrawer open={menuOpen()} onClose={() => setMenuOpen(false)} />
       </Show>
@@ -125,26 +118,35 @@ export default function AppShell(props: RouteSectionProps) {
               <p>Kunde inte ladda sidan. Kontrollera din internetanslutning och försök igen.</p>
             </div>
           }>
-            <Show when={searchOpen()} fallback={props.children}>
-              <SearchResults
-                query={query()}
-                filtered={filtered()}
-                observedBirds={observedBirds() ?? {}}
-                onAdd={handleAdd}
-              />
-            </Show>
+            {props.children}
           </ErrorBoundary>
         </main>
       </div>
+      <footer class={styles.footer}>
+        <nav class={styles.footerLinks}>
+          <A href="/about">Om kryssa.nu</A>
+          <A href="/help">Hjälp</A>
+          <A href="/terms">Villkor</A>
+        </nav>
+      </footer>
       <Show when={!searchOpen()}>
-        <footer class={styles.footer}>
-          <nav class={styles.footerLinks}>
-            <A href="/about">Om kryssa.nu</A>
-            <A href="/help">Hjälp</A>
-            <A href="/terms">Villkor</A>
-          </nav>
-        </footer>
+        <button
+          class={styles.fab}
+          onClick={() => setSearchOpen(true)}
+          aria-label="Sök"
+        >
+          <span class="md-icon">search</span>
+        </button>
       </Show>
+      <SearchSheet
+        open={searchOpen()}
+        onClose={handleSearchClose}
+        query={query()}
+        onQueryChange={setQuery}
+        filtered={filtered()}
+        observedBirds={observedBirds() ?? {}}
+        onAdd={handleAdd}
+      />
       <QuickAddSheet
         bird={selectedBird()}
         open={sheetOpen()}

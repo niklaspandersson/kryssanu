@@ -44,6 +44,33 @@
   text-decoration: underline;
 }
 
+.fab {
+  position: fixed;
+  bottom: calc(var(--space-2xl) + env(safe-area-inset-bottom, 0px));
+  right: var(--space-lg);
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 150;
+  box-shadow: var(--shadow-lg);
+  border: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.fab .md-icon {
+  font-size: 24px;
+}
+
+.fab:active {
+  opacity: 0.85;
+}
+
 /* Tablet: push content right for the fixed rail */
 @media (min-width: 750px) {
   .mainArea {

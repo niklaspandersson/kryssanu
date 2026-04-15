@@ -3,6 +3,7 @@ import styles from "./SearchInput.module.css";
 type Props = {
   value: string;
   onInput: (value: string) => void;
+  ref?: HTMLInputElement | ((el: HTMLInputElement) => void);
 };
 
 export default function SearchInput(props: Props) {
@@ -10,6 +11,7 @@ export default function SearchInput(props: Props) {
     <div class={styles.wrapper}>
       <span class="md-icon">search</span>
       <input
+        ref={props.ref}
         type="text"
         class={styles.input}
         placeholder="Sök efter fågel..."

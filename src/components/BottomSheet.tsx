@@ -5,6 +5,7 @@ type Props = {
   open: boolean;
   onClose: () => void;
   title?: string;
+  sheetClass?: string;
   children: JSX.Element;
 };
 
@@ -22,7 +23,7 @@ export default function BottomSheet(props: Props) {
           downOnOverlay = false;
         }}
       >
-        <div class={styles.sheet}>
+        <div class={styles.sheet} classList={{ [props.sheetClass!]: !!props.sheetClass }}>
           <div class={styles.handle} />
           <Show when={props.title}>
             <h3 class={styles.title}>{props.title}</h3>

@@ -1,0 +1,29 @@
+.tallSheet {
+  max-height: 90dvh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Constrain BottomSheet's .body to flex within the sheet */
+.tallSheet > :last-child {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.resultsArea {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+}
