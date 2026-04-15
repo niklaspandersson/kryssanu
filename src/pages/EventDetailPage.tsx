@@ -197,7 +197,7 @@ export default function EventDetailPage() {
                             <div class={styles.lbInfo}>
                               <span class={styles.lbName}>{entry.user.name}</span>
                               <span class={styles.lbMeta}>
-                                {entry.uniqueSpecies} arter · {entry.totalObservations} obs
+                                {entry.uniqueSpecies} arter · {entry.totalObservations} observationer
                               </span>
                             </div>
                           </div>
@@ -214,7 +214,7 @@ export default function EventDetailPage() {
                               <div class={styles.lbInfo}>
                                 <span class={styles.lbName}>{cu().entry.user.name}</span>
                                 <span class={styles.lbMeta}>
-                                  {cu().entry.uniqueSpecies} arter · {cu().entry.totalObservations} obs
+                                  {cu().entry.uniqueSpecies} arter · {cu().entry.totalObservations} observationer
                                 </span>
                               </div>
                             </div>
@@ -248,7 +248,7 @@ export default function EventDetailPage() {
                             <div class={styles.lbInfo}>
                               <span class={styles.lbName}>{entry.user.name}</span>
                               <span class={styles.lbMeta}>
-                                {entry.uniqueSpecies} arter · {entry.totalObservations} obs
+                                {entry.uniqueSpecies} arter · {entry.totalObservations} observationer
                               </span>
                             </div>
                           </div>

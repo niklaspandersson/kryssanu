@@ -132,7 +132,7 @@ export default function EventsPage() {
                     {new Date(event.endsAt).toLocaleDateString("sv-SE")}
                   </span>
                   <span class={styles.eventMeta}>
-                    {event.participantCount} deltagare · {event.observationCount} obs
+                    {event.participantCount} deltagare · {event.observationCount} observationer
                   </span>
                 </div>
                 <Icon name="chevron_right" />

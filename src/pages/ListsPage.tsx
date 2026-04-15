@@ -53,7 +53,7 @@ export default function ListsPage() {
                     {(desc) => <span class={styles.listDesc}>{desc()}</span>}
                   </Show>
                   <span class={styles.listMeta}>
-                    {list.observationCount} obs
+                    {list.observationCount} observationer
                   </span>
                 </div>
                 <Icon name="chevron_right" />
