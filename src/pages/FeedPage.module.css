@@ -1,10 +1,10 @@
 .page {
-  padding: 0 var(--space-lg) var(--space-lg);
+  padding: var(--space-lg);
 }
 
 /* ── Greeting ─────────────────────────────────────────────────── */
 .greeting {
-  padding: var(--space-xl) 0 var(--space-sm);
+  padding: 0;
   margin-bottom: var(--space-xl);
 }
 
