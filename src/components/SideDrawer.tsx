@@ -3,6 +3,7 @@ import { A } from "@solidjs/router";
 import { events as eventsApi } from "../lib/api";
 import { useAuth } from "../lib/auth";
 import type { EventWithDetails } from "../lib/types";
+import { userLists } from "../lib/listStore";
 import styles from "./SideDrawer.module.css";
 
 type Props = {
@@ -131,12 +132,31 @@ export default function SideDrawer(props: Props) {
             <span class="md-icon">format_list_bulleted</span>
           </A>
 
-          {/* Full lists link for expanded/desktop mode */}
+          {/* Full lists section for expanded/desktop mode */}
           <div class={styles.eventsSection}>
             <A href="/lists" class={styles.navLink} activeClass={styles.activeLink} onClick={() => props.onClose()}>
               <span class="md-icon">format_list_bulleted</span>
               <span class={styles.navLabel}>Listor</span>
             </A>
+            <Show
+              when={userLists().length > 0}
+              fallback={
+                <span class={styles.eventItem} style={{ color: "var(--color-text-muted)", "font-size": "var(--font-size-sm)" }}>
+                  Inga listor
+                </span>
+              }
+            >
+              <For each={userLists().slice().sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).slice(0, 5)}>
+                {(list) => (
+                  <A href={`/lists/${list.id}`} class={styles.eventItem} onClick={() => props.onClose()}>
+                    <div class={styles.eventInfo}>
+                      <span class={styles.eventName}>{list.name}</span>
+                      <span class={styles.eventDate}>{list.observationCount} {list.observationCount === 1 ? "kryss" : "kryss"}</span>
+                    </div>
+                  </A>
+                )}
+              </For>
+            </Show>
           </div>
         </div>
       </aside>

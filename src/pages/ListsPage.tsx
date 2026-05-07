@@ -40,7 +40,7 @@ export default function ListsPage() {
         fallback={
           <EmptyState
             icon="format_list_bulleted"
-            message="Du har inga listor än. Skapa en för att gruppera observationer, t.ex. 'Hemma' eller 'Till jobbet'."
+            message="Du har inga listor än. Skapa en för att gruppera observationer, t.ex. 'Hemma' eller 'På väg till jobbet'."
           />
         }
       >
@@ -54,7 +54,7 @@ export default function ListsPage() {
                     {(desc) => <span class={styles.listDesc}>{desc()}</span>}
                   </Show>
                   <span class={shared.cardMeta}>
-                    {list.observationCount} observationer
+                    {list.observationCount} kryss
                   </span>
                 </div>
                 <Icon name="chevron_right" />

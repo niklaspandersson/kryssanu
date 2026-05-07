@@ -142,7 +142,7 @@ export default function ListDetailPage() {
                 <p class={styles.description}>{l().description}</p>
               </Show>
               <div class={styles.meta}>
-                {l().observationCount} observationer
+                {l().observationCount} kryss
               </div>
             </Show>
 
