@@ -3,6 +3,7 @@ import { useNavigate, A } from "@solidjs/router";
 import { events as eventsApi } from "../lib/api";
 import { isOnline } from "../lib/useOnlineStatus";
 import Icon from "../components/Icon";
+import shared from "../styles/shared.module.css";
 import styles from "./CreateEventPage.module.css";
 
 export default function CreateEventPage() {
@@ -34,35 +35,35 @@ export default function CreateEventPage() {
   }
 
   return (
-    <div class={styles.page}>
-      <A href="/events" class={styles.back}>
+    <div class={shared.page}>
+      <A href="/events" class={shared.back}>
         <Icon name="arrow_back" size={18} />
         Tillbaka
       </A>
-      <h1 class={styles.heading}>Skapa event</h1>
+      <h1 class={shared.headingXl}>Skapa event</h1>
 
       <Show when={!isOnline()}>
-        <div class={styles.offlineNotice}>
+        <div class={shared.offlineNotice}>
           <Icon name="cloud_off" size={20} />
           Du måste vara online för att skapa event.
         </div>
       </Show>
 
-      <form class={styles.form} onSubmit={handleSubmit}>
-        <label class={styles.label}>
+      <form class={shared.form} onSubmit={handleSubmit}>
+        <label class={shared.formLabel}>
           Namn *
           <input
             type="text"
-            class={styles.input}
+            class={shared.formInput}
             value={name()}
             onInput={(e) => setName(e.currentTarget.value)}
             required
           />
         </label>
-        <label class={styles.label}>
+        <label class={shared.formLabel}>
           Beskrivning
           <textarea
-            class={styles.textarea}
+            class={shared.formTextarea}
             value={description()}
             onInput={(e) => setDescription(e.currentTarget.value)}
             rows={3}
@@ -77,21 +78,21 @@ export default function CreateEventPage() {
           Publikt event
           <span class={styles.checkboxHint}>Alla kan se och gå med i eventet</span>
         </label>
-        <label class={styles.label}>
+        <label class={shared.formLabel}>
           Startar *
           <input
             type="datetime-local"
-            class={styles.input}
+            class={shared.formInput}
             value={startsAt()}
             onInput={(e) => setStartsAt(e.currentTarget.value)}
             required
           />
         </label>
-        <label class={styles.label}>
+        <label class={shared.formLabel}>
           Slutar *
           <input
             type="datetime-local"
-            class={styles.input}
+            class={shared.formInput}
             value={endsAt()}
             onInput={(e) => setEndsAt(e.currentTarget.value)}
             required
@@ -99,7 +100,7 @@ export default function CreateEventPage() {
         </label>
         <button
           type="submit"
-          class={styles.submitBtn}
+          class={shared.submitBtn}
           disabled={submitting() || !isOnline() || !name() || !startsAt() || !endsAt()}
         >
           {submitting() ? "Skapar..." : "Skapa event"}

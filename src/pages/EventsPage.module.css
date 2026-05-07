@@ -1,69 +1,42 @@
-.page {
-  padding: var(--space-lg);
-}
-
-.offlineBox {
+/* eventName needs flex to lay out name text + publicTag badge */
+.eventName {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: var(--space-xs);
-  padding: var(--space-lg) 0;
+  gap: var(--space-sm);
 }
 
-.offlineText {
-  margin: 0;
-  font-size: var(--font-size-base);
-  color: var(--color-text-muted);
-  font-style: italic;
-  text-align: center;
+.publicTag {
+  font-size: var(--font-size-xs);
+  color: var(--color-primary);
+  background: #e3f2fd;
+  padding: 1px var(--space-sm);
+  border-radius: var(--radius-full);
+  font-weight: 400;
 }
 
-.header {
+/* ── Tabs ─────────────────────────────────────────────────────────── */
+.tabs {
   display: flex;
-  justify-content: space-between;
-  align-items: start;
+  gap: var(--space-xs);
   margin-bottom: var(--space-lg);
+  border-bottom: 1px solid var(--color-border);
 }
 
-.heading {
-  margin: 0;
-  font-size: var(--font-size-xl);
-  font-weight: 700;
-  color: var(--color-primary-dark);
-}
-
-.createBtn {
-  display: flex;
-  align-items: center;
-  gap: var(--space-xs);
+.tab {
   padding: var(--space-sm) var(--space-md);
-  background: var(--color-primary);
-  color: white;
-  border-radius: var(--radius-sm);
   font-size: var(--font-size-sm);
-  font-weight: 500;
-  text-decoration: none;
-}
-
-.createBtnDisabled {
-  display: flex;
-  align-items: center;
-  gap: var(--space-xs);
-  padding: var(--space-sm) var(--space-md);
-  background: var(--color-border);
   color: var(--color-text-muted);
-  border-radius: var(--radius-sm);
-  font-size: var(--font-size-sm);
-  font-weight: 500;
-  cursor: not-allowed;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  transition: color 0.15s;
 }
 
-.acceptBtn:disabled,
-.declineBtn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+.tabActive {
+  color: var(--color-primary);
+  border-bottom-color: var(--color-primary);
 }
 
+/* ── Pending invites ──────────────────────────────────────────────── */
 .invites {
   margin-bottom: var(--space-lg);
 }
@@ -117,67 +90,8 @@
   color: var(--color-text-secondary);
 }
 
-.tabs {
-  display: flex;
-  gap: var(--space-xs);
-  margin-bottom: var(--space-lg);
-  border-bottom: 1px solid var(--color-border);
-}
-
-.tab {
-  padding: var(--space-sm) var(--space-md);
-  font-size: var(--font-size-sm);
-  color: var(--color-text-muted);
-  border-bottom: 2px solid transparent;
-  margin-bottom: -1px;
-  transition: color 0.15s;
-}
-
-.tabActive {
-  color: var(--color-primary);
-  border-bottom-color: var(--color-primary);
-}
-
-.list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-sm);
-}
-
-.eventCard {
-  display: flex;
-  align-items: center;
-  padding: var(--space-md);
-  background: var(--color-bg-card);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  text-decoration: none;
-}
-
-.eventInfo {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.eventName {
-  display: flex;
-  align-items: center;
-  gap: var(--space-sm);
-  font-weight: 600;
-}
-
-.publicTag {
-  font-size: var(--font-size-xs);
-  color: var(--color-primary);
-  background: #e3f2fd;
-  padding: 1px var(--space-sm);
-  border-radius: var(--radius-full);
-  font-weight: 400;
-}
-
-.eventMeta {
-  font-size: var(--font-size-xs);
-  color: var(--color-text-muted);
+.acceptBtn:disabled,
+.declineBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }

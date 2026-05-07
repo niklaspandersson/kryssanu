@@ -1,14 +1,3 @@
-.page {
-  padding: var(--space-lg);
-}
-
-.heading {
-  margin: 0 0 var(--space-md);
-  font-size: var(--font-size-xl);
-  font-weight: 700;
-  color: var(--color-primary-dark);
-}
-
 /* ── Toolbar (summary + controls) ────────────────────────────── */
 .toolbar {
   display: flex;

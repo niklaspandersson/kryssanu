@@ -3,7 +3,7 @@ import { useNavigate, A } from "@solidjs/router";
 import { lists as listsApi } from "../lib/api";
 import { isOnline } from "../lib/useOnlineStatus";
 import Icon from "../components/Icon";
-import styles from "./CreateListPage.module.css";
+import shared from "../styles/shared.module.css";
 
 export default function CreateListPage() {
   const navigate = useNavigate();
@@ -28,36 +28,36 @@ export default function CreateListPage() {
   }
 
   return (
-    <div class={styles.page}>
-      <A href="/lists" class={styles.back}>
+    <div class={shared.page}>
+      <A href="/lists" class={shared.back}>
         <Icon name="arrow_back" size={18} />
         Tillbaka
       </A>
-      <h1 class={styles.heading}>Skapa lista</h1>
+      <h1 class={shared.headingXl}>Skapa lista</h1>
 
       <Show when={!isOnline()}>
-        <div class={styles.offlineNotice}>
+        <div class={shared.offlineNotice}>
           <Icon name="cloud_off" size={20} />
           Du måste vara online för att skapa listor.
         </div>
       </Show>
 
-      <form class={styles.form} onSubmit={handleSubmit}>
-        <label class={styles.label}>
+      <form class={shared.form} onSubmit={handleSubmit}>
+        <label class={shared.formLabel}>
           Namn *
           <input
             type="text"
-            class={styles.input}
+            class={shared.formInput}
             value={name()}
             onInput={(e) => setName(e.currentTarget.value)}
             maxlength={100}
             required
           />
         </label>
-        <label class={styles.label}>
+        <label class={shared.formLabel}>
           Beskrivning
           <textarea
-            class={styles.textarea}
+            class={shared.formTextarea}
             value={description()}
             onInput={(e) => setDescription(e.currentTarget.value)}
             maxlength={500}
@@ -66,7 +66,7 @@ export default function CreateListPage() {
         </label>
         <button
           type="submit"
-          class={styles.submitBtn}
+          class={shared.submitBtn}
           disabled={submitting() || !isOnline() || !name()}
         >
           {submitting() ? "Skapar..." : "Skapa lista"}

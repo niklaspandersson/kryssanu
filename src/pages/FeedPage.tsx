@@ -7,6 +7,7 @@ import StatCard from "../components/StatCard";
 import Avatar from "../components/Avatar";
 import EmptyState from "../components/EmptyState";
 import Icon from "../components/Icon";
+import shared from "../styles/shared.module.css";
 import styles from "./FeedPage.module.css";
 
 export default function FeedPage() {
@@ -27,7 +28,7 @@ export default function FeedPage() {
   }
 
   return (
-    <div class={styles.page}>
+    <div class={shared.page}>
       <div class={styles.greeting}>
         <h2 class={styles.greetingText}>
           Hej, {user()?.name?.split(" ")[0] ?? "du"}!
@@ -52,18 +53,21 @@ export default function FeedPage() {
       <Show
         when={isOnline()}
         fallback={
-          <section class={styles.section}>
-            <h2 class={styles.sectionTitle}>
+          <section class={shared.section}>
+            <h2 class={shared.sectionTitle}>
               <Icon name="event" size={20} />
               Aktiva event
             </h2>
-            <div class={styles.offlineBox}><Icon name="cloud_off" size={24} /><p class={styles.offlineText}>Eventinformation är inte tillgänglig offline.</p></div>
+            <div class={shared.offlineBox}>
+              <Icon name="cloud_off" size={24} />
+              <p class={shared.offlineText}>Eventinformation är inte tillgänglig offline.</p>
+            </div>
           </section>
         }
       >
         <Show when={(activeEvents() ?? []).length > 0}>
-          <section class={styles.section}>
-            <h2 class={styles.sectionTitle}>
+          <section class={shared.section}>
+            <h2 class={shared.sectionTitle}>
               <Icon name="event" size={20} />
               Aktiva event
             </h2>
@@ -85,15 +89,18 @@ export default function FeedPage() {
       </Show>
 
       {/* Recent activity */}
-      <section class={styles.section}>
-        <h2 class={styles.sectionTitle}>
+      <section class={shared.section}>
+        <h2 class={shared.sectionTitle}>
           <Icon name="history" size={20} />
           Senaste aktivitet
         </h2>
         <Show
           when={isOnline()}
           fallback={
-            <div class={styles.offlineBox}><Icon name="cloud_off" size={24} /><p class={styles.offlineText}>Senaste aktivitet är inte tillgänglig offline.</p></div>
+            <div class={shared.offlineBox}>
+              <Icon name="cloud_off" size={24} />
+              <p class={shared.offlineText}>Senaste aktivitet är inte tillgänglig offline.</p>
+            </div>
           }
         >
           <Show
@@ -107,19 +114,19 @@ export default function FeedPage() {
           >
             <For each={feedData()!.items.slice(0, 15)}>
               {(item) => (
-                <div class={styles.feedItem}>
+                <div class={shared.activityItem}>
                   <Avatar
                     name={item.user.name}
                     image={item.user.image}
                     size={32}
                   />
-                  <div class={styles.feedContent}>
+                  <div class={shared.activityContent}>
                     <span>
-                      <span class={styles.feedUser}>{item.user.name}</span>
+                      <span class={shared.activityUser}>{item.user.name}</span>
                       {" "}kryssade{" "}
-                      <span class={styles.feedBird}>{item.bird.swedish}</span>
+                      <span class={shared.activityBird}>{item.bird.swedish}</span>
                     </span>
-                    <span class={styles.feedDate}>
+                    <span class={shared.activityDate}>
                       {new Date(item.date).toLocaleDateString("sv-SE")}
                     </span>
                   </div>
@@ -128,25 +135,25 @@ export default function FeedPage() {
             </For>
           </Show>
         </Show>
-      </section>      
+      </section>
 
       {/* Latest observations */}
       <Show when={(latestObs() ?? []).length > 0}>
-        <section class={styles.section}>
-          <h2 class={styles.sectionTitle}>
+        <section class={shared.section}>
+          <h2 class={shared.sectionTitle}>
             <Icon name="visibility" size={20} />
             Dina senaste observationer
             <A href="/my-birds" class={styles.sectionLink}>Visa alla</A>
           </h2>
           <For each={latestObs()!.slice(0, 5)}>
             {(obs) => (
-              <div class={styles.feedItem}>
-                <div class={styles.feedContent}>
+              <div class={shared.activityItem}>
+                <div class={shared.activityContent}>
                   <span>
-                    <span class={styles.feedBird}>{obs.bird.swedish}</span>
+                    <span class={shared.activityBird}>{obs.bird.swedish}</span>
                     {obs.location && <span class={styles.feedLocation}> · {obs.location}</span>}
                   </span>
-                  <span class={styles.feedDate}>
+                  <span class={shared.activityDate}>
                     {new Date(obs.date).toLocaleDateString("sv-SE")}
                   </span>
                 </div>

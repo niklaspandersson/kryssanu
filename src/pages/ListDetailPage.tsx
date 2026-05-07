@@ -4,6 +4,7 @@ import { lists as listsApi } from "../lib/api";
 import { isOnline } from "../lib/useOnlineStatus";
 import Icon from "../components/Icon";
 import EmptyState from "../components/EmptyState";
+import shared from "../styles/shared.module.css";
 import styles from "./ListDetailPage.module.css";
 
 export default function ListDetailPage() {
@@ -62,8 +63,8 @@ export default function ListDetailPage() {
   }
 
   return (
-    <div class={styles.page}>
-      <A href="/lists" class={styles.back}>
+    <div class={shared.page}>
+      <A href="/lists" class={shared.back}>
         <Icon name="arrow_back" size={18} />
         Tillbaka
       </A>
@@ -114,7 +115,7 @@ export default function ListDetailPage() {
               }
             >
               <div class={styles.headerRow}>
-                <h1 class={styles.heading}>{l().name}</h1>
+                <h1 class={shared.heading}>{l().name}</h1>
                 <Show when={isOnline()}>
                   <div class={styles.headerActions}>
                     <button

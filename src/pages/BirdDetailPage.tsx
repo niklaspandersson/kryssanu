@@ -5,6 +5,7 @@ import { allBirds } from "../lib/birdStore";
 import { useAuth } from "../lib/auth";
 import Icon from "../components/Icon";
 import EmptyState from "../components/EmptyState";
+import shared from "../styles/shared.module.css";
 import styles from "./BirdDetailPage.module.css";
 
 export default function BirdDetailPage() {
@@ -18,8 +19,8 @@ export default function BirdDetailPage() {
   );
 
   return (
-    <div class={styles.page}>
-      <A href="/" class={styles.back}>
+    <div class={shared.page}>
+      <A href="/" class={shared.back}>
         <Icon name="arrow_back" size={18} />
         Tillbaka
       </A>
@@ -27,7 +28,7 @@ export default function BirdDetailPage() {
       <Show when={bird()} fallback={<EmptyState icon="flutter_dash" message="Laddar..." />}>
         {(b) => (
           <>
-            <h1 class={styles.name}>{b().swedish}</h1>
+            <h1 class={shared.heading}>{b().swedish}</h1>
             <p class={styles.latin}>{b().id}</p>
             <div class={styles.family}>
               <Icon name="category" size={16} />
@@ -36,7 +37,7 @@ export default function BirdDetailPage() {
 
             <Show when={isLoggedIn()}>
               <section class={styles.section}>
-                <h2 class={styles.sectionTitle}>
+                <h2 class={shared.sectionTitle}>
                   Mina observationer
                   <Show when={(obs() ?? []).length > 0}>
                     <span class={styles.count}>({obs()!.length})</span>

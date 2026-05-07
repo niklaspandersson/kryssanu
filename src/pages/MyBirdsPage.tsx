@@ -11,6 +11,7 @@ import EmptyState from "../components/EmptyState";
 import BottomSheet from "../components/BottomSheet";
 import QuickAddSheet from "../components/search/QuickAddSheet";
 import type { Bird } from "../lib/types";
+import shared from "../styles/shared.module.css";
 import styles from "./MyBirdsPage.module.css";
 
 type ShowMode = "all" | "observed";
@@ -205,8 +206,8 @@ export default function MyBirdsPage() {
   }
 
   return (
-    <div class={styles.page}>
-      <h1 class={styles.heading}>Mina kryss</h1>
+    <div class={shared.page}>
+      <h1 class={shared.headingMd}>Mina kryss</h1>
 
       <Show when={birdsReady() && allBirds().length > 0}>
         <div class={styles.toolbar}>

@@ -7,6 +7,7 @@ import Avatar from "../components/Avatar";
 import StatCard from "../components/StatCard";
 import EmptyState from "../components/EmptyState";
 import Icon from "../components/Icon";
+import shared from "../styles/shared.module.css";
 import styles from "./ProfilePage.module.css";
 
 export default function ProfilePage() {
@@ -93,8 +94,8 @@ export default function ProfilePage() {
   }
 
   return (
-    <div class={styles.page}>
-      <h1 class={styles.heading}>Profil</h1>
+    <div class={shared.page}>
+      <h1 class={shared.headingXl}>Profil</h1>
       <Show
         when={user()}
         fallback={<EmptyState icon="person" message="Loggar in..." />}

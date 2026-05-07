@@ -5,6 +5,7 @@ import { useAuth } from "../lib/auth";
 import { isOnline } from "../lib/useOnlineStatus";
 import Icon from "../components/Icon";
 import EmptyState from "../components/EmptyState";
+import shared from "../styles/shared.module.css";
 import styles from "./EventsPage.module.css";
 
 type Tab = "active" | "upcoming" | "past";
@@ -46,19 +47,19 @@ export default function EventsPage() {
   }
 
   return (
-    <div class={styles.page}>
-      <div class={styles.header}>
-        <h1 class={styles.heading}>Event</h1>
+    <div class={shared.page}>
+      <div class={shared.pageHeader}>
+        <h1 class={shared.heading}>Event</h1>
         <Show
           when={isOnline()}
           fallback={
-            <span class={styles.createBtnDisabled}>
+            <span class={shared.actionBtnDisabled}>
               <Icon name="cloud_off" size={20} />
               Offline
             </span>
           }
         >
-          <A href="/events/new" class={styles.createBtn}>
+          <A href="/events/new" class={shared.actionBtn}>
             <Icon name="add" size={20} />
             Skapa
           </A>
@@ -115,23 +116,23 @@ export default function EventsPage() {
         when={filtered().length > 0}
         fallback={<EmptyState icon="event" message="Inga event här" />}
       >
-        <div class={styles.list}>
+        <div class={shared.itemList}>
           <For each={filtered()}>
             {(event) => (
-              <A href={`/events/${event.id}`} class={styles.eventCard}>
-                <div class={styles.eventInfo}>
-                  <span class={styles.eventName}>
+              <A href={`/events/${event.id}`} class={shared.card}>
+                <div class={shared.cardInfo}>
+                  <span class={`${shared.cardTitle} ${styles.eventName}`}>
                     {event.name}
                     <Show when={event.isPublic}>
                       <span class={styles.publicTag}>Publikt</span>
                     </Show>
                   </span>
-                  <span class={styles.eventMeta}>
+                  <span class={shared.cardMeta}>
                     {new Date(event.startsAt).toLocaleDateString("sv-SE")}
                     {" - "}
                     {new Date(event.endsAt).toLocaleDateString("sv-SE")}
                   </span>
-                  <span class={styles.eventMeta}>
+                  <span class={shared.cardMeta}>
                     {event.participantCount} deltagare · {event.observationCount} observationer
                   </span>
                 </div>

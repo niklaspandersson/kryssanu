@@ -1,8 +1,4 @@
-.page {
-  padding: var(--space-lg);
-}
-
-/* ── Greeting ─────────────────────────────────────────────────── */
+/* ── Greeting ─────────────────────────────────────────────────────── */
 .greeting {
   padding: 0;
   margin-bottom: var(--space-xl);
@@ -21,7 +17,7 @@
   color: var(--color-text-muted);
 }
 
-/* ── Stats row ────────────────────────────────────────────────── */
+/* ── Stats row ────────────────────────────────────────────────────── */
 .statsRow {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -29,21 +25,7 @@
   margin-bottom: var(--space-xl);
 }
 
-/* ── Section ──────────────────────────────────────────────────── */
-.section {
-  margin-bottom: var(--space-xl);
-}
-
-.sectionTitle {
-  display: flex;
-  align-items: center;
-  gap: var(--space-sm);
-  margin: 0 0 var(--space-md);
-  font-size: var(--font-size-base);
-  font-weight: 600;
-  color: var(--color-text-secondary);
-}
-
+/* ── Section link (in sectionTitle) ──────────────────────────────── */
 .sectionLink {
   margin-left: auto;
   font-size: var(--font-size-xs);
@@ -56,24 +38,7 @@
   text-decoration: underline;
 }
 
-/* ── Offline text ────────────────────────────────────────────── */
-.offlineBox {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--space-xs);
-  padding: var(--space-lg) 0;
-}
-
-.offlineText {
-  margin: 0;
-  font-size: var(--font-size-base);
-  color: var(--color-text-muted);
-  font-style: italic;
-  text-align: center;
-}
-
-/* ── Event cards ──────────────────────────────────────────────── */
+/* ── Active event cards (primary-light border, distinct from shared .card) ── */
 .eventCard {
   display: flex;
   align-items: center;
@@ -102,41 +67,8 @@
   color: var(--color-text-muted);
 }
 
-/* ── Feed items ───────────────────────────────────────────────── */
-.feedItem {
-  display: flex;
-  align-items: center;
-  gap: var(--space-sm);
-  padding: var(--space-xs) 0;
-  border-bottom: 1px solid var(--color-border);
-}
-
-.feedContent {
-  display: flex;
-  align-items: baseline;
-  gap: var(--space-sm);
-  min-width: 0;
-  flex: 1;
-  font-size: var(--font-size-sm);
-}
-
-.feedUser {
-  font-weight: 600;
-}
-
-.feedBird {
-  color: var(--color-primary);
-  font-weight: 500;
-}
-
+/* ── Feed-specific extras ─────────────────────────────────────────── */
 .feedLocation {
   font-size: var(--font-size-xs);
   color: var(--color-text-muted);
-}
-
-.feedDate {
-  font-size: var(--font-size-xs);
-  color: var(--color-text-muted);
-  margin-left: auto;
-  white-space: nowrap;
 }

@@ -5,6 +5,7 @@ import { useAuth } from "../lib/auth";
 import { isOnline } from "../lib/useOnlineStatus";
 import Icon from "../components/Icon";
 import EmptyState from "../components/EmptyState";
+import shared from "../styles/shared.module.css";
 import styles from "./ListsPage.module.css";
 
 export default function ListsPage() {
@@ -15,19 +16,19 @@ export default function ListsPage() {
   );
 
   return (
-    <div class={styles.page}>
-      <div class={styles.header}>
-        <h1 class={styles.heading}>Listor</h1>
+    <div class={shared.page}>
+      <div class={shared.pageHeader}>
+        <h1 class={shared.heading}>Listor</h1>
         <Show
           when={isOnline()}
           fallback={
-            <span class={styles.createBtnDisabled}>
+            <span class={shared.actionBtnDisabled}>
               <Icon name="cloud_off" size={20} />
               Offline
             </span>
           }
         >
-          <A href="/lists/new" class={styles.createBtn}>
+          <A href="/lists/new" class={shared.actionBtn}>
             <Icon name="add" size={20} />
             Skapa
           </A>
@@ -43,16 +44,16 @@ export default function ListsPage() {
           />
         }
       >
-        <div class={styles.list}>
+        <div class={shared.itemList}>
           <For each={allLists()}>
             {(list) => (
-              <A href={`/lists/${list.id}`} class={styles.listCard}>
-                <div class={styles.listInfo}>
-                  <span class={styles.listName}>{list.name}</span>
+              <A href={`/lists/${list.id}`} class={shared.card}>
+                <div class={shared.cardInfo}>
+                  <span class={shared.cardTitle}>{list.name}</span>
                   <Show when={list.description}>
                     {(desc) => <span class={styles.listDesc}>{desc()}</span>}
                   </Show>
-                  <span class={styles.listMeta}>
+                  <span class={shared.cardMeta}>
                     {list.observationCount} observationer
                   </span>
                 </div>

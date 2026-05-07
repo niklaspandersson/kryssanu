@@ -9,6 +9,7 @@ import Icon from "../components/Icon";
 import Avatar from "../components/Avatar";
 import EmptyState from "../components/EmptyState";
 import BottomSheet from "../components/BottomSheet";
+import shared from "../styles/shared.module.css";
 import styles from "./EventDetailPage.module.css";
 
 export default function EventDetailPage() {
@@ -120,8 +121,8 @@ export default function EventDetailPage() {
   });
 
   return (
-    <div class={styles.page}>
-      <A href="/events" class={styles.back}>
+    <div class={shared.page}>
+      <A href="/events" class={shared.back}>
         <Icon name="arrow_back" size={18} />
         Tillbaka
       </A>
@@ -129,7 +130,7 @@ export default function EventDetailPage() {
       <Show when={event()} fallback={<EmptyState icon="event" message="Laddar event..." />}>
         {(ev) => (
           <>
-            <h1 class={styles.heading}>{ev().name}</h1>
+            <h1 class={shared.headingSm}>{ev().name}</h1>
             <Show when={ev().isPublic}>
               <span class={styles.publicBadge}>
                 <Icon name="public" size={14} />
@@ -178,11 +179,16 @@ export default function EventDetailPage() {
 
             {/* Results (past events) */}
             <Show when={isPast()}>
-              <section class={styles.section}>
-                <h2 class={styles.sectionTitle}>Resultat</h2>
+              <section class={shared.section}>
+                <h2 class={shared.sectionTitle}>Resultat</h2>
                 <Show
                   when={isOnline()}
-                  fallback={<div class={styles.offlineBox}><Icon name="cloud_off" size={24} /><p class={styles.offlineText}>Resultat är inte tillgängliga offline.</p></div>}
+                  fallback={
+                    <div class={shared.offlineBox}>
+                      <Icon name="cloud_off" size={24} />
+                      <p class={shared.offlineText}>Resultat är inte tillgängliga offline.</p>
+                    </div>
+                  }
                 >
                   <Show
                     when={resultsTop10().length > 0}
@@ -229,11 +235,16 @@ export default function EventDetailPage() {
 
             {/* Leaderboard (active events) */}
             <Show when={isActive()}>
-              <section class={styles.section}>
-                <h2 class={styles.sectionTitle}>Topplista</h2>
+              <section class={shared.section}>
+                <h2 class={shared.sectionTitle}>Topplista</h2>
                 <Show
                   when={isOnline()}
-                  fallback={<div class={styles.offlineBox}><Icon name="cloud_off" size={24} /><p class={styles.offlineText}>Topplistan är inte tillgänglig offline.</p></div>}
+                  fallback={
+                    <div class={shared.offlineBox}>
+                      <Icon name="cloud_off" size={24} />
+                      <p class={shared.offlineText}>Topplistan är inte tillgänglig offline.</p>
+                    </div>
+                  }
                 >
                   <Show
                     when={(leaderboard() ?? []).length > 0}
@@ -262,24 +273,29 @@ export default function EventDetailPage() {
 
             {/* Recent activity (active events) */}
             <Show when={isActive()}>
-              <section class={styles.section}>
-                <h2 class={styles.sectionTitle}>Senaste aktivitet</h2>
+              <section class={shared.section}>
+                <h2 class={shared.sectionTitle}>Senaste aktivitet</h2>
                 <Show
                   when={isOnline()}
-                  fallback={<div class={styles.offlineBox}><Icon name="cloud_off" size={24} /><p class={styles.offlineText}>Senaste aktivitet är inte tillgänglig offline.</p></div>}
+                  fallback={
+                    <div class={shared.offlineBox}>
+                      <Icon name="cloud_off" size={24} />
+                      <p class={shared.offlineText}>Senaste aktivitet är inte tillgänglig offline.</p>
+                    </div>
+                  }
                 >
                   <Show when={(recentActivity()?.items ?? []).length > 0}>
                     <For each={recentActivity()!.items}>
                       {(item) => (
-                        <div class={styles.activityItem}>
+                        <div class={shared.activityItem}>
                           <Avatar name={item.user.name} image={item.user.image} size={28} />
-                          <div class={styles.activityContent}>
+                          <div class={shared.activityContent}>
                             <span>
-                              <span class={styles.activityUser}>{item.user.name}</span>
+                              <span class={shared.activityUser}>{item.user.name}</span>
                               {" "}kryssade{" "}
-                              <span class={styles.activityBird}>{item.bird.swedish}</span>
+                              <span class={shared.activityBird}>{item.bird.swedish}</span>
                             </span>
-                            <span class={styles.activityDate}>
+                            <span class={shared.activityDate}>
                               {new Date(item.date).toLocaleDateString("sv-SE")}
                             </span>
                           </div>
@@ -292,8 +308,8 @@ export default function EventDetailPage() {
             </Show>
 
             {/* Participants */}
-            <section class={styles.section}>
-              <h2 class={styles.sectionTitle}>
+            <section class={shared.section}>
+              <h2 class={shared.sectionTitle}>
                 Deltagare ({ev().participantCount})
               </h2>
               <div class={styles.participants}>
@@ -355,8 +371,8 @@ export default function EventDetailPage() {
 
             {/* Invite (creator only, not past events, online only) */}
             <Show when={isCreator() && !isPast() && isOnline()}>
-              <section class={styles.section}>
-                <h2 class={styles.sectionTitle}>Bjud in</h2>
+              <section class={shared.section}>
+                <h2 class={shared.sectionTitle}>Bjud in</h2>
                 <button
                   class={styles.qrBtn}
                   onClick={handleShowQr}

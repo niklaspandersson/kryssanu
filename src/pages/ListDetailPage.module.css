@@ -1,29 +1,8 @@
-.page {
-  padding: var(--space-lg);
-}
-
-.back {
-  display: flex;
-  align-items: center;
-  gap: var(--space-xs);
-  color: var(--color-text-secondary);
-  font-size: var(--font-size-sm);
-  margin-bottom: var(--space-lg);
-  text-decoration: none;
-}
-
 .headerRow {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
   gap: var(--space-md);
-}
-
-.heading {
-  margin: 0;
-  font-size: var(--font-size-xl);
-  font-weight: 700;
-  color: var(--color-primary-dark);
 }
 
 .headerActions {
