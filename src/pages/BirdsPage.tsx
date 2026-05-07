@@ -344,14 +344,6 @@ export default function BirdsPage() {
               >
                 {sortLabel("family")}
               </button>
-              <button
-                type="button"
-                class={styles.controlBtn}
-                classList={{ [styles.controlActive]: sortMode() === "chrono" }}
-                onClick={() => updateSortMode("chrono")}
-              >
-                {sortLabel("chrono")}
-              </button>
             </div>
           </div>
 
