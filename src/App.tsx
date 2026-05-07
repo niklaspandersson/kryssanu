@@ -78,8 +78,8 @@ export default function App() {
   return (
     <Router root={RootLayout}>
       <Route path="/" component={HomePage} />
-      <Route path="/my-birds" component={protectedPage(MyBirdsPage)} />
-      <Route path="/feed" component={protectedPage(FeedPage)} />
+      <Route path="/birds" component={protectedPage(MyBirdsPage)} />
+      <Route path="/summary" component={protectedPage(FeedPage)} />
       <Route path="/events" component={protectedPage(EventsPage)} />
       <Route path="/events/new" component={protectedPage(CreateEventPage)} />
       <Route path="/events/:id" component={protectedPage(EventDetailPage)} />
