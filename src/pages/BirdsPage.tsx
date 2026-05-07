@@ -193,7 +193,7 @@ export default function BirdsPage() {
           </div>
           <Show when={date()}>
             <span class={styles.birdDate}>
-              senast kryssad {new Date(date()!).toLocaleDateString("sv-SE")}
+              {new Date(date()!).toLocaleDateString("sv-SE")}
             </span>
           </Show>
         </div>
