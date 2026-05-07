@@ -213,8 +213,8 @@ export default function BirdsPage() {
         <div class={styles.toolbar}>
           <div class={styles.summary}>
             <span class={styles.summaryCount}>{observedCount()}</span>
-            <span class={styles.summaryLabel}>
-               {timeFilter() === "year" ? `(${currentYear})` : "(totalt)"}
+            <span class={styles.summaryLabel}>(arter observerade
+               {timeFilter() === "year" ? ` ${currentYear}` : " totalt"})
             </span>
           </div>
 
@@ -232,10 +232,6 @@ export default function BirdsPage() {
                 <span class={styles.filterDot} aria-hidden="true" />
               </Show>
             </button>
-
-            <A href="/profile#export" class={styles.exportLink} title="Exportera">
-              <Icon name="download" size={18} />
-            </A>
           </div>
         </div>
 
