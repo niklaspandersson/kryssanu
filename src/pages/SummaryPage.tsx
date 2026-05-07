@@ -143,7 +143,7 @@ export default function SummaryPage() {
           <h2 class={shared.sectionTitle}>
             <Icon name="visibility" size={20} />
             Dina senaste observationer
-            <A href="/my-birds" class={styles.sectionLink}>Visa alla</A>
+            <A href="/birds" class={styles.sectionLink}>Visa alla</A>
           </h2>
           <For each={latestObs()!.slice(0, 5)}>
             {(obs) => (
