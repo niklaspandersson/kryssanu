@@ -6,7 +6,7 @@ import { isOnline } from "./lib/useOnlineStatus";
 import EmptyState from "./components/EmptyState";
 import AppShell from "./components/AppShell";
 import HomePage from "./pages/HomePage";
-import FeedPage from "./pages/FeedPage";
+import SummaryPage from "./pages/SummaryPage";
 import EventsPage from "./pages/EventsPage";
 import CreateEventPage from "./pages/CreateEventPage";
 import EventDetailPage from "./pages/EventDetailPage";
@@ -79,7 +79,7 @@ export default function App() {
     <Router root={RootLayout}>
       <Route path="/" component={HomePage} />
       <Route path="/birds" component={protectedPage(BirdsPage)} />
-      <Route path="/summary" component={protectedPage(FeedPage)} />
+      <Route path="/summary" component={protectedPage(SummaryPage)} />
       <Route path="/events" component={protectedPage(EventsPage)} />
       <Route path="/events/new" component={protectedPage(CreateEventPage)} />
       <Route path="/events/:id" component={protectedPage(EventDetailPage)} />

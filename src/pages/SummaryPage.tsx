@@ -8,9 +8,9 @@ import Avatar from "../components/Avatar";
 import EmptyState from "../components/EmptyState";
 import Icon from "../components/Icon";
 import shared from "../styles/shared.module.css";
-import styles from "./FeedPage.module.css";
+import styles from "./SummaryPage.module.css";
 
-export default function FeedPage() {
+export default function SummaryPage() {
   const { user, isLoggedIn } = useAuth();
 
   const [myStats] = createResource(() => isLoggedIn(), () => meApi.stats());
