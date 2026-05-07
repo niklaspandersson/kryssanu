@@ -1,0 +1,41 @@
+.btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-sm) var(--space-md);
+  flex-shrink: 0;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  overflow: visible;
+}
+
+.icon {
+  width: 28px;
+  height: 28px;
+  overflow: visible;
+}
+
+.box {
+  fill: none;
+  stroke: var(--color-primary);
+  stroke-width: 1.5;
+  /* opacity: 0.45; */
+  transition: stroke 0.15s, opacity 0.15s;
+}
+
+.btn:hover .box {
+  stroke: var(--color-text);
+  opacity: 1;
+}
+
+.observed .box,
+.observed:hover .box {
+  stroke: var(--color-text-muted);
+  opacity: 0.35;
+}
+
+.tick {
+  stroke: var(--color-success);
+
+  stroke-width: 6;
+}

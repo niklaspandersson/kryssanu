@@ -7,6 +7,7 @@ import { isOnline } from "../lib/useOnlineStatus";
 import { pendingObs } from "../lib/offlineDb";
 import { refreshPendingCount } from "../lib/offlineSync";
 import Icon from "../components/Icon";
+import ObserveButton from "../components/ObserveButton";
 import EmptyState from "../components/EmptyState";
 import BottomSheet from "../components/BottomSheet";
 import QuickAddSheet from "../components/search/QuickAddSheet";
@@ -176,31 +177,22 @@ export default function BirdsPage() {
         class={styles.birdRow}
         classList={{ [styles.unobserved]: !isObserved() }}
       >
-        <div class={styles.birdLink}>
+        <ObserveButton
+          observed={isObserved()}
+          onAdd={() => setQuickAddBird(bird)}
+          birdName={bird.swedish}
+        />
+        <div class={styles.birdContent}>
           <div class={styles.birdInfo}>
             <span class={styles.birdName}>{bird.swedish}</span>
             <span class={styles.birdLatin}>{bird.id}</span>
           </div>
           <Show when={date()}>
             <span class={styles.birdDate}>
-              {new Date(date()!).toLocaleDateString("sv-SE")}
+              senast kryssad {new Date(date()!).toLocaleDateString("sv-SE")}
             </span>
           </Show>
         </div>
-        <Show when={isObserved()}>
-          <span class={styles.checkMark}>
-            <Icon name="check_circle" size={20} />
-          </span>
-        </Show>
-
-          <button
-            class={styles.addBtn}
-            onClick={() => setQuickAddBird(bird)}
-            aria-label={`Kryssa ${bird.swedish}`}
-          >
-            <Icon name="add_circle_outline" size={20} />
-          </button>
-
       </div>
     );
   }

@@ -1,4 +1,5 @@
 import type { Bird } from "../../lib/types";
+import ObserveButton from "../ObserveButton";
 import styles from "./BirdRow.module.css";
 
 type Props = {
@@ -10,21 +11,14 @@ type Props = {
 export default function BirdRow(props: Props) {
   return (
     <div class={styles.row}>
+      <ObserveButton
+        observed={props.observed}
+        onAdd={() => props.onAdd(props.bird)}
+        birdName={props.bird.swedish}
+      />
       <div class={styles.info}>
         <span class={styles.name}>{props.bird.swedish}</span>
         <span class={styles.family}>{props.bird.family}</span>
-      </div>
-      <div class={styles.actions}>
-        {props.observed && (
-          <span class={`md-icon ${styles.observed}`}>check_circle</span>
-        )}
-        <button
-          class={styles.addBtn}
-          onClick={() => props.onAdd(props.bird)}
-          aria-label={`Lägg till observation av ${props.bird.swedish}`}
-        >
-          <span class="md-icon">add_circle</span>
-        </button>
       </div>
     </div>
   );
