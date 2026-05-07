@@ -1,6 +1,7 @@
 import { createSignal, createResource, Show, For } from "solid-js";
 import { useParams, useNavigate, A } from "@solidjs/router";
 import { lists as listsApi } from "../lib/api";
+import { refreshLists } from "../lib/listStore";
 import { isOnline } from "../lib/useOnlineStatus";
 import Icon from "../components/Icon";
 import EmptyState from "../components/EmptyState";
@@ -44,6 +45,7 @@ export default function ListDetailPage() {
       });
       setEditing(false);
       refetchList();
+      refreshLists();
     } finally {
       setSaving(false);
     }
@@ -52,6 +54,7 @@ export default function ListDetailPage() {
   async function handleDelete() {
     if (!confirm("Är du säker på att du vill ta bort listan? Observationerna behålls.")) return;
     await listsApi.remove(params.id);
+    refreshLists();
     navigate("/lists");
   }
 

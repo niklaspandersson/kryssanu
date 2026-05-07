@@ -1,6 +1,7 @@
 import { createSignal, Show } from "solid-js";
 import { useNavigate, A } from "@solidjs/router";
 import { lists as listsApi } from "../lib/api";
+import { refreshLists } from "../lib/listStore";
 import { isOnline } from "../lib/useOnlineStatus";
 import Icon from "../components/Icon";
 import shared from "../styles/shared.module.css";
@@ -21,6 +22,7 @@ export default function CreateListPage() {
         name: name(),
         description: description() || undefined,
       });
+      await refreshLists();
       navigate(`/lists/${list.id}`);
     } finally {
       setSubmitting(false);

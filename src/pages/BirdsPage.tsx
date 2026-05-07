@@ -1,6 +1,7 @@
 import { createSignal, createResource, createMemo, Show, For } from "solid-js";
 import { A } from "@solidjs/router";
 import { me as meApi } from "../lib/api";
+import { userLists } from "../lib/listStore";
 import { useAuth } from "../lib/auth";
 import { allBirds, birdsReady } from "../lib/birdStore";
 import { isOnline } from "../lib/useOnlineStatus";
@@ -122,7 +123,7 @@ export default function BirdsPage() {
   const observedCount = createMemo(() => observedSet().size);
   const totalCount = createMemo(() => allBirds().length);
 
-  async function handleQuickAdd(addData: { note?: string; location?: string }) {
+  async function handleQuickAdd(addData: { note?: string; location?: string; latitude?: number; longitude?: number; listIds?: string[] }) {
     const bird = quickAddBird();
     if (!bird) return;
 
@@ -131,6 +132,9 @@ export default function BirdsPage() {
         birdId: bird.id,
         note: addData.note,
         location: addData.location,
+        latitude: addData.latitude,
+        longitude: addData.longitude,
+        listIds: addData.listIds,
       });
     } else {
       await pendingObs.add({
@@ -352,6 +356,7 @@ export default function BirdsPage() {
       <QuickAddSheet
         bird={quickAddBird()}
         open={quickAddBird() !== null}
+        lists={userLists()}
         onClose={() => setQuickAddBird(null)}
         onConfirm={handleQuickAdd}
       />
