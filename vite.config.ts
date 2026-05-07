@@ -29,10 +29,27 @@ export default defineConfig({
         ],
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,webp,png,svg,woff2}'],
-        navigateFallback: 'index.html',
-        navigateFallbackDenylist: [/^\/api/],
+        globPatterns: ['**/*.{js,css,webp,png,svg,woff2}'],
+        //navigateFallback: 'index.html',
+        //navigateFallbackDenylist: [/^\/api/],
+        navigationPreload: true,
         runtimeCaching: [
+          {
+            urlPattern: ({ request }) => request.mode === 'navigate',
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'html-cache',
+              networkTimeoutSeconds: 3,
+              // This is your offline fallback for SPAs
+              plugins: [
+                {
+                  handlerDidError: async () => {
+                    return caches.match('/index.html');
+                  },
+                },
+              ],
+            },
+          },
           {
             urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
             handler: 'CacheFirst',
