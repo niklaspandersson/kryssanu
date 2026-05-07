@@ -15,7 +15,7 @@ import CreateListPage from "./pages/CreateListPage";
 import ListDetailPage from "./pages/ListDetailPage";
 import InviteAcceptPage from "./pages/InviteAcceptPage";
 import ProfilePage from "./pages/ProfilePage";
-import MyBirdsPage from "./pages/MyBirdsPage";
+import BirdsPage from "./pages/BirdsPage";
 import AboutPage from "./pages/AboutPage";
 import HelpPage from "./pages/HelpPage";
 import TermsPage from "./pages/TermsPage";
@@ -78,7 +78,7 @@ export default function App() {
   return (
     <Router root={RootLayout}>
       <Route path="/" component={HomePage} />
-      <Route path="/birds" component={protectedPage(MyBirdsPage)} />
+      <Route path="/birds" component={protectedPage(BirdsPage)} />
       <Route path="/summary" component={protectedPage(FeedPage)} />
       <Route path="/events" component={protectedPage(EventsPage)} />
       <Route path="/events/new" component={protectedPage(CreateEventPage)} />

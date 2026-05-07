@@ -12,13 +12,13 @@ import BottomSheet from "../components/BottomSheet";
 import QuickAddSheet from "../components/search/QuickAddSheet";
 import type { Bird } from "../lib/types";
 import shared from "../styles/shared.module.css";
-import styles from "./MyBirdsPage.module.css";
+import styles from "./BirdsPage.module.css";
 
 type ShowMode = "all" | "observed";
 type TimeFilter = "all" | "year";
 type SortMode = "alpha" | "family" | "chrono";
 
-export default function MyBirdsPage() {
+export default function BirdsPage() {
   const { isLoggedIn } = useAuth();
 
   const stored = (() => {
