@@ -7,20 +7,20 @@
   background: rgba(0, 0, 0, 0.4);
   z-index: 200;
   display: flex;
-  align-items: flex-end;
+  align-items: flex-start;
   justify-content: center;
   overscroll-behavior: contain;
 }
 
 .sheet {
   background: var(--color-bg-card);
-  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
   width: 100%;
   max-width: var(--max-width);
   max-height: 80dvh;
   overflow-y: auto;
-  padding: var(--space-md) var(--space-lg) var(--space-lg);
-  animation: slideUp 0.2s ease-out;
+  padding: env(safe-area-inset-top, 0) var(--space-lg) var(--space-md);
+  animation: slideDown 0.2s ease-out;
 }
 
 .handle {
@@ -28,22 +28,22 @@
   height: 4px;
   border-radius: 2px;
   background: var(--color-border);
-  margin: 0 auto var(--space-lg);
+  margin: var(--space-lg) auto 0;
 }
 
 .title {
-  margin: 0 0 var(--space-lg);
+  margin: var(--space-lg) 0 var(--space-lg);
   font-size: var(--font-size-lg);
   font-weight: 600;
 }
 
 .body {
-  padding-bottom: env(safe-area-inset-bottom, 0);
+  padding-top: var(--space-md);
 }
 
-@keyframes slideUp {
+@keyframes slideDown {
   from {
-    transform: translateY(100%);
+    transform: translateY(-100%);
   }
 
   to {

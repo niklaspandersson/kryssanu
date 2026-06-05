@@ -1,12 +1,12 @@
 .tallSheet {
-  max-height: 90dvh;
+  max-height: 60dvh;
   display: flex;
   flex-direction: column;
   overflow: hidden;
 }
 
-/* Constrain BottomSheet's .body to flex within the sheet */
-.tallSheet > :last-child {
+/* Constrain TopSheet's .body to flex within the sheet, leaving the handle at the bottom */
+.tallSheet> :first-child {
   flex: 1;
   min-height: 0;
   overflow: hidden;

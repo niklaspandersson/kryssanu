@@ -2,7 +2,7 @@ import { createSignal, createEffect, onCleanup, Show, For } from "solid-js";
 import type { Bird, ListWithDetails } from "../../lib/types";
 import { useGeolocation } from "../../lib/useGeolocation";
 import { reverseGeocode } from "../../lib/reverseGeocode";
-import BottomSheet from "../BottomSheet";
+import TopSheet from "../TopSheet";
 import Icon from "../Icon";
 import styles from "./QuickAddSheet.module.css";
 
@@ -93,7 +93,7 @@ export default function QuickAddSheet(props: Props) {
   });
 
   return (
-    <BottomSheet
+    <TopSheet
       open={props.open}
       onClose={props.onClose}
       title={props.bird?.swedish ?? ""}
@@ -156,6 +156,6 @@ export default function QuickAddSheet(props: Props) {
           Kryssa!
         </button>
       </div>
-    </BottomSheet>
+    </TopSheet>
   );
 }

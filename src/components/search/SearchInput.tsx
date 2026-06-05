@@ -8,7 +8,7 @@ type Props = {
 
 export default function SearchInput(props: Props) {
   return (
-    <div class={styles.wrapper}>
+    <div class={styles.wrapper} id="search-input-wrapper">
       <span class="md-icon">search</span>
       <input
         ref={props.ref}

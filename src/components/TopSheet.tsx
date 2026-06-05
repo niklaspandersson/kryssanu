@@ -1,5 +1,5 @@
 import { createEffect, onCleanup, Show, type JSX } from "solid-js";
-import styles from "./BottomSheet.module.css";
+import styles from "./TopSheet.module.css";
 
 type Props = {
   open: boolean;
@@ -9,7 +9,7 @@ type Props = {
   children: JSX.Element;
 };
 
-export default function BottomSheet(props: Props) {
+export default function TopSheet(props: Props) {
   createEffect(() => {
     if (props.open) {
       document.body.classList.add("overlay-open");
@@ -36,11 +36,11 @@ export default function BottomSheet(props: Props) {
         }, passive: false } }
       >
         <div class={styles.sheet} classList={{ [props.sheetClass!]: !!props.sheetClass }}>
-          <div class={styles.handle} />
           <Show when={props.title}>
             <h3 class={styles.title}>{props.title}</h3>
           </Show>
           <div class={styles.body}>{props.children}</div>
+          <div class={styles.handle} />
         </div>
       </div>
     </Show>
