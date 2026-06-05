@@ -22,6 +22,26 @@ export type Observation = {
 
 export type ObservationWithBird = Observation & {
   bird: Bird;
+  /** List ids this observation belongs to. Only populated by some endpoints. */
+  listIds?: string[];
+};
+
+export type UpdateObservationInput = {
+  date?: string;
+  location?: string | null;
+  note?: string | null;
+  listIds?: string[];
+};
+
+export type BulkObservationPayload =
+  | { ids: string[]; op: "setLocation"; value: string | null }
+  | { ids: string[]; op: "setDate"; value: string }
+  | { ids: string[]; op: "addList" | "removeList"; value: string }
+  | { ids: string[]; op: "delete" };
+
+export type PaginatedObservations = {
+  observations: ObservationWithBird[];
+  total: number;
 };
 
 export type CreateObservationInput = {

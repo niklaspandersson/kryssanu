@@ -1,0 +1,409 @@
+/* ── Page header (heading + Markera button) ───────────────────────── */
+.pageHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--space-md);
+  margin-bottom: var(--space-lg);
+}
+
+.selectBtn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: var(--space-sm) var(--space-md);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg-card);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  white-space: nowrap;
+  transition: background 0.12s ease, border-color 0.12s ease;
+}
+
+.selectBtn:not(.selectBtnActive):hover {
+  background: var(--color-bg-elevated);
+  border-color: var(--color-primary-light);
+}
+
+.selectBtnActive {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #fff;
+}
+
+.selectBtnActive:hover {
+  background: var(--color-primary-dark);
+  border-color: var(--color-primary-dark);
+}
+
+.summary {
+  margin: 0 0 var(--space-md);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+
+/* ── Select-all row ───────────────────────────────────────────────── */
+.selectAllRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-sm) 0 var(--space-sm) 2px;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.linkBtn {
+  color: var(--color-primary);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+}
+
+.linkBtn:hover {
+  text-decoration: underline;
+}
+
+/* ── Checkbox ─────────────────────────────────────────────────────── */
+.checkCell {
+  display: flex;
+  align-items: center;
+  padding-right: var(--space-md);
+  cursor: pointer;
+}
+
+.checkbox {
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-bg-card);
+  transition: all 0.12s ease;
+  flex-shrink: 0;
+}
+
+.checkbox :global(.md-icon) {
+  color: #fff;
+  opacity: 0;
+  transform: scale(0.6);
+  transition: all 0.12s ease;
+}
+
+.checkboxChecked {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.checkboxChecked :global(.md-icon) {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.obsList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.obsItem {
+  border-bottom: 1px solid var(--color-border);
+  transition: background 0.12s ease;
+}
+
+.obsItem:hover {
+  background: var(--color-bg-elevated);
+}
+
+.rowSelectable {
+  display: flex;
+  align-items: stretch;
+}
+
+.obsMain {
+  flex: 1;
+  min-width: 0;
+}
+
+/* ── Compact, summary-style row ───────────────────────────────────── */
+.obsRow {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-sm);
+  width: 100%;
+  padding: var(--space-sm) 0;
+  background: transparent;
+  border: none;
+  text-align: left;
+  font-size: var(--font-size-sm);
+  color: var(--color-text);
+  cursor: pointer;
+}
+
+.obsBird {
+  color: var(--color-primary);
+  font-weight: 500;
+}
+
+.obsLocation {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-xs);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.obsListTags {
+  display: inline-flex;
+  gap: 4px;
+  margin-left: var(--space-xs);
+}
+
+.listTagDot {
+  font-size: 10px;
+  color: var(--color-primary);
+  background: var(--color-bg-elevated);
+  border-radius: var(--radius-full);
+  padding: 1px 7px;
+  align-self: center;
+  white-space: nowrap;
+}
+
+.obsDate {
+  margin-left: auto;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+.chevron,
+.chevronOpen {
+  color: var(--color-text-muted);
+  transition: transform 0.15s ease;
+  flex-shrink: 0;
+}
+
+.chevronOpen {
+  transform: rotate(180deg);
+}
+
+/* ── Expanded details ─────────────────────────────────────────────── */
+.details {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: var(--space-xs) var(--space-md);
+  margin: 0;
+  padding: 0 0 var(--space-md) var(--space-xs);
+  font-size: var(--font-size-sm);
+}
+
+.details dt {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-xs);
+}
+
+.details dd {
+  margin: 0;
+  color: var(--color-text-secondary);
+  word-break: break-word;
+}
+
+.muted {
+  color: var(--color-text-muted);
+}
+
+.chipInline {
+  display: inline-block;
+  font-size: var(--font-size-xs);
+  color: var(--color-primary-dark);
+  background: var(--color-bg-elevated);
+  border-radius: var(--radius-full);
+  padding: 2px 10px;
+  margin: 0 4px 4px 0;
+}
+
+.detailActions {
+  grid-column: 1 / 3;
+  display: flex;
+  gap: var(--space-sm);
+  margin-top: var(--space-sm);
+}
+
+.editBtn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: var(--space-sm) var(--space-md);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg-card);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+}
+
+.editBtn:hover {
+  background: var(--color-bg);
+}
+
+.editBtnDanger {
+  color: var(--color-danger);
+}
+
+.editBtnDanger:hover {
+  background: var(--color-danger-bg);
+}
+
+/* ── Bulk action bar ──────────────────────────────────────────────── */
+.actionBar {
+  position: fixed;
+  bottom: calc(var(--space-2xl) + env(safe-area-inset-bottom, 0px));
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(720px, calc(100vw - 2 * var(--space-lg)));
+  background: var(--color-primary-dark);
+  color: #fff;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  z-index: 160;
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-sm) var(--space-md);
+  animation: barUp 0.22s ease-out;
+}
+
+.barCount {
+  display: flex;
+  flex-direction: column;
+  padding: 0 var(--space-sm);
+  min-width: 92px;
+}
+
+.barCountNum {
+  font-size: var(--font-size-base);
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.barCountLabel {
+  font-size: var(--font-size-xs);
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.barActions {
+  display: flex;
+  gap: var(--space-xs);
+  margin-left: auto;
+  flex-wrap: wrap;
+}
+
+.barBtn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.barBtn:hover {
+  background: rgba(255, 255, 255, 0.22);
+}
+
+.barBtnDanger:hover {
+  background: var(--color-danger);
+}
+
+.barDivider {
+  width: 1px;
+  align-self: stretch;
+  background: rgba(255, 255, 255, 0.18);
+  margin: 4px 2px;
+}
+
+.barClose {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: var(--radius-full);
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.barClose:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+@keyframes barUp {
+  from {
+    transform: translate(-50%, 130%);
+  }
+  to {
+    transform: translate(-50%, 0);
+  }
+}
+
+@media (max-width: 560px) {
+  .barCount {
+    min-width: 0;
+  }
+  .barCountLabel {
+    display: none;
+  }
+  .barBtn span:not(:global(.md-icon)) {
+    display: none;
+  }
+  .barBtn {
+    padding: var(--space-sm);
+  }
+}
+
+/* ── Pagination ───────────────────────────────────────────────────── */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  margin: var(--space-md) 0;
+}
+
+.pageBtn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: var(--space-xs) var(--space-sm);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg-card);
+  color: var(--color-primary);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.pageBtn:hover:not(:disabled) {
+  background: var(--color-bg);
+}
+
+.pageBtn:disabled {
+  background: var(--color-border);
+  border-color: var(--color-border);
+  color: var(--color-text-muted);
+  cursor: not-allowed;
+}
+
+.pageInfo {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}

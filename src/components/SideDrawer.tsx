@@ -78,6 +78,10 @@ export default function SideDrawer(props: Props) {
             <span class="md-icon">checklist</span>
             <span class={styles.navLabel}>Fåglar</span>
           </A>
+          <A href="/observations" class={styles.navLink} activeClass={styles.activeLink} onClick={() => props.onClose()}>
+            <span class="md-icon">visibility</span>
+            <span class={styles.navLabel}>Observationer</span>
+          </A>
 
           <div class={styles.divider} />
 

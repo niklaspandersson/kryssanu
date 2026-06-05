@@ -18,9 +18,15 @@ import styles from "./AppShell.module.css";
 
 const [searchOpen, setSearchOpen] = createSignal(false);
 const [menuOpen, setMenuOpen] = createSignal(false);
+const [fabHidden, setFabHidden] = createSignal(false);
 
 export function openSearch() {
   setSearchOpen(true);
+}
+
+/** Pages can hide the floating search FAB while a competing bottom UI is shown. */
+export function setSearchFabHidden(hidden: boolean) {
+  setFabHidden(hidden);
 }
 
 export default function AppShell(props: RouteSectionProps) {
@@ -123,7 +129,7 @@ export default function AppShell(props: RouteSectionProps) {
           <A href="/terms">Villkor</A>
         </nav>
       </footer>
-      <Show when={!searchOpen()}>
+      <Show when={!searchOpen() && !fabHidden()}>
         <button
           class={styles.fab}
           onClick={() => setSearchOpen(true)}

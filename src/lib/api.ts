@@ -6,6 +6,8 @@ import type {
   User,
   UserStats,
   CreateObservationInput,
+  UpdateObservationInput,
+  BulkObservationPayload,
   CreateEventInput,
   EventWithDetails,
   LeaderboardEntry,
@@ -13,6 +15,7 @@ import type {
   ParticipantWithUser,
   UpdateProfileInput,
   InviteTokenResponse,
+  PaginatedObservations,
   Memberships,
   ListWithDetails,
   CreateListInput,
@@ -91,6 +94,13 @@ export const me = {
     const qs = params.toString();
     return fetchJson<ObservationWithBird[]>(`/me/observations${qs ? `?${qs}` : ''}`);
   },
+  allObservations: (opts: { limit?: number; offset?: number } = {}) => {
+    const params = new URLSearchParams();
+    if (opts.limit != null) params.set('limit', String(opts.limit));
+    if (opts.offset != null) params.set('offset', String(opts.offset));
+    const qs = params.toString();
+    return fetchJson<PaginatedObservations>(`/me/observations/all${qs ? `?${qs}` : ''}`);
+  },
   observationsForBird: (birdId: string) =>
     fetchJson<Observation[]>(
       `/me/observations/bird/${encodeURIComponent(birdId)}`
@@ -99,6 +109,21 @@ export const me = {
     fetchJson<Observation>('/me/observations', {
       method: 'POST',
       body: JSON.stringify(input),
+    }),
+  updateObservation: (id: string, input: UpdateObservationInput) =>
+    fetchJson<ObservationWithBird>(
+      `/me/observations/${encodeURIComponent(id)}`,
+      { method: 'PATCH', body: JSON.stringify(input) }
+    ),
+  deleteObservation: (id: string) =>
+    fetchJson<{ ok: boolean }>(
+      `/me/observations/${encodeURIComponent(id)}`,
+      { method: 'DELETE' }
+    ),
+  bulkObservations: (payload: BulkObservationPayload) =>
+    fetchJson<{ ok: boolean; count: number }>('/me/observations/bulk', {
+      method: 'POST',
+      body: JSON.stringify(payload),
     }),
   memberships: () => fetchJson<Memberships>('/me/memberships'),
 };

@@ -15,6 +15,7 @@
   --color-border: #ddd8cd;
   --color-success: #5a8547;
   --color-danger: #c1121f;
+  --color-danger-bg: oklch(from #c1121f calc(l + .45) calc(c * .25) h);
   --color-warning: #e9c46a;
 
   /* Spacing */
