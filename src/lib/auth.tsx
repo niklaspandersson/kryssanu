@@ -7,7 +7,7 @@ import {
 } from "solid-js";
 import { useNavigate } from "@solidjs/router";
 import type { User } from "./types";
-import { auth, me } from "./api";
+import { auth, me, setUnauthorizedHandler } from "./api";
 import { apiCache } from "./offlineDb";
 
 type AuthContextValue = {
@@ -39,7 +39,7 @@ export function AuthProvider(props: { children: JSX.Element }) {
         if (cb) {
           cb();
         } else {
-          navigate("/feed");
+          navigate("/summary");
         }
       })
       .catch(console.error);
@@ -57,6 +57,13 @@ export function AuthProvider(props: { children: JSX.Element }) {
   }
 
   onMount(async () => {
+    setUnauthorizedHandler(() => {
+      if (user() === null) return;
+      setUser(null);
+      localStorage.removeItem("kryssanu-user");
+      apiCache.clear().finally(() => { window.location.href = "/"; });
+    });
+
     try {
       const u = await me.get();
       setUser(u);

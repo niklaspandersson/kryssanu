@@ -23,6 +23,12 @@ import { isOnline } from './useOnlineStatus';
 
 const BASE = '/api';
 
+let unauthorizedHandler: (() => void) | null = null;
+
+export function setUnauthorizedHandler(fn: () => void) {
+  unauthorizedHandler = fn;
+}
+
 async function fetchJson<T>(url: string, init?: RequestInit): Promise<T> {
   const isGet = !init?.method || init.method === 'GET';
 
@@ -39,6 +45,7 @@ async function fetchJson<T>(url: string, init?: RequestInit): Promise<T> {
       ...init,
     });
     if (!res.ok) {
+      if (res.status === 401) unauthorizedHandler?.();
       throw new Error(`${res.status} ${res.statusText}`);
     }
     const data = await res.json() as T;
@@ -47,6 +54,7 @@ async function fetchJson<T>(url: string, init?: RequestInit): Promise<T> {
     }
     return data;
   } catch (e) {
+    if (e instanceof Error && e.message.startsWith('401')) throw e;
     if (isGet) {
       const cached = await apiCache.get<T>(url);
       if (cached) return cached.data;
