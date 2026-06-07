@@ -47,7 +47,7 @@ No test runner or linter is configured.
 ### Backend (`packages/server-php/`)
 
 - **Entry:** `public/app.php` — Slim app initialization, middleware, route registration
-- **Routes:** `src/Routes/*.php` — Auth, Birds, Observations, Events, Feed, Stats, Users
+- **Routes:** `src/Routes/*.php` — Auth, Birds, Events, Lists, Me, Stats, Export
 - **Middleware:** `SessionMiddleware` (validates session on all requests), `AuthMiddleware` (enforces auth)
 - **Database:** `src/Database.php` — PDO singleton for MySQL
 - **Session cleanup:** `bin/cleanup-sessions.php` (cron job)
@@ -58,7 +58,7 @@ All API routes are under `/api`. In dev, Vite proxies `/api` to the PHP server o
 
 ### Database
 
-Prisma schema in `prisma/schema.prisma` defines: User, Bird, Observation, Event, Participant, InviteToken, Session. Bird IDs are latin species names. User/Event IDs are CUIDs.
+Prisma schema in `prisma/schema.prisma` defines: User, GoogleToken, Session, Bird, Observation, Event, ObservationEvent, Participant, List, ObservationList, InviteToken. Bird IDs are latin species names. User/Event IDs are CUIDs.
 
 ## Key Conventions
 
@@ -72,5 +72,6 @@ Prisma schema in `prisma/schema.prisma` defines: User, Bird, Observation, Event,
 
 Required in `.env` (see `.env.example`):
 - `DATABASE_URL` — MySQL connection string
-- `GOOGLE_CLIENT_ID` / `VITE_GOOGLE_CLIENT_ID` — Google OAuth client ID
-- `APP_ENV` — `production` or `development`
+- `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` — Google OAuth credentials
+- `VITE_GOOGLE_CLIENT_ID` — Google OAuth client ID exposed to the client
+- `APP_URL` — base URL used for OAuth redirect URIs
