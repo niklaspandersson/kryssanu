@@ -20,7 +20,78 @@ class AuthRoutes
         $app->group('/api/auth', function (RouteCollectorProxy $group) {
             $group->post('/google', [self::class, 'google']);
             $group->post('/logout', [self::class, 'logout']);
+
+            // Mint a session without Google OAuth so the app can be driven by
+            // browser automation. Only registered outside production.
+            if (!self::isProduction()) {
+                $group->post('/dev-login', [self::class, 'devLogin']);
+                $group->get('/dev-login', [self::class, 'devLogin']);
+            }
         });
+    }
+
+    private static function isProduction(): bool
+    {
+        return ($_ENV['APP_ENV'] ?? getenv('APP_ENV') ?: 'development') === 'production';
+    }
+
+    /**
+     * Create a session row for a user and attach the session cookie to the response.
+     */
+    private static function startSession(Response $response, string $userId): Response
+    {
+        $db = Database::getConnection();
+        $sessionId = Helpers::generateCuid();
+        $expiresAt = gmdate('Y-m-d H:i:s', time() + self::SESSION_MAX_AGE_SECONDS);
+        $stmt = $db->prepare(
+            'INSERT INTO Session (id, userId, expiresAt) VALUES (:id, :userId, :expiresAt)'
+        );
+        $stmt->execute([
+            'id' => $sessionId,
+            'userId' => $userId,
+            'expiresAt' => $expiresAt,
+        ]);
+
+        $cookieParts = [
+            "session={$sessionId}",
+            'HttpOnly',
+            'Path=/',
+            'Max-Age=' . self::SESSION_MAX_AGE_SECONDS,
+            'SameSite=Lax',
+        ];
+        if (self::isProduction()) {
+            $cookieParts[] = 'Secure';
+        }
+
+        return $response->withHeader('Set-Cookie', implode('; ', $cookieParts));
+    }
+
+    /**
+     * Dev-only login. Picks a user by ?email= (or the first user in the DB) and
+     * mints a session, so automated browsers can reach authenticated pages.
+     */
+    public static function devLogin(Request $request, Response $response): Response
+    {
+        $db = Database::getConnection();
+        $params = array_merge((array) ($request->getParsedBody() ?? []), $request->getQueryParams());
+        $email = $params['email'] ?? null;
+
+        if ($email) {
+            $stmt = $db->prepare('SELECT * FROM User WHERE email = :email LIMIT 1');
+            $stmt->execute(['email' => $email]);
+        } else {
+            $stmt = $db->query('SELECT * FROM User ORDER BY id ASC LIMIT 1');
+        }
+        $user = $stmt->fetch();
+
+        if (!$user) {
+            return Helpers::jsonResponse($response, [
+                'error' => $email ? "No user with email {$email}" : 'No users in database',
+            ], 404);
+        }
+
+        $response = self::startSession($response, $user['id']);
+        return Helpers::jsonResponse($response, Helpers::formatUser($user));
     }
 
     public static function google(Request $request, Response $response): Response
@@ -67,32 +138,7 @@ class AuthRoutes
                 $user = $stmt->fetch();
             }
 
-            // Create session
-            $sessionId = Helpers::generateCuid();
-            $expiresAt = gmdate('Y-m-d H:i:s', time() + self::SESSION_MAX_AGE_SECONDS);
-            $stmt = $db->prepare(
-                'INSERT INTO Session (id, userId, expiresAt) VALUES (:id, :userId, :expiresAt)'
-            );
-            $stmt->execute([
-                'id' => $sessionId,
-                'userId' => $user['id'],
-                'expiresAt' => $expiresAt,
-            ]);
-
-            // Set cookie
-            $isProduction = ($_ENV['APP_ENV'] ?? getenv('APP_ENV') ?? 'development') === 'production';
-            $cookieParts = [
-                "session={$sessionId}",
-                'HttpOnly',
-                'Path=/',
-                'Max-Age=' . self::SESSION_MAX_AGE_SECONDS,
-                'SameSite=Lax',
-            ];
-            if ($isProduction) {
-                $cookieParts[] = 'Secure';
-            }
-
-            $response = $response->withHeader('Set-Cookie', implode('; ', $cookieParts));
+            $response = self::startSession($response, $user['id']);
 
             return Helpers::jsonResponse($response, Helpers::formatUser($user));
         } catch (\Exception $e) {
