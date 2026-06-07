@@ -143,6 +143,16 @@
   cursor: pointer;
 }
 
+.obsContent {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-xs) var(--space-sm);
+}
+
 .obsBird {
   color: var(--color-primary);
   font-weight: 500;
@@ -175,6 +185,7 @@
 
 .obsDate {
   margin-left: auto;
+  flex-shrink: 0;
   font-size: var(--font-size-xs);
   color: var(--color-text-muted);
   white-space: nowrap;

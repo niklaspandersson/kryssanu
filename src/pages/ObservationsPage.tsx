@@ -324,17 +324,19 @@ export default function ObservationsPage() {
                         }
                         aria-expanded={isOpen()}
                       >
-                        <span class={styles.obsBird}>{obs.bird.swedish}</span>
-                        <Show when={obs.location}>
-                          {(loc) => <span class={styles.obsLocation}> · {loc()}</span>}
-                        </Show>
-                        <Show when={obsLists().length > 0}>
-                          <span class={styles.obsListTags}>
-                            <For each={obsLists()}>
-                              {(l) => <span class={styles.listTagDot}>{l!.name}</span>}
-                            </For>
-                          </span>
-                        </Show>
+                        <span class={styles.obsContent}>
+                          <span class={styles.obsBird}>{obs.bird.swedish}</span>
+                          <Show when={obs.location}>
+                            {(loc) => <span class={styles.obsLocation}> · {loc()}</span>}
+                          </Show>
+                          <Show when={obsLists().length > 0}>
+                            <span class={styles.obsListTags}>
+                              <For each={obsLists()}>
+                                {(l) => <span class={styles.listTagDot}>{l!.name}</span>}
+                              </For>
+                            </span>
+                          </Show>
+                        </span>
                         <span class={styles.obsDate}>{shortDate(obs.date)}</span>
                         <Show when={!selectMode()}>
                           <Icon

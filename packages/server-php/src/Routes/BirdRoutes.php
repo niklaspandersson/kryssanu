@@ -25,7 +25,7 @@ class BirdRoutes
     public static function version(Request $request, Response $response): Response
     {
         $db = Database::getConnection();
-        $count = (int) $db->query('SELECT COUNT(*) FROM Bird WHERE visitor = 0')->fetchColumn();
+        $count = (int) $db->query('SELECT COUNT(*) FROM Bird')->fetchColumn();
         $response = $response->withHeader('Cache-Control', 'public, max-age=300');
         return Helpers::jsonResponse($response, ['version' => $count]);
     }
@@ -33,7 +33,7 @@ class BirdRoutes
     public static function list(Request $request, Response $response): Response
     {
         $db = Database::getConnection();
-        $stmt = $db->query('SELECT * FROM Bird WHERE visitor = 0 ORDER BY swedish ASC');
+        $stmt = $db->query('SELECT * FROM Bird ORDER BY swedish ASC');
         $birds = array_map([Helpers::class, 'formatBird'], $stmt->fetchAll());
         $response = $response->withHeader('Cache-Control', 'public, max-age=86400');
         return Helpers::jsonResponse($response, $birds);

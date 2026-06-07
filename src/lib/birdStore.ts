@@ -22,8 +22,9 @@ export async function initBirds(): Promise<void> {
       return;
     }
 
-    // Version mismatch or no cache — fetch full list
-    const listRes = await fetch('/api/birds', { credentials: 'include' });
+    // Version mismatch or no cache — fetch full list. Bypass the HTTP cache
+    // (the list has a long max-age) so a version bump always yields fresh data.
+    const listRes = await fetch('/api/birds', { credentials: 'include', cache: 'reload' });
     if (!listRes.ok) throw new Error('bird list fetch failed');
     const birds = (await listRes.json()) as Bird[];
     await birdCache.set(birds, serverVersion);

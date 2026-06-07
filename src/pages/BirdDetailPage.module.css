@@ -5,6 +5,19 @@
   font-size: var(--font-size-sm);
 }
 
+.visitorBadge {
+  display: inline-block;
+  vertical-align: middle;
+  margin-left: var(--space-sm);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  line-height: 1;
+  padding: 3px 8px;
+  border-radius: var(--radius-sm);
+  background: var(--color-accent);
+  color: #fff;
+}
+
 .family {
   display: flex;
   align-items: center;

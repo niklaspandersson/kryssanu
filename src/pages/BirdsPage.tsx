@@ -34,15 +34,17 @@ export default function BirdsPage() {
   const [showMode, setShowMode] = createSignal<ShowMode>(stored.show ?? "all");
   const [timeFilter, setTimeFilter] = createSignal<TimeFilter>(stored.time ?? "all");
   const [sortMode, setSortMode] = createSignal<SortMode>(stored.sort ?? "alpha");
+  const [includeVisitors, setIncludeVisitors] = createSignal<boolean>(stored.visitors ?? false);
   const [filtersOpen, setFiltersOpen] = createSignal(false);
 
-  function persistFilters(show: ShowMode, time: TimeFilter, sort: SortMode) {
-    localStorage.setItem("mybirds-filters", JSON.stringify({ show, time, sort }));
+  function persistFilters(show: ShowMode, time: TimeFilter, sort: SortMode, visitors: boolean) {
+    localStorage.setItem("mybirds-filters", JSON.stringify({ show, time, sort, visitors }));
   }
 
-  function updateShowMode(v: ShowMode) { setShowMode(v); persistFilters(v, timeFilter(), sortMode()); }
-  function updateTimeFilter(v: TimeFilter) { setTimeFilter(v); persistFilters(showMode(), v, sortMode()); }
-  function updateSortMode(v: SortMode) { setSortMode(v); persistFilters(showMode(), timeFilter(), v); }
+  function updateShowMode(v: ShowMode) { setShowMode(v); persistFilters(v, timeFilter(), sortMode(), includeVisitors()); }
+  function updateTimeFilter(v: TimeFilter) { setTimeFilter(v); persistFilters(showMode(), v, sortMode(), includeVisitors()); }
+  function updateSortMode(v: SortMode) { setSortMode(v); persistFilters(showMode(), timeFilter(), v, includeVisitors()); }
+  function updateIncludeVisitors(v: boolean) { setIncludeVisitors(v); persistFilters(showMode(), timeFilter(), sortMode(), v); }
   const [quickAddBird, setQuickAddBird] = createSignal<Bird | null>(null);
   const [observed, { refetch }] = createResource(() => isLoggedIn(), (loggedIn) =>
     loggedIn ? meApi.checklist() : undefined
@@ -82,6 +84,9 @@ export default function BirdsPage() {
     if (birds.length === 0) return [];
     const obs = observedSet();
     let list = birds;
+    if (!includeVisitors()) {
+      list = list.filter(b => !b.visitor);
+    }
     if (showMode() === "observed") {
       list = list.filter(b => obs.has(b.id));
     }
@@ -120,8 +125,12 @@ export default function BirdsPage() {
     return [...groups.entries()].sort((a, b) => a[0].localeCompare(b[0], "sv"));
   });
 
-  const observedCount = createMemo(() => observedSet().size);
-  const totalCount = createMemo(() => allBirds().length);
+  const observedCount = createMemo(() => {
+    const obs = observedSet();
+    if (includeVisitors()) return obs.size;
+    // Keep the count consistent with the visible list: exclude observed rarities.
+    return allBirds().filter(b => obs.has(b.id) && !b.visitor).length;
+  });
 
   async function handleQuickAdd(addData: { note?: string; location?: string; latitude?: number; longitude?: number; listIds?: string[] }) {
     const bird = quickAddBird();
@@ -164,7 +173,7 @@ export default function BirdsPage() {
   }
 
   const filtersActive = createMemo(
-    () => showMode() !== "all" || timeFilter() !== "all" || sortMode() !== "alpha"
+    () => showMode() !== "all" || timeFilter() !== "all" || sortMode() !== "alpha" || includeVisitors()
   );
 
   function sortLabel(mode: SortMode): string {
@@ -188,7 +197,12 @@ export default function BirdsPage() {
         />
         <div class={styles.birdContent}>
           <div class={styles.birdInfo}>
-            <span class={styles.birdName}>{bird.swedish}</span>
+            <span class={styles.birdName}>
+              {bird.swedish}
+              <Show when={bird.visitor}>
+                <span class={styles.visitorBadge}>Raritet</span>
+              </Show>
+            </span>
             <span class={styles.birdLatin}>{bird.id}</span>
           </div>
           <Show when={date()}>
@@ -339,6 +353,28 @@ export default function BirdsPage() {
                 onClick={() => updateSortMode("family")}
               >
                 {sortLabel("family")}
+              </button>
+            </div>
+          </div>
+
+          <div class={styles.sheetSection}>
+            <div class={styles.sheetLabel}>Rariteter</div>
+            <div class={styles.sheetSegmented}>
+              <button
+                type="button"
+                class={styles.controlBtn}
+                classList={{ [styles.controlActive]: !includeVisitors() }}
+                onClick={() => updateIncludeVisitors(false)}
+              >
+                Dölj
+              </button>
+              <button
+                type="button"
+                class={styles.controlBtn}
+                classList={{ [styles.controlActive]: includeVisitors() }}
+                onClick={() => updateIncludeVisitors(true)}
+              >
+                Visa
               </button>
             </div>
           </div>

@@ -28,7 +28,12 @@ export default function BirdDetailPage() {
       <Show when={bird()} fallback={<EmptyState icon="flutter_dash" message="Laddar..." />}>
         {(b) => (
           <>
-            <h1 class={shared.heading}>{b().swedish}</h1>
+            <h1 class={shared.heading}>
+              {b().swedish}
+              <Show when={b().visitor}>
+                <span class={styles.visitorBadge}>Raritet</span>
+              </Show>
+            </h1>
             <p class={styles.latin}>{b().id}</p>
             <div class={styles.family}>
               <Icon name="category" size={16} />
