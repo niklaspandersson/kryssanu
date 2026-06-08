@@ -24,7 +24,7 @@ export default function InviteAcceptPage() {
           <EmptyState icon="link_off" message="Inbjudningslänken är ogiltig eller har gått ut" />
           <div style={{ display: "flex", "justify-content": "center", "margin-top": "var(--space-lg)" }}>
             <A href="/events" style={{ color: "var(--color-primary)", "text-decoration": "none" }}>
-              Tillbaka till events
+              Till evenemang
             </A>
           </div>
         </>

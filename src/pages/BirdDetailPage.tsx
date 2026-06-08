@@ -1,5 +1,5 @@
 import { createResource, createMemo, Show, For } from "solid-js";
-import { useParams, useNavigate, A } from "@solidjs/router";
+import { useParams, A } from "@solidjs/router";
 import { me as meApi, birdImages as birdImagesApi } from "../lib/api";
 import { allBirds } from "../lib/birdStore";
 import { userLists } from "../lib/listStore";
@@ -11,7 +11,6 @@ import styles from "./BirdDetailPage.module.css";
 
 export default function BirdDetailPage() {
   const params = useParams();
-  const navigate = useNavigate();
   const { isLoggedIn } = useAuth();
 
   // Solid Router does not URL-decode route params, and bird IDs are latin
@@ -37,11 +36,6 @@ export default function BirdDetailPage() {
 
   return (
     <div class={shared.page}>
-      <button type="button" class={shared.back} onClick={() => navigate(-1)}>
-        <Icon name="arrow_back" size={18} />
-        Tillbaka
-      </button>
-
       <Show when={bird()} fallback={<EmptyState icon="checklist" message="Laddar..." />}>
         {(b) => (
           <>

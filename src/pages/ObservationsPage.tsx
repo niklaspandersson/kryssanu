@@ -91,7 +91,6 @@ export default function ObservationsPage() {
     if (birdId()) return `Art: ${activeBird()?.swedish ?? "Art"}`;
     return undefined;
   };
-  const isFiltered = () => !!listId() || !!birdId();
 
   const observations = () => data()?.observations ?? [];
   const total = () => data()?.total ?? 0;
@@ -281,15 +280,6 @@ export default function ObservationsPage() {
 
   return (
     <div class={shared.page}>
-      <Show when={isFiltered()}>
-        <A
-          href={listId() ? "/lists" : `/birds/${encodeURIComponent(birdId()!)}`}
-          class={shared.back}
-        >
-          <Icon name="arrow_back" size={18} />
-          {listId() ? "Listor" : "Tillbaka"}
-        </A>
-      </Show>
       <div class={styles.pageHeader}>
         <div class={styles.headingGroup}>
           <h1 class={shared.heading}>Mina observationer</h1>

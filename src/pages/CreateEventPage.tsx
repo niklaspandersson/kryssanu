@@ -1,5 +1,5 @@
 import { createSignal, Show } from "solid-js";
-import { useNavigate, A } from "@solidjs/router";
+import { useNavigate } from "@solidjs/router";
 import { events as eventsApi } from "../lib/api";
 import { isOnline } from "../lib/useOnlineStatus";
 import Icon from "../components/Icon";
@@ -36,10 +36,6 @@ export default function CreateEventPage() {
 
   return (
     <div class={shared.page}>
-      <A href="/events" class={shared.back}>
-        <Icon name="arrow_back" size={18} />
-        Tillbaka
-      </A>
       <h1 class={shared.headingXl}>Skapa event</h1>
 
       <Show when={!isOnline()}>

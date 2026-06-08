@@ -1,5 +1,5 @@
 import { createSignal, createResource, Show, For, onCleanup } from "solid-js";
-import { useParams, A } from "@solidjs/router";
+import { useParams } from "@solidjs/router";
 import QRCode from "qrcode";
 import { events as eventsApi, feed, me as meApi } from "../lib/api";
 import { useAuth } from "../lib/auth";
@@ -121,11 +121,6 @@ export default function EventDetailPage() {
 
   return (
     <div class={shared.page}>
-      <A href="/events" class={shared.back}>
-        <Icon name="arrow_back" size={18} />
-        Tillbaka
-      </A>
-
       <Show when={event()} fallback={<EmptyState icon="event" message="Laddar event..." />}>
         {(ev) => (
           <>
