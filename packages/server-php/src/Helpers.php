@@ -14,6 +14,22 @@ class Helpers
     }
 
     /**
+     * Absolute path to the directory where uploaded observation images are
+     * stored. Configurable via IMAGE_UPLOAD_DIR; defaults to a `user-images`
+     * folder inside the PHP server package. Created on first use.
+     */
+    public static function imageDir(): string
+    {
+        $configured = $_ENV['IMAGE_UPLOAD_DIR'] ?? getenv('IMAGE_UPLOAD_DIR') ?: null;
+        // Helpers.php lives in packages/server-php/src, so dirname(__DIR__) is the package root.
+        $dir = $configured ?: dirname(__DIR__) . '/user-images';
+        if (!is_dir($dir)) {
+            @mkdir($dir, 0775, true);
+        }
+        return rtrim($dir, '/');
+    }
+
+    /**
      * Format a datetime string to ISO 8601 matching JS toISOString().
      * Input: MySQL datetime string (e.g., "2024-01-15 10:30:00")
      * Output: "2024-01-15T10:30:00.000Z"
@@ -92,7 +108,7 @@ class Helpers
      */
     public static function formatObservation(array $row): array
     {
-        return [
+        $obs = [
             'id' => $row['id'],
             'date' => self::toISOString($row['date']),
             'location' => $row['location'],
@@ -103,6 +119,26 @@ class Helpers
             'updatedAt' => self::toISOString($row['updatedAt']),
             'birdId' => $row['birdId'],
             'userId' => $row['userId'],
+        ];
+
+        // Only present when the query LEFT JOINs the observation's first image
+        // (selected as `img_id`). Null when the observation has no image.
+        if (array_key_exists('img_id', $row)) {
+            $obs['image'] = $row['img_id'] ? self::formatImage($row['img_id']) : null;
+        }
+
+        return $obs;
+    }
+
+    /**
+     * Build the public image reference (URLs to the large + thumb variants).
+     */
+    public static function formatImage(string $id): array
+    {
+        return [
+            'id' => $id,
+            'url' => "/api/images/{$id}",
+            'thumbUrl' => "/api/images/{$id}/thumb",
         ];
     }
 }

@@ -20,6 +20,8 @@ import type {
   ListWithDetails,
   CreateListInput,
   UpdateListInput,
+  ObservationImage,
+  BirdImage,
 } from './types';
 import { apiCache } from './offlineDb';
 import { isOnline } from './useOnlineStatus';
@@ -125,7 +127,36 @@ export const me = {
       method: 'POST',
       body: JSON.stringify(payload),
     }),
+  // Image upload bypasses fetchJson: FormData must set its own multipart
+  // boundary, so we must NOT force a Content-Type header here.
+  uploadObservationImage: async (
+    observationId: string,
+    file: File,
+  ): Promise<ObservationImage> => {
+    const fd = new FormData();
+    fd.append('image', file);
+    const res = await fetch(
+      `${BASE}/me/observations/${encodeURIComponent(observationId)}/images`,
+      { method: 'POST', credentials: 'include', body: fd },
+    );
+    if (!res.ok) {
+      if (res.status === 401) unauthorizedHandler?.();
+      throw new Error(`${res.status} ${res.statusText}`);
+    }
+    return res.json() as Promise<ObservationImage>;
+  },
+  deleteObservationImage: (observationId: string, imageId: string) =>
+    fetchJson<{ ok: boolean }>(
+      `/me/observations/${encodeURIComponent(observationId)}/images/${encodeURIComponent(imageId)}`,
+      { method: 'DELETE' },
+    ),
   memberships: () => fetchJson<Memberships>('/me/memberships'),
+};
+
+// ── Bird images (public) ────────────────────────────────────────────
+export const birdImages = {
+  first: (birdId: string) =>
+    fetchJson<BirdImage | null>(`/birds/${encodeURIComponent(birdId)}/images`),
 };
 
 // ── Lists ───────────────────────────────────────────────────────────

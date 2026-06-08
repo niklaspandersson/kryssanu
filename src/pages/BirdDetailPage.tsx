@@ -1,6 +1,6 @@
 import { createResource, createMemo, Show, For } from "solid-js";
 import { useParams, useNavigate } from "@solidjs/router";
-import { me as meApi } from "../lib/api";
+import { me as meApi, birdImages as birdImagesApi } from "../lib/api";
 import { allBirds } from "../lib/birdStore";
 import { userLists } from "../lib/listStore";
 import { useAuth } from "../lib/auth";
@@ -21,6 +21,12 @@ export default function BirdDetailPage() {
   const [obs] = createResource(
     () => (isLoggedIn() ? birdId() : null),
     (id) => meApi.observationsForBird(id)
+  );
+
+  // Public first image for this bird, shown to everyone (incl. logged-out users).
+  const [heroImage] = createResource(
+    birdId,
+    (id) => birdImagesApi.first(id)
   );
 
   const listById = createMemo(() =>
@@ -47,6 +53,25 @@ export default function BirdDetailPage() {
             </h1>
             <p class={styles.latin}>{b().id}</p>
             <div class={styles.family}>{b().family}</div>
+
+            <Show when={heroImage()}>
+              {(img) => (
+                <figure class={styles.heroImage}>
+                  <img
+                    src={img().url}
+                    alt={b().swedish}
+                    width={img().width ?? undefined}
+                    height={img().height ?? undefined}
+                    loading="lazy"
+                  />
+                  <figcaption class={styles.credit}>
+                    {[img().uploaderName ?? "Okänd", img().year, img().location]
+                      .filter(Boolean)
+                      .join(" · ")}
+                  </figcaption>
+                </figure>
+              )}
+            </Show>
 
             <Show when={isLoggedIn()}>
               <section class={styles.section}>
@@ -85,6 +110,9 @@ export default function BirdDetailPage() {
                                     )}
                                   </For>
                                 </span>
+                              </Show>
+                              <Show when={o.image}>
+                                <Icon name="image" size={16} class={styles.obsImageIcon} />
                               </Show>
                             </span>
                             <span class={styles.obsDate}>

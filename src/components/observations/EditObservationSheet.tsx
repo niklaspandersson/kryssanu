@@ -1,9 +1,12 @@
 import { createSignal, Show, For } from "solid-js";
 import type {
   ObservationWithBird,
+  ObservationImageRef,
   ListWithDetails,
   UpdateObservationInput,
 } from "../../lib/types";
+import { me as meApi } from "../../lib/api";
+import { downscaleImage } from "../../lib/downscaleImage";
 import TopSheet from "../TopSheet";
 import Icon from "../Icon";
 import styles from "./EditSheets.module.css";
@@ -15,6 +18,8 @@ type Props = {
   onClose: () => void;
   onSave: (input: UpdateObservationInput) => void;
   onDelete: () => void;
+  /** Called after an image is uploaded or removed, so the parent can refresh. */
+  onImageChanged?: () => void;
 };
 
 /** ISO datetime → yyyy-mm-dd in local time, for a native date input. */
@@ -31,11 +36,49 @@ export default function EditObservationSheet(props: Props) {
   const [location, setLocation] = createSignal(props.obs.location ?? "");
   const [note, setNote] = createSignal(props.obs.note ?? "");
   const [listIds, setListIds] = createSignal<string[]>(props.obs.listIds ?? []);
+  const [image, setImage] = createSignal<ObservationImageRef | null>(
+    props.obs.image ?? null
+  );
+  const [imageBusy, setImageBusy] = createSignal(false);
+
+  let imageInputRef!: HTMLInputElement;
 
   const toggleList = (id: string) =>
     setListIds((prev) =>
       prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
     );
+
+  async function handleImageSelect(file: File) {
+    setImageBusy(true);
+    try {
+      const uploaded = await meApi.uploadObservationImage(
+        props.obs.id,
+        await downscaleImage(file)
+      );
+      setImage({ id: uploaded.id, url: uploaded.url, thumbUrl: uploaded.thumbUrl });
+      props.onImageChanged?.();
+    } catch (e) {
+      console.error("Bilduppladdning misslyckades", e);
+    } finally {
+      setImageBusy(false);
+      if (imageInputRef) imageInputRef.value = "";
+    }
+  }
+
+  async function removeImage() {
+    const img = image();
+    if (!img) return;
+    setImageBusy(true);
+    try {
+      await meApi.deleteObservationImage(props.obs.id, img.id);
+      setImage(null);
+      props.onImageChanged?.();
+    } catch (e) {
+      console.error("Kunde inte ta bort bild", e);
+    } finally {
+      setImageBusy(false);
+    }
+  }
 
   function handleSave() {
     props.onSave({
@@ -110,6 +153,56 @@ export default function EditObservationSheet(props: Props) {
             </div>
           </div>
         </Show>
+
+        <div class={styles.formLabel}>
+          Bild
+          <input
+            ref={imageInputRef}
+            id="edit-obs-image-input"
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            hidden
+            onChange={(e) => {
+              const file = e.currentTarget.files?.[0];
+              if (file) handleImageSelect(file);
+            }}
+          />
+          <Show
+            when={image()}
+            fallback={
+              <label
+                for="edit-obs-image-input"
+                class={styles.imageBtn}
+                classList={{ [styles.disabled]: imageBusy() }}
+              >
+                <Icon name="add_a_photo" size={20} />
+                {imageBusy() ? "Laddar upp..." : "Lägg till bild"}
+              </label>
+            }
+          >
+            {(img) => (
+              <div class={styles.imagePreview}>
+                <img src={img().thumbUrl} alt="Observationsbild" />
+                <button
+                  type="button"
+                  class={styles.imageRemove}
+                  aria-label="Ta bort bild"
+                  disabled={imageBusy()}
+                  onClick={removeImage}
+                >
+                  <Icon name="close" size={18} />
+                </button>
+                <label
+                  for="edit-obs-image-input"
+                  class={styles.imageReplace}
+                  classList={{ [styles.disabled]: imageBusy() }}
+                >
+                  {imageBusy() ? "Laddar upp..." : "Byt bild"}
+                </label>
+              </div>
+            )}
+          </Show>
+        </div>
 
         <div class={styles.actions}>
           <button class={styles.btnGhost} onClick={props.onClose}>

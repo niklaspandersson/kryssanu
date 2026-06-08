@@ -360,6 +360,13 @@ export default function ObservationsPage() {
                               </For>
                             </span>
                           </Show>
+                          <Show when={obs.image}>
+                            <Icon
+                              name="image"
+                              size={16}
+                              class={styles.obsImageIcon}
+                            />
+                          </Show>
                         </span>
                         <span class={styles.obsDate}>{shortDate(obs.date)}</span>
                         <Show when={!selectMode()}>
@@ -395,6 +402,21 @@ export default function ObservationsPage() {
                               </For>
                             </Show>
                           </dd>
+                          <Show when={obs.image}>
+                            {(img) => (
+                              <>
+                                <dt>Bild</dt>
+                                <dd>
+                                  <img
+                                    class={styles.detailImage}
+                                    src={img().url}
+                                    alt={obs.bird.swedish}
+                                    loading="lazy"
+                                  />
+                                </dd>
+                              </>
+                            )}
+                          </Show>
                           <div class={styles.detailActions}>
                             <button class={styles.editBtn} onClick={() => setEditing(obs)}>
                               <Icon name="edit" size={18} /> Ändra
@@ -470,6 +492,7 @@ export default function ObservationsPage() {
             onClose={() => setEditing(null)}
             onSave={saveEdit}
             onDelete={() => deleteOne(obs())}
+            onImageChanged={() => refetch()}
           />
         )}
       </Show>

@@ -22,6 +22,9 @@ next-env.d.ts
 # php
 vendor
 
+# user-uploaded observation images
+packages/server-php/user-images/
+
 # production
 /build
 

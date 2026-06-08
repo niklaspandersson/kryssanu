@@ -52,6 +52,16 @@
   border-color: var(--color-primary-light);
 }
 
+/* iOS Safari gives native date inputs an intrinsic width and ignores
+   width: 100%, overflowing the sheet. Strip the native appearance so the
+   field respects its container. */
+input[type="date"].formField {
+  -webkit-appearance: none;
+  appearance: none;
+  min-width: 0;
+  max-width: 100%;
+}
+
 textarea.formField {
   resize: vertical;
   min-height: 76px;
@@ -85,6 +95,68 @@ textarea.formField {
   border-color: var(--color-primary);
   color: var(--color-primary-dark);
   background: var(--color-bg-elevated);
+}
+
+.imageBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-xs);
+  width: 100%;
+  padding: var(--space-md);
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+}
+
+.imageBtn:disabled,
+.disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.imagePreview {
+  position: relative;
+  width: 100%;
+}
+
+.imagePreview img {
+  width: 100%;
+  max-height: 220px;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+  display: block;
+}
+
+.imageRemove {
+  position: absolute;
+  top: var(--space-xs);
+  right: var(--space-xs);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-full, 999px);
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  cursor: pointer;
+}
+
+.imageReplace {
+  position: absolute;
+  bottom: var(--space-xs);
+  right: var(--space-xs);
+  padding: var(--space-xs) var(--space-md);
+  border-radius: var(--radius-full, 999px);
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  font-size: var(--font-size-xs);
+  cursor: pointer;
 }
 
 .actions {
@@ -148,4 +220,34 @@ textarea.formField {
 
 .btnDangerGhost:hover {
   background: var(--color-danger-bg);
+}
+
+/* Tighten up sheet contents on small screens so everything fits without
+   pushing the action buttons out of reach. */
+@media (max-width: 640px) {
+  .form {
+    gap: var(--space-md);
+  }
+
+  .title {
+    font-size: var(--font-size-base);
+  }
+
+  .formLabel {
+    font-size: var(--font-size-xs);
+  }
+
+  .formField,
+  .btnPrimary,
+  .btnGhost {
+    font-size: var(--font-size-sm);
+  }
+
+  .formField {
+    padding: var(--space-sm) var(--space-md);
+  }
+
+  .imagePreview img {
+    max-height: 160px;
+  }
 }

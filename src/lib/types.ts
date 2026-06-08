@@ -6,6 +6,35 @@ export type Bird = {
   visitor: boolean;
 };
 
+// ── Observation image ───────────────────────────────────────────────
+/** Reference to an observation's image variants (large + thumb). */
+export type ObservationImageRef = {
+  id: string;
+  url: string;
+  thumbUrl: string;
+};
+
+/** Result of uploading an image to an observation. */
+export type ObservationImage = ObservationImageRef & {
+  observationId: string;
+  width: number | null;
+  height: number | null;
+  createdAt: string;
+};
+
+/** Public image shown on a bird's details page, with uploader credit. */
+export type BirdImage = {
+  id: string;
+  url: string;
+  thumbUrl: string;
+  uploaderId: string;
+  uploaderName: string | null;
+  year: number;
+  location: string | null;
+  width: number | null;
+  height: number | null;
+};
+
 // ── Observation ─────────────────────────────────────────────────────
 export type Observation = {
   id: string;
@@ -18,6 +47,8 @@ export type Observation = {
   updatedAt: string;
   birdId: string;
   userId: string;
+  /** The observation's image, when one is attached. Only populated by endpoints that join it. */
+  image?: ObservationImageRef | null;
 };
 
 export type ObservationWithBird = Observation & {

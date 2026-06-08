@@ -71,7 +71,18 @@ Prisma schema in `prisma/schema.prisma` defines: User, GoogleToken, Session, Bir
 ## Environment Variables
 
 Required in `.env` (see `.env.example`):
+
 - `DATABASE_URL` — MySQL connection string
 - `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` — Google OAuth credentials
 - `VITE_GOOGLE_CLIENT_ID` — Google OAuth client ID exposed to the client
 - `APP_URL` — base URL used for OAuth redirect URIs
+
+Optional:
+
+- `IMAGE_UPLOAD_DIR` — filesystem directory for user-uploaded observation images (defaults to `packages/server-php/user-images`)
+
+## Instructions
+
+- Be concise but complete in explanations; assume the reader is a competent fullstack developer, familiary to this codebase.
+- Do not include any information that is not directly relevant to understanding the code structure, build process, or conventions.
+- Do not make any changes outside of what is requested in the prompt. If you need to clarify something, ask for clarification instead of making assumptions.

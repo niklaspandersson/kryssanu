@@ -68,9 +68,22 @@ model Observation {
   user      User     @relation(fields: [userId], references: [id])
   events    ObservationEvent[]
   lists     ObservationList[]
+  images    ObservationImage[]
 
   @@index([userId])
   @@index([birdId])
+}
+
+model ObservationImage {
+  id            String      @id @default(cuid())
+  observationId String
+  width         Int? // of the large variant
+  height        Int?
+  createdAt     DateTime    @default(now())
+  observation   Observation @relation(fields: [observationId], references: [id], onDelete: Cascade)
+
+  @@index([observationId])
+  @@index([createdAt])
 }
 
 model Event {

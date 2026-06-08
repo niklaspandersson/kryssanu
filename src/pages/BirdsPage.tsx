@@ -132,12 +132,12 @@ export default function BirdsPage() {
     return allBirds().filter(b => obs.has(b.id) && !b.visitor).length;
   });
 
-  async function handleQuickAdd(addData: { note?: string; location?: string; latitude?: number; longitude?: number; listIds?: string[] }) {
+  async function handleQuickAdd(addData: { note?: string; location?: string; latitude?: number; longitude?: number; listIds?: string[]; image?: File }) {
     const bird = quickAddBird();
     if (!bird) return;
 
     if (isOnline()) {
-      await meApi.createObservation({
+      const created = await meApi.createObservation({
         birdId: bird.id,
         note: addData.note,
         location: addData.location,
@@ -145,6 +145,14 @@ export default function BirdsPage() {
         longitude: addData.longitude,
         listIds: addData.listIds,
       });
+      // Non-fatal: the observation is already saved if the image upload fails.
+      if (addData.image) {
+        try {
+          await meApi.uploadObservationImage(created.id, addData.image);
+        } catch (e) {
+          console.error("Bilduppladdning misslyckades", e);
+        }
+      }
     } else {
       await pendingObs.add({
         id: crypto.randomUUID(),

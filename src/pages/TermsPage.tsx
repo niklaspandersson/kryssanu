@@ -6,7 +6,7 @@ export default function TermsPage() {
       <h1>Villkor</h1>
       <p>
         Genom att använda kryssa.nu godkänner du dessa villkor. Senast
-        uppdaterad: 2026-03-19.
+        uppdaterad: 2026-06-08.
       </p>
 
       <h2>Om tjänsten</h2>
@@ -31,6 +31,16 @@ export default function TermsPage() {
         anteckningar. Genom att använda tjänsten ger du oss rätt att lagra och
         visa ditt innehåll inom ramen för tjänstens funktioner, exempelvis i
         event och statistik. Vi säljer aldrig dina uppgifter till tredje part.
+      </p>
+
+      <h2>Uppladdade bilder</h2>
+      <p>
+        När du laddar upp en bild till en observation ger du oss en
+        icke-exklusiv rätt att lagra och visa bilden inom tjänsten, exempelvis på
+        artens sida tillsammans med ditt namn, år och plats. Du behåller alla
+        rättigheter till dina bilder och kan när som helst ta bort dem från
+        tjänsten. När du tar bort en bild slutar vi visa den och raderar den från
+        våra system.
       </p>
 
       <h2>Uppföranderegler</h2>

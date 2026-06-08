@@ -24,6 +24,25 @@
   margin-bottom: var(--space-xl);
 }
 
+/* Public hero image with uploader credit */
+.heroImage {
+  position: relative;
+  margin: 0 0 var(--space-lg);
+}
+
+.heroImage img {
+  width: 100%;
+  height: auto;
+  border-radius: var(--radius-md, 12px);
+  display: block;
+}
+
+.credit {
+  margin-top: var(--space-xs);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}
+
 /* Uses margin-top (not margin-bottom) to space from family row above */
 .section {
   margin-top: var(--space-xl);
@@ -52,6 +71,12 @@
   padding: var(--space-sm) 0;
   font-size: var(--font-size-sm);
   color: var(--color-text);
+}
+
+.obsImageIcon {
+  color: var(--color-text-muted);
+  align-self: center;
+  flex-shrink: 0;
 }
 
 .obsContent {

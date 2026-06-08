@@ -67,6 +67,17 @@ export default defineConfig({
               cacheableResponse: { statuses: [0, 200] },
             },
           },
+          {
+            // User-uploaded observation images. They are immutable (content-addressed
+            // by id), so cache them so once-viewed photos render offline.
+            urlPattern: ({ url }) => url.pathname.startsWith('/api/images/'),
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'observation-images',
+              expiration: { maxEntries: 300, maxAgeSeconds: 60 * 60 * 24 * 60 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
         ],
       },
     }),

@@ -45,6 +45,17 @@ export default function HomePage() {
         </div>
         <div class={styles.featureCard}>
           <div class={styles.featureIconWrapper}>
+            <span class="md-icon">photo_camera</span>
+          </div>
+          <div class={styles.featureText}>
+            <span class={styles.featureTitle}>Ladda upp bilder</span>
+            <span class={styles.featureDesc}>
+              Lägg till en bild på dina observationer. Dina bilder kan visas på artens sida — med ditt namn, år och plats.
+            </span>
+          </div>
+        </div>
+        <div class={styles.featureCard}>
+          <div class={styles.featureIconWrapper}>
             <span class="md-icon">bar_chart</span>
           </div>
           <div class={styles.featureText}>

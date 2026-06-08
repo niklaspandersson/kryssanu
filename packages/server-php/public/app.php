@@ -56,6 +56,7 @@ $routeFiles = [
     'EventRoutes',
     'ListRoutes',
     'ExportRoutes',
+    'ImageRoutes',
 ];
 foreach ($routeFiles as $routeClass) {
     $class = "Kryssanu\\Routes\\{$routeClass}";

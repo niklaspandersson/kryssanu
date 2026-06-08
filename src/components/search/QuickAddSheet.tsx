@@ -2,6 +2,7 @@ import { createSignal, createEffect, onCleanup, Show, For } from "solid-js";
 import type { Bird, ListWithDetails } from "../../lib/types";
 import { useGeolocation } from "../../lib/useGeolocation";
 import { reverseGeocode } from "../../lib/reverseGeocode";
+import { downscaleImage } from "../../lib/downscaleImage";
 import TopSheet from "../TopSheet";
 import Icon from "../Icon";
 import styles from "./QuickAddSheet.module.css";
@@ -17,6 +18,7 @@ type Props = {
     latitude?: number;
     longitude?: number;
     listIds?: string[];
+    image?: File;
   }) => void;
 };
 
@@ -26,7 +28,26 @@ export default function QuickAddSheet(props: Props) {
   const [reverseLoading, setReverseLoading] = createSignal(false);
   const [userEdited, setUserEdited] = createSignal(false);
   const [selectedListIds, setSelectedListIds] = createSignal<string[]>([]);
+  const [imageFile, setImageFile] = createSignal<File | null>(null);
+  const [imagePreview, setImagePreview] = createSignal<string | null>(null);
   const { geo, setGeo, requestPosition } = useGeolocation();
+
+  let imageInputRef!: HTMLInputElement;
+
+  function clearImage() {
+    const prev = imagePreview();
+    if (prev) URL.revokeObjectURL(prev);
+    setImagePreview(null);
+    setImageFile(null);
+    if (imageInputRef) imageInputRef.value = "";
+  }
+
+  async function handleImageSelect(file: File) {
+    const prev = imagePreview();
+    if (prev) URL.revokeObjectURL(prev);
+    setImagePreview(URL.createObjectURL(file));
+    setImageFile(await downscaleImage(file));
+  }
 
   function toggleList(id: string) {
     setSelectedListIds((prev) =>
@@ -43,11 +64,13 @@ export default function QuickAddSheet(props: Props) {
       latitude: g.latitude ?? undefined,
       longitude: g.longitude ?? undefined,
       listIds: ids.length > 0 ? ids : undefined,
+      image: imageFile() ?? undefined,
     });
     setNote("");
     setLocation("");
     setSelectedListIds([]);
     setUserEdited(false);
+    clearImage();
   }
 
   let locationRef!: HTMLInputElement;
@@ -59,7 +82,11 @@ export default function QuickAddSheet(props: Props) {
     setReverseLoading(false);
   }
 
-  onCleanup(cancelGeocode);
+  onCleanup(() => {
+    cancelGeocode();
+    const prev = imagePreview();
+    if (prev) URL.revokeObjectURL(prev);
+  });
 
   createEffect(() => {
     if (props.open) {
@@ -71,6 +98,7 @@ export default function QuickAddSheet(props: Props) {
       setLocation("");
       setSelectedListIds([]);
       setUserEdited(false);
+      clearImage();
       setGeo({ latitude: null, longitude: null, loading: false, error: null });
     }
   });
@@ -152,6 +180,49 @@ export default function QuickAddSheet(props: Props) {
             </For>
           </div>
         </Show>
+
+        {/* Visually hidden (not display:none) so Safari still opens the file
+            dialog when the associated label is clicked. */}
+        <input
+          ref={imageInputRef}
+          id="quickadd-image-input"
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          style={{
+            position: "absolute",
+            width: "1px",
+            height: "1px",
+            opacity: 0,
+            overflow: "hidden",
+            "pointer-events": "none",
+          }}
+          onChange={(e) => {
+            const file = e.currentTarget.files?.[0];
+            if (file) handleImageSelect(file);
+          }}
+        />
+        <Show
+          when={imagePreview()}
+          fallback={
+            <label for="quickadd-image-input" class={styles.imageBtn}>
+              <Icon name="add_a_photo" size={20} />
+              Lägg till bild
+            </label>
+          }
+        >
+          <div class={styles.imagePreview}>
+            <img src={imagePreview()!} alt="Förhandsvisning" />
+            <button
+              type="button"
+              class={styles.imageRemove}
+              aria-label="Ta bort bild"
+              onClick={clearImage}
+            >
+              <Icon name="close" size={18} />
+            </button>
+          </div>
+        </Show>
+
         <button class={styles.confirmBtn} onClick={handleConfirm}>
           Kryssa!
         </button>

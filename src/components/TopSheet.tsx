@@ -32,7 +32,8 @@ export default function TopSheet(props: Props) {
           downOnOverlay = false;
         }}
         on:touchmove={ { handleEvent: (e) => {
-          e.preventDefault();
+          // Only block backdrop drags; let the sheet body scroll on touch.
+          if (e.target === e.currentTarget) e.preventDefault();
         }, passive: false } }
       >
         <div class={styles.sheet} classList={{ [props.sheetClass!]: !!props.sheetClass }}>

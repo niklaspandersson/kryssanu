@@ -150,7 +150,8 @@ class MeRoutes
         $offset = max((int) ($request->getQueryParams()['offset'] ?? 0), 0);
 
         $stmt = $db->prepare(
-            'SELECT o.*, b.id as b_id, b.swedish as b_swedish, b.family as b_family, b.visitor as b_visitor
+            'SELECT o.*, b.id as b_id, b.swedish as b_swedish, b.family as b_family, b.visitor as b_visitor,
+                    (SELECT oi.id FROM ObservationImage oi WHERE oi.observationId = o.id ORDER BY oi.createdAt ASC LIMIT 1) AS img_id
              FROM Observation o
              JOIN Bird b ON b.id = o.birdId
              WHERE o.userId = :userId
@@ -190,7 +191,8 @@ class MeRoutes
         $total = (int) $countStmt->fetchColumn();
 
         $stmt = $db->prepare(
-            'SELECT o.*, b.id as b_id, b.swedish as b_swedish, b.family as b_family, b.visitor as b_visitor
+            'SELECT o.*, b.id as b_id, b.swedish as b_swedish, b.family as b_family, b.visitor as b_visitor,
+                    (SELECT oi.id FROM ObservationImage oi WHERE oi.observationId = o.id ORDER BY oi.createdAt ASC LIMIT 1) AS img_id
              FROM Observation o
              JOIN Bird b ON b.id = o.birdId
              WHERE o.userId = :userId
@@ -257,7 +259,11 @@ class MeRoutes
         $offset = max((int) ($request->getQueryParams()['offset'] ?? 0), 0);
 
         $stmt = $db->prepare(
-            'SELECT * FROM Observation WHERE userId = :userId AND birdId = :birdId ORDER BY date DESC LIMIT :limit OFFSET :offset'
+            'SELECT o.*,
+                    (SELECT oi.id FROM ObservationImage oi WHERE oi.observationId = o.id ORDER BY oi.createdAt ASC LIMIT 1) AS img_id
+             FROM Observation o
+             WHERE o.userId = :userId AND o.birdId = :birdId
+             ORDER BY o.date DESC LIMIT :limit OFFSET :offset'
         );
         $stmt->bindValue('userId', $user['id']);
         $stmt->bindValue('birdId', $args['birdId']);
@@ -497,6 +503,9 @@ class MeRoutes
             return Helpers::jsonResponse($response, ['error' => 'Observation not found'], 404);
         }
 
+        // Remove image files first; the DB row cascades with the observation.
+        ImageRoutes::purgeObservationFiles($db, [$args['id']]);
+
         $stmt = $db->prepare('DELETE FROM Observation WHERE id = :id');
         $stmt->execute(['id' => $args['id']]);
 
@@ -591,6 +600,8 @@ class MeRoutes
                 break;
 
             case 'delete':
+                // Remove image files first; the DB rows cascade with the observations.
+                ImageRoutes::purgeObservationFiles($db, $ownedIds);
                 $stmt = $db->prepare("DELETE FROM Observation WHERE id IN ({$ph})");
                 $stmt->execute($ownedIds);
                 break;
