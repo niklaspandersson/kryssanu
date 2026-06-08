@@ -84,10 +84,12 @@ export default function ObservationsPage() {
   const activeBird = createMemo(() =>
     birdId() ? allBirds().find((b) => b.id === birdId()) : undefined
   );
-  const heading = () => {
-    if (listId()) return activeList()?.name ?? "Lista";
-    if (birdId()) return activeBird()?.swedish ?? "Art";
-    return "Mina observationer";
+  // The main title is always the same; filtered views get a descriptive
+  // subtitle naming the active list or species instead.
+  const subtitle = () => {
+    if (listId()) return `Lista: ${activeList()?.name ?? "Lista"}`;
+    if (birdId()) return `Art: ${activeBird()?.swedish ?? "Art"}`;
+    return undefined;
   };
   const isFiltered = () => !!listId() || !!birdId();
 
@@ -289,7 +291,12 @@ export default function ObservationsPage() {
         </A>
       </Show>
       <div class={styles.pageHeader}>
-        <h1 class={shared.heading}>{heading()}</h1>
+        <div class={styles.headingGroup}>
+          <h1 class={shared.heading}>Mina observationer</h1>
+          <Show when={subtitle()}>
+            {(sub) => <p class={styles.subtitle}>{sub()}</p>}
+          </Show>
+        </div>
         <Show when={total() > 0}>
           <button
             class={styles.selectBtn}

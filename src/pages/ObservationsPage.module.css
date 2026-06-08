@@ -7,6 +7,19 @@
   margin-bottom: var(--space-lg);
 }
 
+.headingGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  min-width: 0;
+}
+
+.subtitle {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
 .selectBtn {
   display: flex;
   align-items: center;
