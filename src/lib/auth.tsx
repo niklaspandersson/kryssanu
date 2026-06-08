@@ -101,8 +101,10 @@ export function AuthProvider(props: { children: JSX.Element }) {
       const google = (window as any).google;
       if (!google) return;
       google.accounts.id.renderButton(container, {
-        type: "icon",
+        type: "standard",
         size: "medium",
+        text: "signin_with",
+        locale: "sv",
       });
     });
   }
