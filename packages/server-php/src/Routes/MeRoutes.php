@@ -266,7 +266,13 @@ class MeRoutes
         $stmt->execute();
         $rows = $stmt->fetchAll();
 
-        $observations = array_map([Helpers::class, 'formatObservation'], $rows);
+        $listIdsByObs = self::listIdsForObservations($db, array_column($rows, 'id'));
+
+        $observations = array_map(function ($row) use ($listIdsByObs) {
+            $obs = Helpers::formatObservation($row);
+            $obs['listIds'] = $listIdsByObs[$row['id']] ?? [];
+            return $obs;
+        }, $rows);
 
         return Helpers::jsonResponse($response, $observations);
     }

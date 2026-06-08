@@ -196,7 +196,7 @@ export default function BirdsPage() {
           birdName={bird.swedish}
         />
         <div class={styles.birdContent}>
-          <div class={styles.birdInfo}>
+          <A href={`/birds/${encodeURIComponent(bird.id)}`} class={styles.birdInfo}>
             <span class={styles.birdName}>
               {bird.swedish}
               <Show when={bird.visitor}>
@@ -204,7 +204,7 @@ export default function BirdsPage() {
               </Show>
             </span>
             <span class={styles.birdLatin}>{bird.id}</span>
-          </div>
+          </A>
           <Show when={date()}>
             <span class={styles.birdDate}>
               {new Date(date()!).toLocaleDateString("sv-SE")}

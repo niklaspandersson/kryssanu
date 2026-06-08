@@ -156,6 +156,11 @@
 .obsBird {
   color: var(--color-primary);
   font-weight: 500;
+  text-decoration: none;
+}
+
+.obsBird:hover {
+  text-decoration: underline;
 }
 
 .obsLocation {

@@ -9,6 +9,7 @@ type Props = {
   filtered: Bird[];
   observedBirds: Record<number, boolean>;
   onAdd: (bird: Bird) => void;
+  onNavigate?: () => void;
 };
 
 export default function SearchResults(props: Props) {
@@ -35,6 +36,7 @@ export default function SearchResults(props: Props) {
                 bird={bird}
                 observed={props.observedBirds[bird.id] ?? false}
                 onAdd={props.onAdd}
+                onNavigate={props.onNavigate}
               />
             )}
           </For>

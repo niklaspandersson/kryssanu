@@ -1,4 +1,5 @@
 import { Show } from "solid-js";
+import { A } from "@solidjs/router";
 import type { Bird } from "../../lib/types";
 import ObserveButton from "../ObserveButton";
 import styles from "./BirdRow.module.css";
@@ -7,6 +8,7 @@ type Props = {
   bird: Bird;
   observed: boolean;
   onAdd: (bird: Bird) => void;
+  onNavigate?: () => void;
 };
 
 export default function BirdRow(props: Props) {
@@ -18,12 +20,16 @@ export default function BirdRow(props: Props) {
         birdName={props.bird.swedish}
       />
       <div class={styles.info}>
-        <span class={styles.name}>
+        <A
+          href={`/birds/${encodeURIComponent(props.bird.id)}`}
+          class={styles.name}
+          onClick={() => props.onNavigate?.()}
+        >
           {props.bird.swedish}
           <Show when={props.bird.visitor}>
             <span class={styles.visitorBadge}>Raritet</span>
           </Show>
-        </span>
+        </A>
         <span class={styles.family}>{props.bird.family}</span>
       </div>
     </div>

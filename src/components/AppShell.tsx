@@ -146,6 +146,7 @@ export default function AppShell(props: RouteSectionProps) {
         filtered={filtered()}
         observedBirds={observedBirds() ?? {}}
         onAdd={handleAdd}
+        onNavigate={handleSearchClose}
       />
       <QuickAddSheet
         bird={selectedBird()}

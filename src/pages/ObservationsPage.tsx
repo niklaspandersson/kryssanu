@@ -7,6 +7,7 @@ import {
   Show,
   For,
 } from "solid-js";
+import { A } from "@solidjs/router";
 import { me as meApi } from "../lib/api";
 import { useAuth } from "../lib/auth";
 import { setSearchFabHidden } from "../components/AppShell";
@@ -317,15 +318,38 @@ export default function ObservationsPage() {
                     </Show>
 
                     <div class={styles.obsMain}>
-                      <button
+                      <div
                         class={styles.obsRow}
+                        role="button"
+                        tabindex="0"
+                        aria-expanded={isOpen()}
                         onClick={() =>
                           selectMode() ? toggleSelect(obs.id) : toggleExpand(obs.id)
                         }
-                        aria-expanded={isOpen()}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault();
+                            selectMode() ? toggleSelect(obs.id) : toggleExpand(obs.id);
+                          }
+                        }}
                       >
                         <span class={styles.obsContent}>
-                          <span class={styles.obsBird}>{obs.bird.swedish}</span>
+                          <A
+                            href={`/birds/${encodeURIComponent(obs.bird.id)}`}
+                            class={styles.obsBird}
+                            onClick={(e) => {
+                              // Navigate to the bird, but in select mode keep the
+                              // tap as a row selection instead.
+                              if (selectMode()) {
+                                e.preventDefault();
+                                toggleSelect(obs.id);
+                              } else {
+                                e.stopPropagation();
+                              }
+                            }}
+                          >
+                            {obs.bird.swedish}
+                          </A>
                           <Show when={obs.location}>
                             {(loc) => <span class={styles.obsLocation}> · {loc()}</span>}
                           </Show>
@@ -345,7 +369,7 @@ export default function ObservationsPage() {
                             class={isOpen() ? styles.chevronOpen : styles.chevron}
                           />
                         </Show>
-                      </button>
+                      </div>
 
                       <Show when={isOpen() && !selectMode()}>
                         <dl class={styles.details}>

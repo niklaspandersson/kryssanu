@@ -102,7 +102,7 @@ export const me = {
     return fetchJson<PaginatedObservations>(`/me/observations/all${qs ? `?${qs}` : ''}`);
   },
   observationsForBird: (birdId: string) =>
-    fetchJson<Observation[]>(
+    fetchJson<(Observation & { listIds?: string[] })[]>(
       `/me/observations/bird/${encodeURIComponent(birdId)}`
     ),
   createObservation: (input: CreateObservationInput) =>

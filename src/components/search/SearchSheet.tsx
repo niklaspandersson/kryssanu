@@ -13,6 +13,7 @@ type Props = {
   filtered: Bird[];
   observedBirds: Record<number, boolean>;
   onAdd: (bird: Bird) => void;
+  onNavigate?: () => void;
 };
 
 export default function SearchSheet(props: Props) {
@@ -71,6 +72,7 @@ export default function SearchSheet(props: Props) {
             filtered={props.filtered}
             observedBirds={props.observedBirds}
             onAdd={props.onAdd}
+            onNavigate={props.onNavigate}
           />
         </div>
       </div>

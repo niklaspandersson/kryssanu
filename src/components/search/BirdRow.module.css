@@ -23,7 +23,8 @@
   font-weight: 500;
   font-size: var(--font-size-base);
   color: var(--color-text);
-  display: flex;
+  display: inline-flex;
+  align-self: flex-start;
   align-items: center;
   gap: var(--space-xs);
 }
