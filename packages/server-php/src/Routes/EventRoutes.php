@@ -637,8 +637,14 @@ class EventRoutes
             return Helpers::jsonResponse($response, ['error' => 'Only the creator can manage invite tokens'], 403);
         }
 
-        $stmt = $db->prepare('DELETE FROM InviteToken WHERE eventId = :eventId');
-        $stmt->execute(['eventId' => $args['id']]);
+        // Keep the token valid for a short grace period after the QR code is
+        // closed, so in-flight scans can still join.
+        $validUntil = gmdate('Y-m-d H:i:s', time() + 300);
+        $stmt = $db->prepare(
+            'UPDATE InviteToken SET validUntil = :validUntil
+             WHERE eventId = :eventId AND validUntil IS NULL'
+        );
+        $stmt->execute(['validUntil' => $validUntil, 'eventId' => $args['id']]);
 
         return Helpers::jsonResponse($response, ['ok' => true]);
     }
@@ -654,6 +660,14 @@ class EventRoutes
 
         if (!$inviteToken) {
             return Helpers::jsonResponse($response, ['error' => 'Invite link expired or invalid'], 404);
+        }
+
+        if ($inviteToken['validUntil'] !== null) {
+            $now = new \DateTime('now', new \DateTimeZone('UTC'));
+            $validUntil = new \DateTime($inviteToken['validUntil'], new \DateTimeZone('UTC'));
+            if ($validUntil < $now) {
+                return Helpers::jsonResponse($response, ['error' => 'Invite link expired or invalid'], 404);
+            }
         }
 
         $eventId = $inviteToken['eventId'];

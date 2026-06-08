@@ -27,3 +27,12 @@ $count = $stmt->rowCount();
 if ($count > 0) {
     echo "Cleaned up {$count} expired sessions\n";
 }
+
+// Remove invite tokens whose grace period has lapsed.
+$stmt = $db->prepare('DELETE FROM InviteToken WHERE validUntil IS NOT NULL AND validUntil < NOW()');
+$stmt->execute();
+$tokenCount = $stmt->rowCount();
+
+if ($tokenCount > 0) {
+    echo "Cleaned up {$tokenCount} expired invite tokens\n";
+}

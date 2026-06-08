@@ -4,7 +4,6 @@ import QRCode from "qrcode";
 import { events as eventsApi, feed, me as meApi } from "../lib/api";
 import { useAuth } from "../lib/auth";
 import { isOnline } from "../lib/useOnlineStatus";
-import { openSearch } from "../components/AppShell";
 import Icon from "../components/Icon";
 import Avatar from "../components/Avatar";
 import EmptyState from "../components/EmptyState";
@@ -166,15 +165,15 @@ export default function EventDetailPage() {
               </button>
             </Show>
 
-            {/* Add observation (active events, participants only) */}
+            {/* Observation notice (active events, participants only) */}
             <Show when={isActive() && isParticipant()}>
-              <button
-                class={styles.addObsBtn}
-                onClick={() => openSearch()}
-              >
-                <Icon name="add" size={20} />
-                Lägg till observation
-              </button>
+              <div class={styles.obsNotice}>
+                <Icon name="info" size={20} />
+                <p>
+                  Alla observationer du registrerar under eventets tidsperiod
+                  räknas automatiskt med i eventet.
+                </p>
+              </div>
             </Show>
 
             {/* Results (past events) */}
@@ -395,6 +394,10 @@ export default function EventDetailPage() {
                     alt="QR-kod för inbjudan"
                   />
                   <p class={styles.qrEventName}>{ev().name}</p>
+                  <p class={styles.qrNotice}>
+                    Inbjudan gäller i upp till 5 minuter efter att du stängt
+                    QR-koden.
+                  </p>
                   <button class={styles.qrCloseBtn} onClick={handleCloseQr}>
                     Stäng
                   </button>

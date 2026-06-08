@@ -153,11 +153,12 @@ model ObservationList {
 }
 
 model InviteToken {
-  id        String   @id @default(cuid())
-  token     String   @unique
-  eventId   String
-  createdAt DateTime @default(now())
-  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  id         String    @id @default(cuid())
+  token      String    @unique
+  eventId    String
+  createdAt  DateTime  @default(now())
+  validUntil DateTime?
+  event      Event     @relation(fields: [eventId], references: [id], onDelete: Cascade)
 
   @@index([eventId])
 }
