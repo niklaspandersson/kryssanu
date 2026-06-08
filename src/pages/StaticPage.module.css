@@ -13,3 +13,35 @@
   line-height: 1.6;
   color: var(--text-secondary, #555);
 }
+
+.section {
+  margin-top: 2rem;
+}
+
+.list {
+  margin: 0;
+  padding-left: 1.25rem;
+  line-height: 1.6;
+  color: var(--text-secondary, #555);
+}
+
+.list li {
+  margin-bottom: 0.4rem;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  margin-bottom: 0.5rem;
+}
+
+.sectionHeader .md-icon {
+  font-size: 22px;
+  color: var(--color-primary);
+}
+
+.sectionHeader h2 {
+  font-size: 1.15rem;
+  margin: 0;
+}
