@@ -124,7 +124,12 @@ export default function SummaryPage() {
                     <span>
                       <span class={shared.activityUser}>{item.user.name}</span>
                       {" "}kryssade{" "}
-                      <span class={shared.activityBird}>{item.bird.swedish}</span>
+                      <A
+                        href={`/birds/${encodeURIComponent(item.bird.id)}`}
+                        class={`${shared.activityBird} ${styles.birdLink}`}
+                      >
+                        {item.bird.swedish}
+                      </A>
                     </span>
                     <span class={shared.activityDate}>
                       {new Date(item.date).toLocaleDateString("sv-SE")}
@@ -145,21 +150,30 @@ export default function SummaryPage() {
             Dina senaste kryss
             <A href="/observations" class={styles.sectionLink}>Visa alla</A>
           </h2>
-          <For each={latestObs()!.slice(0, 5)}>
-            {(obs) => (
-              <div class={shared.activityItem}>
-                <div class={shared.activityContent}>
-                  <span>
-                    <span class={shared.activityBird}>{obs.bird.swedish}</span>
-                    {obs.location && <span class={styles.feedLocation}> · {obs.location}</span>}
-                  </span>
-                  <span class={shared.activityDate}>
-                    {new Date(obs.date).toLocaleDateString("sv-SE")}
-                  </span>
-                </div>
-              </div>
-            )}
-          </For>
+          <ul class={styles.obsList}>
+            <For each={latestObs()!.slice(0, 5)}>
+              {(obs) => (
+                <li class={styles.obsItem}>
+                  <div class={styles.obsRow}>
+                    <span class={styles.obsContent}>
+                      <A
+                        href={`/birds/${encodeURIComponent(obs.bird.id)}`}
+                        class={styles.obsBird}
+                      >
+                        {obs.bird.swedish}
+                      </A>
+                      <Show when={obs.location}>
+                        {(loc) => <span class={styles.obsLocation}> · {loc()}</span>}
+                      </Show>
+                    </span>
+                    <span class={styles.obsDate}>
+                      {new Date(obs.date).toLocaleDateString("sv-SE")}
+                    </span>
+                  </div>
+                </li>
+              )}
+            </For>
+          </ul>
         </section>
       </Show>
     </div>
