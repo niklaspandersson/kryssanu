@@ -53,6 +53,18 @@
   color: var(--color-text-muted);
 }
 
+.sectionLink {
+  margin-left: auto;
+  font-size: var(--font-size-xs);
+  color: var(--color-primary);
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.sectionLink:hover {
+  text-decoration: underline;
+}
+
 /* Observation rows — mirror the compact list on the Observations page. */
 .obsList {
   list-style: none;
@@ -89,7 +101,14 @@
   gap: var(--space-xs) var(--space-sm);
 }
 
+.obsBird {
+  color: var(--color-primary);
+  font-weight: 500;
+}
+
 .obsLocation {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-xs);
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;

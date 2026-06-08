@@ -186,20 +186,41 @@ class MeRoutes
         $limit = min(max((int) ($request->getQueryParams()['limit'] ?? 100), 1), 100);
         $offset = max((int) ($request->getQueryParams()['offset'] ?? 0), 0);
 
-        $countStmt = $db->prepare('SELECT COUNT(*) FROM Observation WHERE userId = :userId');
-        $countStmt->execute(['userId' => $user['id']]);
+        $listId = $request->getQueryParams()['listId'] ?? null;
+        $birdId = $request->getQueryParams()['birdId'] ?? null;
+
+        // Optional filters: by list membership and/or by species. Both narrow the
+        // same paginated result set so the client keeps full pagination/bulk support.
+        $joins = '';
+        $where = 'o.userId = :userId';
+        $bindings = ['userId' => $user['id']];
+        if ($listId !== null) {
+            $joins .= ' JOIN ObservationList ol ON ol.observationId = o.id AND ol.listId = :listId';
+            $bindings['listId'] = $listId;
+        }
+        if ($birdId !== null) {
+            $where .= ' AND o.birdId = :birdId';
+            $bindings['birdId'] = $birdId;
+        }
+
+        $countStmt = $db->prepare(
+            "SELECT COUNT(*) FROM Observation o{$joins} WHERE {$where}"
+        );
+        $countStmt->execute($bindings);
         $total = (int) $countStmt->fetchColumn();
 
         $stmt = $db->prepare(
-            'SELECT o.*, b.id as b_id, b.swedish as b_swedish, b.family as b_family, b.visitor as b_visitor,
+            "SELECT o.*, b.id as b_id, b.swedish as b_swedish, b.family as b_family, b.visitor as b_visitor,
                     (SELECT oi.id FROM ObservationImage oi WHERE oi.observationId = o.id ORDER BY oi.createdAt ASC LIMIT 1) AS img_id
              FROM Observation o
-             JOIN Bird b ON b.id = o.birdId
-             WHERE o.userId = :userId
+             JOIN Bird b ON b.id = o.birdId{$joins}
+             WHERE {$where}
              ORDER BY o.date DESC, o.id DESC
-             LIMIT :limit OFFSET :offset'
+             LIMIT :limit OFFSET :offset"
         );
-        $stmt->bindValue('userId', $user['id']);
+        foreach ($bindings as $key => $value) {
+            $stmt->bindValue($key, $value);
+        }
         $stmt->bindValue('limit', $limit, \PDO::PARAM_INT);
         $stmt->bindValue('offset', $offset, \PDO::PARAM_INT);
         $stmt->execute();

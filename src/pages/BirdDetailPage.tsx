@@ -1,5 +1,5 @@
 import { createResource, createMemo, Show, For } from "solid-js";
-import { useParams, useNavigate } from "@solidjs/router";
+import { useParams, useNavigate, A } from "@solidjs/router";
 import { me as meApi, birdImages as birdImagesApi } from "../lib/api";
 import { allBirds } from "../lib/birdStore";
 import { userLists } from "../lib/listStore";
@@ -80,6 +80,12 @@ export default function BirdDetailPage() {
                   Mina observationer
                   <Show when={(obs() ?? []).length > 0}>
                     <span class={styles.count}>({obs()!.length})</span>
+                    <A
+                      href={`/observations/bird/${encodeURIComponent(birdId())}`}
+                      class={styles.sectionLink}
+                    >
+                      Visa alla
+                    </A>
                   </Show>
                 </h2>
                 <Show
@@ -97,11 +103,12 @@ export default function BirdDetailPage() {
                         <li class={styles.obsItem}>
                           <div class={styles.obsRow}>
                             <span class={styles.obsContent}>
-                              <span class={styles.obsLocation}>
-                                <Show when={o.location} fallback="—">
-                                  {o.location}
-                                </Show>
-                              </span>
+                              <span class={styles.obsBird}>{b().swedish}</span>
+                              <Show when={o.location}>
+                                {(loc) => (
+                                  <span class={styles.obsLocation}> · {loc()}</span>
+                                )}
+                              </Show>
                               <Show when={listsFor(o).length > 0}>
                                 <span class={styles.obsListTags}>
                                   <For each={listsFor(o)}>

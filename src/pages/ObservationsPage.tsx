@@ -7,11 +7,12 @@ import {
   Show,
   For,
 } from "solid-js";
-import { A } from "@solidjs/router";
+import { A, useParams } from "@solidjs/router";
 import { me as meApi } from "../lib/api";
 import { useAuth } from "../lib/auth";
 import { setSearchFabHidden } from "../components/AppShell";
 import { userLists, refreshLists } from "../lib/listStore";
+import { allBirds } from "../lib/birdStore";
 import type {
   ObservationWithBird,
   UpdateObservationInput,
@@ -46,12 +47,49 @@ type ConfirmConfig = {
 
 export default function ObservationsPage() {
   const { isLoggedIn } = useAuth();
+  const params = useParams();
   const [page, setPage] = createSignal(0);
 
+  // Solid Router does not URL-decode route params, and bird IDs are latin
+  // species names containing spaces — decode before filtering.
+  const listId = () => params.listId;
+  const birdId = () => (params.birdId ? decodeURIComponent(params.birdId) : undefined);
+
+  // Reset to the first page whenever the active filter changes so we never land
+  // on an out-of-range offset for the new (smaller) result set.
+  createEffect(() => {
+    listId();
+    birdId();
+    setPage(0);
+  });
+
   const [data, { refetch, mutate }] = createResource(
-    () => (isLoggedIn() ? page() : undefined),
-    (p) => meApi.allObservations({ limit: PAGE_SIZE, offset: p * PAGE_SIZE })
+    () =>
+      isLoggedIn()
+        ? { page: page(), listId: listId(), birdId: birdId() }
+        : undefined,
+    ({ page: p, listId, birdId }) =>
+      meApi.allObservations({
+        limit: PAGE_SIZE,
+        offset: p * PAGE_SIZE,
+        listId,
+        birdId,
+      })
   );
+
+  // Contextual header: list name / species name for filtered views.
+  const activeList = createMemo(() =>
+    listId() ? userLists().find((l) => l.id === listId()) : undefined
+  );
+  const activeBird = createMemo(() =>
+    birdId() ? allBirds().find((b) => b.id === birdId()) : undefined
+  );
+  const heading = () => {
+    if (listId()) return activeList()?.name ?? "Lista";
+    if (birdId()) return activeBird()?.swedish ?? "Art";
+    return "Mina observationer";
+  };
+  const isFiltered = () => !!listId() || !!birdId();
 
   const observations = () => data()?.observations ?? [];
   const total = () => data()?.total ?? 0;
@@ -241,8 +279,17 @@ export default function ObservationsPage() {
 
   return (
     <div class={shared.page}>
+      <Show when={isFiltered()}>
+        <A
+          href={listId() ? "/lists" : `/birds/${encodeURIComponent(birdId()!)}`}
+          class={shared.back}
+        >
+          <Icon name="arrow_back" size={18} />
+          {listId() ? "Listor" : "Tillbaka"}
+        </A>
+      </Show>
       <div class={styles.pageHeader}>
-        <h1 class={shared.heading}>Mina observationer</h1>
+        <h1 class={shared.heading}>{heading()}</h1>
         <Show when={total() > 0}>
           <button
             class={styles.selectBtn}
@@ -264,7 +311,13 @@ export default function ObservationsPage() {
           fallback={
             <EmptyState
               icon="visibility_off"
-              message="Du har inga observationer än. Sök efter en fågel och registrera ditt första kryss."
+              message={
+                listId()
+                  ? "Inga observationer i den här listan ännu. Välj listan när du registrerar en ny observation."
+                  : birdId()
+                  ? "Du har inga observationer av den här arten ännu."
+                  : "Du har inga observationer än. Sök efter en fågel och registrera ditt första kryss."
+              }
             />
           }
         >

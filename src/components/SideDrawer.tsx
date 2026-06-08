@@ -152,7 +152,7 @@ export default function SideDrawer(props: Props) {
             >
               <For each={userLists().slice().sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).slice(0, 5)}>
                 {(list) => (
-                  <A href={`/lists/${list.id}`} class={styles.eventItem} onClick={() => props.onClose()}>
+                  <A href={`/observations/list/${list.id}`} class={styles.eventItem} onClick={() => props.onClose()}>
                     <div class={styles.eventInfo}>
                       <span class={styles.eventName}>{list.name}</span>
                       <span class={styles.eventDate}>{list.observationCount} {list.observationCount === 1 ? "kryss" : "kryss"}</span>

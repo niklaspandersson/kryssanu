@@ -96,10 +96,14 @@ export const me = {
     const qs = params.toString();
     return fetchJson<ObservationWithBird[]>(`/me/observations${qs ? `?${qs}` : ''}`);
   },
-  allObservations: (opts: { limit?: number; offset?: number } = {}) => {
+  allObservations: (
+    opts: { limit?: number; offset?: number; listId?: string; birdId?: string } = {}
+  ) => {
     const params = new URLSearchParams();
     if (opts.limit != null) params.set('limit', String(opts.limit));
     if (opts.offset != null) params.set('offset', String(opts.offset));
+    if (opts.listId != null) params.set('listId', opts.listId);
+    if (opts.birdId != null) params.set('birdId', opts.birdId);
     const qs = params.toString();
     return fetchJson<PaginatedObservations>(`/me/observations/all${qs ? `?${qs}` : ''}`);
   },

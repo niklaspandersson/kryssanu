@@ -12,7 +12,6 @@ import CreateEventPage from "./pages/CreateEventPage";
 import EventDetailPage from "./pages/EventDetailPage";
 import ListsPage from "./pages/ListsPage";
 import CreateListPage from "./pages/CreateListPage";
-import ListDetailPage from "./pages/ListDetailPage";
 import InviteAcceptPage from "./pages/InviteAcceptPage";
 import ProfilePage from "./pages/ProfilePage";
 import BirdsPage from "./pages/BirdsPage";
@@ -83,13 +82,14 @@ export default function App() {
       <Route path="/birds" component={protectedPage(BirdsPage)} />
       <Route path="/birds/:id" component={BirdDetailPage} />
       <Route path="/observations" component={protectedPage(ObservationsPage)} />
+      <Route path="/observations/list/:listId" component={protectedPage(ObservationsPage)} />
+      <Route path="/observations/bird/:birdId" component={protectedPage(ObservationsPage)} />
       <Route path="/summary" component={protectedPage(SummaryPage)} />
       <Route path="/events" component={protectedPage(EventsPage)} />
       <Route path="/events/new" component={protectedPage(CreateEventPage)} />
       <Route path="/events/:id" component={protectedPage(EventDetailPage)} />
       <Route path="/lists" component={protectedPage(ListsPage)} />
       <Route path="/lists/new" component={protectedPage(CreateListPage)} />
-      <Route path="/lists/:id" component={protectedPage(ListDetailPage)} />
       <Route path="/invite/:token" component={protectedPage(InviteAcceptPage)} />
       <Route path="/profile" component={protectedPage(ProfilePage)} />
       <Route path="/about" component={AboutPage} />

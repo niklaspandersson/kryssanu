@@ -18,12 +18,12 @@ export default function CreateListPage() {
 
     setSubmitting(true);
     try {
-      const list = await listsApi.create({
+      await listsApi.create({
         name: name(),
         description: description() || undefined,
       });
       await refreshLists();
-      navigate(`/lists/${list.id}`);
+      navigate("/lists");
     } finally {
       setSubmitting(false);
     }
