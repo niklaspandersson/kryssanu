@@ -1,8 +1,13 @@
 import { createSignal } from 'solid-js';
+import type { PendingObservation } from './types';
 import { pendingObs } from './offlineDb';
 import { me as meApi } from './api';
+import { notifyObservationCreated } from './observationStore';
 
 export const [pendingCount, setPendingCount] = createSignal(0);
+export const [pendingObservations, setPendingObservations] = createSignal<
+  PendingObservation[]
+>([]);
 
 let syncing = false;
 
@@ -43,11 +48,15 @@ export async function syncPendingObservations(): Promise<{
     await refreshPendingCount();
   }
 
+  // Server-backed activity feeds can now include the synced observations.
+  if (synced > 0) notifyObservationCreated();
+
   return { synced, failed };
 }
 
 export async function refreshPendingCount(): Promise<void> {
   const pending = await pendingObs.getAll();
+  setPendingObservations(pending);
   setPendingCount(pending.length);
 }
 

@@ -9,6 +9,7 @@ import { userLists, refreshLists } from "../lib/listStore";
 import { isOnline } from "../lib/useOnlineStatus";
 import { pendingObs } from "../lib/offlineDb";
 import { refreshPendingCount } from "../lib/offlineSync";
+import { notifyObservationCreated } from "../lib/observationStore";
 import TopNav from "./TopNav";
 import SearchSheet from "./search/SearchSheet";
 import QuickAddSheet from "./search/QuickAddSheet";
@@ -80,6 +81,7 @@ export default function AppShell(props: RouteSectionProps) {
 
     if (isOnline()) {
       await meApi.createObservation({ birdId: bird.id, ...data });
+      notifyObservationCreated();
     } else {
       await pendingObs.add({
         id: crypto.randomUUID(),

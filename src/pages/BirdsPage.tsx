@@ -7,6 +7,7 @@ import { allBirds, birdsReady } from "../lib/birdStore";
 import { isOnline } from "../lib/useOnlineStatus";
 import { pendingObs } from "../lib/offlineDb";
 import { refreshPendingCount } from "../lib/offlineSync";
+import { notifyObservationCreated } from "../lib/observationStore";
 import Icon from "../components/Icon";
 import ObserveButton from "../components/ObserveButton";
 import EmptyState from "../components/EmptyState";
@@ -153,6 +154,7 @@ export default function BirdsPage() {
           console.error("Bilduppladdning misslyckades", e);
         }
       }
+      notifyObservationCreated();
     } else {
       await pendingObs.add({
         id: crypto.randomUUID(),

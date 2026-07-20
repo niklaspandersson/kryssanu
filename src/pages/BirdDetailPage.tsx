@@ -4,23 +4,50 @@ import { me as meApi, birdImages as birdImagesApi } from "../lib/api";
 import { allBirds } from "../lib/birdStore";
 import { userLists } from "../lib/listStore";
 import { useAuth } from "../lib/auth";
+import { pendingObservations } from "../lib/offlineSync";
+import { observationsRevision } from "../lib/observationStore";
+import type { Observation } from "../lib/types";
 import Icon from "../components/Icon";
 import EmptyState from "../components/EmptyState";
 import shared from "../styles/shared.module.css";
 import styles from "./BirdDetailPage.module.css";
 
+type ObsRow = Observation & { listIds?: string[]; pending?: boolean };
+
 export default function BirdDetailPage() {
   const params = useParams();
-  const { isLoggedIn } = useAuth();
+  const { isLoggedIn, user } = useAuth();
 
   // Solid Router does not URL-decode route params, and bird IDs are latin
   // species names containing spaces — decode before matching/fetching.
   const birdId = () => decodeURIComponent(params.id);
   const bird = createMemo(() => allBirds().find(b => b.id === birdId()));
   const [obs] = createResource(
-    () => (isLoggedIn() ? birdId() : null),
-    (id) => meApi.observationsForBird(id)
+    () => (isLoggedIn() ? { id: birdId(), rev: observationsRevision() } : null),
+    (source) => meApi.observationsForBird(source.id)
   );
+
+  // Observations queued while offline aren't on the server yet, so `obs` (a
+  // server fetch) can't include them. Show this bird's pending kryss at the top.
+  const rows = createMemo<ObsRow[]>(() => {
+    const id = birdId();
+    const pending: ObsRow[] = pendingObservations()
+      .filter((p) => p.birdId === id)
+      .map((p) => ({
+        id: `pending-${p.id}`,
+        date: p.createdAt,
+        location: p.location ?? null,
+        latitude: p.latitude ?? null,
+        longitude: p.longitude ?? null,
+        note: p.note ?? null,
+        createdAt: p.createdAt,
+        updatedAt: p.createdAt,
+        birdId: p.birdId,
+        userId: user()?.id ?? "",
+        pending: true,
+      }));
+    return [...pending, ...(obs() ?? [])];
+  });
 
   // Public first image for this bird, shown to everyone (incl. logged-out users).
   const [heroImage] = createResource(
@@ -72,8 +99,8 @@ export default function BirdDetailPage() {
                 <h2 class={shared.sectionTitle}>
                   <Icon name="visibility" size={20} />
                   Mina observationer
-                  <Show when={(obs() ?? []).length > 0}>
-                    <span class={styles.count}>({obs()!.length})</span>
+                  <Show when={rows().length > 0}>
+                    <span class={styles.count}>({rows().length})</span>
                     <A
                       href={`/observations/bird/${encodeURIComponent(birdId())}`}
                       class={styles.sectionLink}
@@ -83,7 +110,7 @@ export default function BirdDetailPage() {
                   </Show>
                 </h2>
                 <Show
-                  when={(obs() ?? []).length > 0}
+                  when={rows().length > 0}
                   fallback={
                     <EmptyState
                       icon="visibility_off"
@@ -92,7 +119,7 @@ export default function BirdDetailPage() {
                   }
                 >
                   <ul class={styles.obsList}>
-                    <For each={obs()!.slice(0, 10)}>
+                    <For each={rows().slice(0, 10)}>
                       {(o) => (
                         <li class={styles.obsItem}>
                           <div class={styles.obsRow}>
@@ -114,6 +141,12 @@ export default function BirdDetailPage() {
                               </Show>
                               <Show when={o.image}>
                                 <Icon name="image" size={16} class={styles.obsImageIcon} />
+                              </Show>
+                              <Show when={o.pending}>
+                                <span class={styles.pendingBadge}>
+                                  <Icon name="cloud_off" size={14} />
+                                  Väntar på synk
+                                </span>
                               </Show>
                             </span>
                             <span class={styles.obsDate}>

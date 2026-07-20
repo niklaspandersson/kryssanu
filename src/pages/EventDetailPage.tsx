@@ -4,6 +4,7 @@ import QRCode from "qrcode";
 import { events as eventsApi, feed, me as meApi } from "../lib/api";
 import { useAuth } from "../lib/auth";
 import { isOnline } from "../lib/useOnlineStatus";
+import { observationsRevision } from "../lib/observationStore";
 import Icon from "../components/Icon";
 import Avatar from "../components/Avatar";
 import EmptyState from "../components/EmptyState";
@@ -39,8 +40,8 @@ export default function EventDetailPage() {
     (source) => eventsApi.participants(source.eventId, { limit: PARTICIPANTS_PER_PAGE, offset: source.offset })
   );
   const [recentActivity] = createResource(
-    () => (isActive() ? params.id : null),
-    (eventId) => feed.get({ eventId, limit: 10 })
+    () => (isActive() ? { id: params.id, rev: observationsRevision() } : null),
+    (source) => feed.get({ eventId: source.id, limit: 10 })
   );
   const [participantObs] = createResource(
     () => {

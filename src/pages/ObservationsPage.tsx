@@ -13,6 +13,8 @@ import { useAuth } from "../lib/auth";
 import { setSearchFabHidden } from "../components/AppShell";
 import { userLists, refreshLists } from "../lib/listStore";
 import { allBirds } from "../lib/birdStore";
+import { isOnline } from "../lib/useOnlineStatus";
+import { observationsRevision } from "../lib/observationStore";
 import type {
   ObservationWithBird,
   UpdateObservationInput,
@@ -66,7 +68,7 @@ export default function ObservationsPage() {
   const [data, { refetch, mutate }] = createResource(
     () =>
       isLoggedIn()
-        ? { page: page(), listId: listId(), birdId: birdId() }
+        ? { page: page(), listId: listId(), birdId: birdId(), rev: observationsRevision() }
         : undefined,
     ({ page: p, listId, birdId }) =>
       meApi.allObservations({
@@ -298,6 +300,17 @@ export default function ObservationsPage() {
           </button>
         </Show>
       </div>
+
+      <Show when={!isOnline()}>
+        <div class={shared.offlineBox}>
+          <Icon name="cloud_off" size={24} />
+          <p class={shared.offlineText}>
+            Du är offline. Listan uppdateras inte förrän du är uppkopplad igen –
+            nya observationer du registrerar nu synkas när anslutningen är
+            tillbaka.
+          </p>
+        </div>
+      </Show>
 
       <Show
         when={!data.loading || data()}

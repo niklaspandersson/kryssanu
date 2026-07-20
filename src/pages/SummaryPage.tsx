@@ -1,8 +1,12 @@
-import { createResource, Show, For } from "solid-js";
+import { createResource, createMemo, Show, For } from "solid-js";
 import { A } from "@solidjs/router";
 import { feed, me as meApi, events as eventsApi } from "../lib/api";
 import { useAuth } from "../lib/auth";
 import { isOnline } from "../lib/useOnlineStatus";
+import { allBirds } from "../lib/birdStore";
+import { pendingObservations } from "../lib/offlineSync";
+import { observationsRevision } from "../lib/observationStore";
+import type { ObservationWithBird } from "../lib/types";
 import StatCard from "../components/StatCard";
 import Avatar from "../components/Avatar";
 import EmptyState from "../components/EmptyState";
@@ -14,9 +18,49 @@ export default function SummaryPage() {
   const { user, isLoggedIn } = useAuth();
 
   const [myStats] = createResource(() => isLoggedIn(), () => meApi.stats());
-  const [feedData] = createResource(() => isLoggedIn(), () => feed.get());
+  const [feedData] = createResource(
+    () => (isLoggedIn() ? observationsRevision() : undefined),
+    () => feed.get()
+  );
   const [activeEvents] = createResource(() => isLoggedIn(), () => eventsApi.getAll("active"));
-  const [latestObs] = createResource(() => isLoggedIn(), () => meApi.observations());
+  const [latestObs] = createResource(
+    () => (isLoggedIn() ? observationsRevision() : undefined),
+    () => meApi.observations()
+  );
+
+  // Observations queued while offline haven't reached the server yet, so
+  // `latestObs` (a server fetch) can't include them. Map them to the display
+  // shape and show them at the top with a "pending sync" marker.
+  const pendingRows = createMemo<(ObservationWithBird & { pending: true })[]>(() => {
+    const birds = allBirds();
+    return pendingObservations().map((p) => {
+      const bird = birds.find((b) => b.id === p.birdId);
+      return {
+        id: `pending-${p.id}`,
+        date: p.createdAt,
+        location: p.location ?? null,
+        latitude: p.latitude ?? null,
+        longitude: p.longitude ?? null,
+        note: p.note ?? null,
+        createdAt: p.createdAt,
+        updatedAt: p.createdAt,
+        birdId: p.birdId,
+        userId: user()?.id ?? "",
+        bird: bird ?? {
+          id: p.birdId,
+          swedish: p.birdName,
+          family: "",
+          visitor: false,
+        },
+        pending: true as const,
+      };
+    });
+  });
+
+  const latestRows = createMemo(() => [
+    ...pendingRows(),
+    ...(latestObs() ?? []),
+  ]);
 
   function remaining(endsAt: string) {
     const diff = new Date(endsAt).getTime() - Date.now();
@@ -143,7 +187,7 @@ export default function SummaryPage() {
       </section>
 
       {/* Latest observations */}
-      <Show when={(latestObs() ?? []).length > 0}>
+      <Show when={latestRows().length > 0}>
         <section class={shared.section}>
           <h2 class={shared.sectionTitle}>
             <Icon name="visibility" size={20} />
@@ -151,7 +195,7 @@ export default function SummaryPage() {
             <A href="/observations" class={styles.sectionLink}>Visa alla</A>
           </h2>
           <ul class={styles.obsList}>
-            <For each={latestObs()!.slice(0, 5)}>
+            <For each={latestRows().slice(0, 5)}>
               {(obs) => (
                 <li class={styles.obsItem}>
                   <div class={styles.obsRow}>
@@ -164,6 +208,12 @@ export default function SummaryPage() {
                       </A>
                       <Show when={obs.location}>
                         {(loc) => <span class={styles.obsLocation}> · {loc()}</span>}
+                      </Show>
+                      <Show when={"pending" in obs && obs.pending}>
+                        <span class={styles.pendingBadge}>
+                          <Icon name="cloud_off" size={14} />
+                          Väntar på synk
+                        </span>
                       </Show>
                     </span>
                     <span class={styles.obsDate}>
