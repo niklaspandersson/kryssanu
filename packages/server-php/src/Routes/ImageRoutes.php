@@ -141,6 +141,19 @@ class ImageRoutes
 
     public static function birdImages(Request $request, Response $response, array $args): Response
     {
+        // This pointer changes when images are added/removed (or when the flag
+        // below is flipped), so it must not be cached aggressively (the image
+        // bytes themselves are immutable + cached separately, and offline reads
+        // come from the app's IndexedDB cache).
+        $response = $response->withHeader('Cache-Control', 'no-cache');
+
+        // Off by default: user-uploaded photos aren't audited/moderated yet,
+        // so don't surface them as the public hero image until that exists.
+        $enabled = $_ENV['PUBLIC_BIRD_IMAGES_ENABLED'] ?? getenv('PUBLIC_BIRD_IMAGES_ENABLED');
+        if (!in_array($enabled, ['true', '1'], true)) {
+            return Helpers::jsonResponse($response, null);
+        }
+
         $db = Database::getConnection();
 
         $stmt = $db->prepare(
@@ -156,11 +169,6 @@ class ImageRoutes
         );
         $stmt->execute(['birdId' => $args['birdId']]);
         $row = $stmt->fetch();
-
-        // This pointer changes when images are added/removed, so it must not be
-        // cached aggressively (the image bytes themselves are immutable + cached
-        // separately, and offline reads come from the app's IndexedDB cache).
-        $response = $response->withHeader('Cache-Control', 'no-cache');
 
         if (!$row) {
             return Helpers::jsonResponse($response, null);
