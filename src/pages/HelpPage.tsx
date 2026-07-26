@@ -33,7 +33,7 @@ export default function HelpPage() {
           <li>
             Fritextsök för att hitta arten — du kan söka både på artnamn och familj.
           </li>
-          <li>Bocka i rutan så skapas en observation med dagens datum. Du kan även ange plats,en kort anteckning samt koppla en bild.</li>
+          <li>Bocka i rutan så skapas en observation med dagens datum. Du kan även ange plats, en kort anteckning samt koppla en bild.</li>
           <li>
             Alla observationer går att redigera i efterhand, både enskilt och flera åt gången.
           </li>
@@ -58,11 +58,10 @@ export default function HelpPage() {
         </div>
         <p>
           Öppna en observation och välj ”Lägg till bild” för att ladda upp ett
-          foto från telefonen eller datorn. Bilder som laddas upp kan kommat att visas på artens detaljsida,
-          tillsammans med ditt namn, år och plats för observationen. 
+          foto från telefonen eller datorn. Bilden kopplas till observationen
+          och syns i din observationshistorik.
         </p>
-        <p>Du kan när som helst byta eller ta
-          bort en bild från en observation. Om bilden använts på en artsida så tas den även bort därifrån.</p>
+        <p>Du kan när som helst byta eller ta bort en bild från en observation.</p>
       </section>
 
       <section class={styles.section}>
