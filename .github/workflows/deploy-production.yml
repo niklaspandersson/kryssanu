@@ -1,0 +1,45 @@
+name: Deploy to production
+
+on:
+  push:
+    branches: [production]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+      - run: npm run build
+        env:
+          VITE_GOOGLE_CLIENT_ID: ${{ secrets.VITE_GOOGLE_CLIENT_ID }}
+
+      - name: Upload frontend
+        uses: Dylan700/sftp-upload-action@latest
+        with:
+          server: ${{ secrets.SSH_HOST }}
+          port: ${{ secrets.SSH_PORT }}
+          username: ${{ secrets.SSH_USERNAME }}
+          password: ${{ secrets.SSH_PASSWORD }}
+          uploads: |
+            dist/ => ${{ secrets.REMOTE_FRONTEND_PATH }}/
+
+      - name: Upload backend
+        uses: Dylan700/sftp-upload-action@latest
+        with:
+          server: ${{ secrets.SSH_HOST }}
+          port: ${{ secrets.SSH_PORT }}
+          username: ${{ secrets.SSH_USERNAME }}
+          password: ${{ secrets.SSH_PASSWORD }}
+          uploads: |
+            packages/server-php/ => ${{ secrets.REMOTE_BACKEND_PATH }}/
+          ignore: |
+            vendor/**
+            user-images/**
+            .env
