@@ -10,7 +10,7 @@ export default function HomePage() {
           <h1 class={styles.heroTitle}>kryssa.nu</h1>
           <img src="/logo-v2.webp" alt="Kryssa.nu" class={styles.heroLogo} />
           <p class={styles.heroSubtitle}>
-            Din personliga fågeljournal — kryssa arter, tävla med vänner och följ din statistik.
+            Din personliga fågeljournal - kryssa arter, tävla med vänner och följ din statistik.
           </p>
           <button class={styles.heroCta} onClick={() => openSearch()}>
             <span class="md-icon">search</span>
@@ -39,7 +39,7 @@ export default function HomePage() {
           <div class={styles.featureText}>
             <span class={styles.featureTitle}>Tävla med vänner</span>
             <span class={styles.featureDesc}>
-              Skapa event och bjud in vänner. Se vem som kryssar flest arter under en helg eller semester.
+              Skapa event och bjud in vänner. Se vem som kryssar flest arter under en dag eller på sommarlovet.
             </span>
           </div>
         </div>
@@ -50,7 +50,7 @@ export default function HomePage() {
           <div class={styles.featureText}>
             <span class={styles.featureTitle}>Ladda upp bilder</span>
             <span class={styles.featureDesc}>
-              Lägg till en bild på dina observationer. Dina bilder kan visas på artens sida — med ditt namn, år och plats.
+              Lägg till en bild på dina observationer.
             </span>
           </div>
         </div>

@@ -13,7 +13,7 @@ export default function TermsPage() {
       <p>
         Kryssa.nu är en ideell tjänst som drivs av frivilliga.
         Tjänsten erbjuds i befintligt skick utan några garantier. Vi förbehåller
-        oss rätten att när som helst ändra, begränsa eller avsluta tjänsten.
+        oss rätten att när som helst ändra, begränsa eller avsluta tjänsten. 
       </p>
 
       <h2>Konto och inloggning</h2>
