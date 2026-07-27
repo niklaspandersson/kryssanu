@@ -11,17 +11,19 @@ export default function TermsPage() {
 
       <h2>Om tjänsten</h2>
       <p>
-        Kryssa.nu är en ideell tjänst som drivs av frivilliga.
+        Kryssa.nu är en ideell tjänst som drivs utan reklam eller vinstintresse.
         Tjänsten erbjuds i befintligt skick utan några garantier. Vi förbehåller
-        oss rätten att när som helst ändra, begränsa eller avsluta tjänsten.
+        oss rätten att när som helst ändra, begränsa eller avsluta tjänsten. Men 
+        vi gör vårt bästa för att hålla tjänsten tillgänglig och informera om 
+        eventuella ändringar.
       </p>
 
       <h2>Konto och inloggning</h2>
       <p>
         Du loggar in via Google. Vi lagrar den information som behövs för att
-        tjänsten ska fungera, såsom ditt namn, e-postadress och profilbild från
-        Google. Du ansvarar för att hålla ditt konto säkert och för all aktivitet
-        som sker via ditt konto.
+        tjänsten ska fungera, såsom ditt namn och din e-postadress. Du ansvarar 
+        för att hålla ditt konto säkert och för all aktivitet som sker via ditt
+        konto.
       </p>
 
       <h2>Ditt innehåll</h2>
@@ -60,7 +62,7 @@ export default function TermsPage() {
       <h2>Personuppgifter</h2>
       <p>
         Vi samlar in och lagrar personuppgifter i enlighet med GDPR. De
-        uppgifter vi lagrar är: namn, e-postadress, profilbild (från Google),
+        uppgifter vi lagrar är: namn, e-postadress, länk till profilbild (från Google),
         samt information du själv väljer att ange, som ort och biografi. Du kan
         när som helst begära att få dina uppgifter raderade genom att kontakta
         oss.

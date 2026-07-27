@@ -53,6 +53,16 @@ export default function HelpPage() {
 
       <section class={styles.section}>
         <div class={styles.sectionHeader}>
+          <span class="md-icon">list</span>
+          <h2>Listor</h2>
+        </div>
+        <p>
+          Skapa listor för att organisera dina observationer ytterligare. Du kan till exempel ha en lista för kryss du gör hemma i trädgården eller på väg till jobbet, du väljer själv. Du kan skapa så många listor du vill. Listorna är privata och syns bara för dig.
+        </p>
+      </section>
+
+      <section class={styles.section}>
+        <div class={styles.sectionHeader}>
           <span class="md-icon">photo_camera</span>
           <h2>Ladda upp bilder</h2>
         </div>
