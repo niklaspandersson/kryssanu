@@ -8,7 +8,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "db:push": "prisma db push",
-    "db:seed": "tsx prisma/seed.ts"
+    "db:seed": "tsx prisma/seed.ts",
+    "db:build-birds-csv": "tsx tools/data-import/build-birds-csv.ts"
   },
   "dependencies": {
     "@prisma/client": "6.19.2",
