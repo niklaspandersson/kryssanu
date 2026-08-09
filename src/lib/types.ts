@@ -4,6 +4,7 @@ export type Bird = {
   swedish: string;
   family: string;
   visitor: boolean;
+  onSwedishList: boolean;
 };
 
 // ── Observation image ───────────────────────────────────────────────

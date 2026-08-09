@@ -51,6 +51,7 @@ export default function SummaryPage() {
           swedish: p.birdName,
           family: "",
           visitor: false,
+          onSwedishList: true,
         },
         pending: true as const,
       };

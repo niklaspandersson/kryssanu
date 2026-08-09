@@ -15,7 +15,7 @@ export async function initBirds(): Promise<void> {
     const { version: serverVersion } = (await res.json()) as { version: number };
 
     // Compare with cached version
-    const cached = await birdCache.get();
+    const cached = await birdCache.get('sweden');
     if (cached && cached.version === serverVersion) {
       setAllBirds(cached.birds);
       setBirdsReady(true);
@@ -27,12 +27,12 @@ export async function initBirds(): Promise<void> {
     const listRes = await fetch('/api/birds', { credentials: 'include', cache: 'reload' });
     if (!listRes.ok) throw new Error('bird list fetch failed');
     const birds = (await listRes.json()) as Bird[];
-    await birdCache.set(birds, serverVersion);
+    await birdCache.set('sweden', birds, serverVersion);
     setAllBirds(birds);
     setBirdsReady(true);
   } catch {
     // Offline or error — fall back to cached data
-    const cached = await birdCache.get();
+    const cached = await birdCache.get('sweden');
     if (cached) {
       setAllBirds(cached.birds);
     }

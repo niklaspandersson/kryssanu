@@ -59,31 +59,31 @@ export const pendingObs = {
 
 // ── Bird list cache ───────────────────────────────────────────────
 
-type BirdCacheRow = { key: string; version: number; birds: Bird[] };
+export type BirdScope = 'sweden' | 'world';
 
-const BIRDS_KEY = 'all';
+type BirdCacheRow = { key: BirdScope; version: number; birds: Bird[] };
 
 export const birdCache = {
-  async set(birds: Bird[], version: number): Promise<void> {
+  async set(scope: BirdScope, birds: Bird[], version: number): Promise<void> {
     const db = await openDb();
     await wrap(
-      tx(db, 'cachedBirds', 'readwrite').put({ key: BIRDS_KEY, version, birds }),
+      tx(db, 'cachedBirds', 'readwrite').put({ key: scope, version, birds }),
     );
   },
 
-  async get(): Promise<{ birds: Bird[]; version: number } | null> {
+  async get(scope: BirdScope): Promise<{ birds: Bird[]; version: number } | null> {
     const db = await openDb();
     const row = await wrap<BirdCacheRow | undefined>(
-      tx(db, 'cachedBirds', 'readonly').get(BIRDS_KEY),
+      tx(db, 'cachedBirds', 'readonly').get(scope),
     );
     if (!row?.birds) return null;
     return { birds: row.birds, version: row.version };
   },
 
-  async getVersion(): Promise<number | null> {
+  async getVersion(scope: BirdScope): Promise<number | null> {
     const db = await openDb();
     const row = await wrap<BirdCacheRow | undefined>(
-      tx(db, 'cachedBirds', 'readonly').get(BIRDS_KEY),
+      tx(db, 'cachedBirds', 'readonly').get(scope),
     );
     return row?.version ?? null;
   },
