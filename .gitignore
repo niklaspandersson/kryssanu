@@ -5,7 +5,9 @@ node_modules
 /.pnp
 .pnp.js
 dist
-tools
+
+# generated/sourced data files, not the scripts that produce them
+tools/data-import/*.csv
 
 # testing
 /coverage
