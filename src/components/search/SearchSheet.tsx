@@ -14,6 +14,9 @@ type Props = {
   observedBirds: Record<number, boolean>;
   onAdd: (bird: Bird) => void;
   onNavigate?: () => void;
+  worldwide: boolean;
+  worldwideLoading: boolean;
+  onSearchWorldwide: () => void;
 };
 
 export default function SearchSheet(props: Props) {
@@ -73,6 +76,9 @@ export default function SearchSheet(props: Props) {
             observedBirds={props.observedBirds}
             onAdd={props.onAdd}
             onNavigate={props.onNavigate}
+            worldwide={props.worldwide}
+            worldwideLoading={props.worldwideLoading}
+            onSearchWorldwide={props.onSearchWorldwide}
           />
         </div>
       </div>

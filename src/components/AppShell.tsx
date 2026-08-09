@@ -4,7 +4,7 @@ import { A } from "@solidjs/router";
 import { useAuth } from "../lib/auth";
 import type { Bird } from "../lib/types";
 import { me as meApi } from "../lib/api";
-import { allBirds } from "../lib/birdStore";
+import { allBirds, worldBirds, ensureWorldBirds } from "../lib/birdStore";
 import { userLists, refreshLists } from "../lib/listStore";
 import { isOnline } from "../lib/useOnlineStatus";
 import { pendingObs } from "../lib/offlineDb";
@@ -36,6 +36,8 @@ export default function AppShell(props: RouteSectionProps) {
   const [query, setQuery] = createSignal("");
   const [selectedBird, setSelectedBird] = createSignal<Bird | null>(null);
   const [sheetOpen, setSheetOpen] = createSignal(false);
+  const [worldwide, setWorldwide] = createSignal(false);
+  const [worldwideLoading, setWorldwideLoading] = createSignal(false);
 
   const [observedBirds, { mutate: setObserved }] = createResource(
     () => searchOpen() && user(),
@@ -53,7 +55,7 @@ export default function AppShell(props: RouteSectionProps) {
   });
 
   const filtered = createMemo(() => {
-    const list = allBirds();
+    const list = worldwide() ? worldBirds() : allBirds();
     const q = query().toLowerCase().trim();
     if (!q) return [];
     return list.filter(
@@ -62,6 +64,14 @@ export default function AppShell(props: RouteSectionProps) {
         b.family.toLowerCase().includes(q)
     );
   });
+
+  async function handleSearchWorldwide() {
+    if (worldwide() || worldwideLoading()) return;
+    setWorldwideLoading(true);
+    await ensureWorldBirds();
+    setWorldwideLoading(false);
+    setWorldwide(true);
+  }
 
   function handleAdd(bird: Bird) {
     if (!isLoggedIn()) {
@@ -104,6 +114,8 @@ export default function AppShell(props: RouteSectionProps) {
   function handleSearchClose() {
     setQuery("");
     setSearchOpen(false);
+    setWorldwide(false);
+    setWorldwideLoading(false);
   }
 
   return (
@@ -149,6 +161,9 @@ export default function AppShell(props: RouteSectionProps) {
         observedBirds={observedBirds() ?? {}}
         onAdd={handleAdd}
         onNavigate={handleSearchClose}
+        worldwide={worldwide()}
+        worldwideLoading={worldwideLoading()}
+        onSearchWorldwide={handleSearchWorldwide}
       />
       <QuickAddSheet
         bird={selectedBird()}
