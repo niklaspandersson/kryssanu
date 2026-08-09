@@ -25,7 +25,8 @@ class BirdRoutes
     public static function version(Request $request, Response $response): Response
     {
         $db = Database::getConnection();
-        $count = (int) $db->query('SELECT COUNT(*) FROM Bird')->fetchColumn();
+        $where = self::scopeWhere($request);
+        $count = (int) $db->query("SELECT COUNT(*) FROM Bird {$where}")->fetchColumn();
         $response = $response->withHeader('Cache-Control', 'public, max-age=300');
         return Helpers::jsonResponse($response, ['version' => $count]);
     }
@@ -33,10 +34,30 @@ class BirdRoutes
     public static function list(Request $request, Response $response): Response
     {
         $db = Database::getConnection();
-        $stmt = $db->query('SELECT * FROM Bird ORDER BY swedish ASC');
+        $where = self::scopeWhere($request);
+
+        $params = $request->getQueryParams();
+        $sql = "SELECT * FROM Bird {$where} ORDER BY swedish ASC";
+        if (isset($params['limit'])) {
+            $limit = max(0, (int) $params['limit']);
+            $offset = max(0, (int) ($params['offset'] ?? 0));
+            $sql .= " LIMIT {$limit} OFFSET {$offset}";
+        }
+
+        $stmt = $db->query($sql);
         $birds = array_map([Helpers::class, 'formatBird'], $stmt->fetchAll());
         $response = $response->withHeader('Cache-Control', 'public, max-age=86400');
         return Helpers::jsonResponse($response, $birds);
+    }
+
+    /**
+     * `scope=world` returns every species; anything else (including no param)
+     * stays scoped to Sweden's official list, matching pre-existing behavior.
+     */
+    private static function scopeWhere(Request $request): string
+    {
+        $scope = $request->getQueryParams()['scope'] ?? 'sweden';
+        return $scope === 'world' ? '' : 'WHERE onSwedishList = 1';
     }
 
     public static function get(Request $request, Response $response, array $args): Response

@@ -72,6 +72,7 @@ class Helpers
             'swedish' => $row['swedish'],
             'family' => $row['family'],
             'visitor' => (bool) $row['visitor'],
+            'onSwedishList' => (bool) $row['onSwedishList'],
         ];
     }
 
