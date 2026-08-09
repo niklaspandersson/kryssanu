@@ -8,11 +8,12 @@ datasource db {
 }
 
 model Bird {
-  id           String        @id // latin name
-  swedish      String
-  family       String
-  visitor      Boolean
-  observations Observation[]
+  id            String        @id // latin name
+  swedish       String
+  family        String
+  visitor       Boolean
+  onSwedishList Boolean       @default(true)
+  observations  Observation[]
 }
 
 model User {
