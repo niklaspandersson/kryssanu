@@ -1,4 +1,5 @@
 import type {
+  Bird,
   Observation,
   ObservationWithBird,
   ObservedBirds,
@@ -155,6 +156,11 @@ export const me = {
       { method: 'DELETE' },
     ),
   memberships: () => fetchJson<Memberships>('/me/memberships'),
+};
+
+// ── Birds ───────────────────────────────────────────────────────────
+export const birds = {
+  get: (birdId: string) => fetchJson<Bird>(`/birds/${encodeURIComponent(birdId)}`),
 };
 
 // ── Bird images (public) ────────────────────────────────────────────

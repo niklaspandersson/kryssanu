@@ -1,6 +1,6 @@
 import { createSignal, createResource, createMemo, Show, For } from "solid-js";
 import { A } from "@solidjs/router";
-import { me as meApi } from "../lib/api";
+import { me as meApi, birds as birdsApi } from "../lib/api";
 import { userLists } from "../lib/listStore";
 import { useAuth } from "../lib/auth";
 import { allBirds, birdsReady } from "../lib/birdStore";
@@ -69,6 +69,23 @@ export default function BirdsPage() {
     return set;
   });
 
+  // Species observed outside Sweden's official list (e.g. logged on a trip
+  // abroad) don't come back from `allBirds()`, which stays Sweden-scoped by
+  // design. Fetch their full details individually so they still show up in
+  // the "observed" view instead of silently vanishing.
+  const missingObservedIds = createMemo(() => {
+    const d = observed();
+    if (!d) return [];
+    const present = new Set(allBirds().map(b => b.id));
+    return Object.keys(d.observed).filter(id => !present.has(id));
+  });
+
+  const [extraObservedBirds] = createResource(missingObservedIds, async (ids) => {
+    if (ids.length === 0) return [];
+    const results = await Promise.all(ids.map(id => birdsApi.get(id).catch(() => null)));
+    return results.filter((b): b is Bird => b !== null);
+  });
+
   function latestObsDate(birdId: string): string | null {
     const d = observed();
     if (!d || !d.observed[birdId]) return null;
@@ -84,12 +101,15 @@ export default function BirdsPage() {
     const birds = allBirds();
     if (birds.length === 0) return [];
     const obs = observedSet();
-    let list = birds;
-    if (!includeVisitors()) {
-      list = list.filter(b => !b.visitor);
-    }
+    let list: Bird[];
     if (showMode() === "observed") {
-      list = list.filter(b => obs.has(b.id));
+      // The "Rariteter" hide/show toggle only concerns Sweden-scope vagrants;
+      // birds observed outside Sweden's list have no such concept and always show.
+      const sweden = birds.filter(b => obs.has(b.id) && (includeVisitors() || !b.visitor));
+      const world = (extraObservedBirds() ?? []).filter(b => obs.has(b.id));
+      list = [...sweden, ...world];
+    } else {
+      list = includeVisitors() ? birds : birds.filter(b => !b.visitor);
     }
     if (sortMode() === "alpha") {
       return [...list].sort((a, b) => a.swedish.localeCompare(b.swedish, "sv"));
@@ -129,8 +149,15 @@ export default function BirdsPage() {
   const observedCount = createMemo(() => {
     const obs = observedSet();
     if (includeVisitors()) return obs.size;
-    // Keep the count consistent with the visible list: exclude observed rarities.
-    return allBirds().filter(b => obs.has(b.id) && !b.visitor).length;
+    // Keep the count consistent with the visible list: exclude observed
+    // Sweden-scope rarities, but never exclude world-scope observations —
+    // `obs` (built from server data) already includes both.
+    const hiddenRarityIds = new Set(allBirds().filter(b => b.visitor).map(b => b.id));
+    let count = 0;
+    for (const id of obs) {
+      if (!hiddenRarityIds.has(id)) count++;
+    }
+    return count;
   });
 
   async function handleQuickAdd(addData: { note?: string; location?: string; latitude?: number; longitude?: number; listIds?: string[]; image?: File }) {
