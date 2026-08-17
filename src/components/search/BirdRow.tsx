@@ -1,6 +1,7 @@
 import { Show } from "solid-js";
 import { A } from "@solidjs/router";
 import type { Bird } from "../../lib/types";
+import { isRarity } from "../../lib/birds";
 import ObserveButton from "../ObserveButton";
 import styles from "./BirdRow.module.css";
 
@@ -26,7 +27,7 @@ export default function BirdRow(props: Props) {
           onClick={() => props.onNavigate?.()}
         >
           {props.bird.swedish}
-          <Show when={props.bird.visitor}>
+          <Show when={isRarity(props.bird)}>
             <span class={styles.visitorBadge}>Raritet</span>
           </Show>
         </A>

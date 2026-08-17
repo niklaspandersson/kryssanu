@@ -1,9 +1,34 @@
 // ── Bird ────────────────────────────────────────────────────────────
+/** Fyndkategori A–E, per AERC definitions. */
+export type Fyndkategori = "A" | "B" | "C" | "D" | "E";
+
+/**
+ * Status in Sweden:
+ * `H` häckfågel · `h` oklar/oregelbunden häckning · `F` flyttfågel ·
+ * `T` tillfällig · `R` raritet (färre än 100 fynd) · `I` introduktion
+ *
+ * `I` covers every kategori E taxon; Sverigelistan itself leaves those blank.
+ */
+export type BirdStatus = "H" | "h" | "F" | "T" | "R" | "I";
+
+/** A taxon from Sverigelistan. Species and subspecies are both birds. */
 export type Bird = {
   id: string;
   swedish: string;
+  english: string | null;
   family: string;
-  visitor: boolean;
+  familyLatin: string | null;
+  orderLatin: string | null;
+  orderSwedish: string | null;
+  /** The species a subspecies belongs to; null on species. A bird with a
+   * parent is a subspecies. */
+  parentId: string | null;
+  /** Always set on a listed bird; null only once a bird has been delisted. */
+  kategori: Fyndkategori | null;
+  status: BirdStatus | null;
+  extinct: boolean;
+  /** No longer on Sverigelistan; kept for the observations that reference it. */
+  delisted: boolean;
 };
 
 // ── Observation image ───────────────────────────────────────────────

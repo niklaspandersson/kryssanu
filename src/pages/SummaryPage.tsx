@@ -49,8 +49,16 @@ export default function SummaryPage() {
         bird: bird ?? {
           id: p.birdId,
           swedish: p.birdName,
+          english: null,
           family: "",
-          visitor: false,
+          familyLatin: null,
+          orderLatin: null,
+          orderSwedish: null,
+          parentId: null,
+          kategori: null,
+          status: null,
+          extinct: false,
+          delisted: false,
         },
         pending: true as const,
       };

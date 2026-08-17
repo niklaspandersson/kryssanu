@@ -14,6 +14,7 @@ import EmptyState from "../components/EmptyState";
 import BottomSheet from "../components/BottomSheet";
 import QuickAddSheet from "../components/search/QuickAddSheet";
 import type { Bird } from "../lib/types";
+import { isRarity } from "../lib/birds";
 import shared from "../styles/shared.module.css";
 import styles from "./BirdsPage.module.css";
 
@@ -86,7 +87,7 @@ export default function BirdsPage() {
     const obs = observedSet();
     let list = birds;
     if (!includeVisitors()) {
-      list = list.filter(b => !b.visitor);
+      list = list.filter(b => !isRarity(b));
     }
     if (showMode() === "observed") {
       list = list.filter(b => obs.has(b.id));
@@ -130,7 +131,7 @@ export default function BirdsPage() {
     const obs = observedSet();
     if (includeVisitors()) return obs.size;
     // Keep the count consistent with the visible list: exclude observed rarities.
-    return allBirds().filter(b => obs.has(b.id) && !b.visitor).length;
+    return allBirds().filter(b => obs.has(b.id) && !isRarity(b)).length;
   });
 
   async function handleQuickAdd(addData: { note?: string; location?: string; latitude?: number; longitude?: number; listIds?: string[]; image?: File }) {
@@ -209,7 +210,7 @@ export default function BirdsPage() {
           <A href={`/birds/${encodeURIComponent(bird.id)}`} class={styles.birdInfo}>
             <span class={styles.birdName}>
               {bird.swedish}
-              <Show when={bird.visitor}>
+              <Show when={isRarity(bird)}>
                 <span class={styles.visitorBadge}>Raritet</span>
               </Show>
             </span>
