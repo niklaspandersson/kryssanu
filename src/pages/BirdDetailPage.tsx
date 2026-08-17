@@ -7,7 +7,12 @@ import { useAuth } from "../lib/auth";
 import { pendingObservations } from "../lib/offlineSync";
 import { observationsRevision } from "../lib/observationStore";
 import type { Observation } from "../lib/types";
-import { isIntroduced, isRarity } from "../lib/birds";
+import {
+  INTRODUCED_TOOLTIP,
+  RARITY_TOOLTIP,
+  isIntroduced,
+  isRarity,
+} from "../lib/birds";
 import Icon from "../components/Icon";
 import EmptyState from "../components/EmptyState";
 import shared from "../styles/shared.module.css";
@@ -70,10 +75,10 @@ export default function BirdDetailPage() {
             <h1 class={shared.heading}>
               {b().swedish}
               <Show when={isRarity(b()!)}>
-                <span class={styles.visitorBadge}>Raritet</span>
+                <span class={styles.visitorBadge} title={RARITY_TOOLTIP}>Raritet</span>
               </Show>
               <Show when={isIntroduced(b()!)}>
-                <span class={styles.introducedBadge}>Introducerad</span>
+                <span class={styles.introducedBadge} title={INTRODUCED_TOOLTIP}>Introducerad</span>
               </Show>
             </h1>
             <p class={styles.latin}>{b().id}</p>

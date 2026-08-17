@@ -18,3 +18,8 @@ export function isIntroduced(bird: Pick<Bird, 'kategori'>): boolean {
 export function isSubspecies(bird: Pick<Bird, 'parentId'>): boolean {
   return bird.parentId !== null;
 }
+
+/** Explanations shown as tooltips on the badges the predicates above drive. */
+export const RARITY_TOOLTIP = 'Raritet: färre än 100 fynd i Sverige';
+export const INTRODUCED_TOOLTIP =
+  'Introducerad: förvildad eller införd art, som inte tagit sig hit på egen vinge';

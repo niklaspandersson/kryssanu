@@ -14,7 +14,12 @@ import EmptyState from "../components/EmptyState";
 import BottomSheet from "../components/BottomSheet";
 import QuickAddSheet from "../components/search/QuickAddSheet";
 import type { Bird } from "../lib/types";
-import { isIntroduced, isRarity } from "../lib/birds";
+import {
+  INTRODUCED_TOOLTIP,
+  RARITY_TOOLTIP,
+  isIntroduced,
+  isRarity,
+} from "../lib/birds";
 import shared from "../styles/shared.module.css";
 import styles from "./BirdsPage.module.css";
 
@@ -211,10 +216,10 @@ export default function BirdsPage() {
             <span class={styles.birdName}>
               {bird.swedish}
               <Show when={isRarity(bird)}>
-                <span class={styles.visitorBadge}>Raritet</span>
+                <span class={styles.visitorBadge} title={RARITY_TOOLTIP}>Raritet</span>
               </Show>
               <Show when={isIntroduced(bird)}>
-                <span class={styles.introducedBadge}>Introducerad</span>
+                <span class={styles.introducedBadge} title={INTRODUCED_TOOLTIP}>Introducerad</span>
               </Show>
             </span>
             <span class={styles.birdLatin}>{bird.id}</span>

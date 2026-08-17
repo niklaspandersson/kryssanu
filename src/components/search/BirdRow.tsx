@@ -1,7 +1,12 @@
 import { Show } from "solid-js";
 import { A } from "@solidjs/router";
 import type { Bird } from "../../lib/types";
-import { isIntroduced, isRarity } from "../../lib/birds";
+import {
+  INTRODUCED_TOOLTIP,
+  RARITY_TOOLTIP,
+  isIntroduced,
+  isRarity,
+} from "../../lib/birds";
 import ObserveButton from "../ObserveButton";
 import styles from "./BirdRow.module.css";
 
@@ -28,10 +33,10 @@ export default function BirdRow(props: Props) {
         >
           {props.bird.swedish}
           <Show when={isRarity(props.bird)}>
-            <span class={styles.visitorBadge}>Raritet</span>
+            <span class={styles.visitorBadge} title={RARITY_TOOLTIP}>Raritet</span>
           </Show>
           <Show when={isIntroduced(props.bird)}>
-            <span class={styles.introducedBadge}>Introducerad</span>
+            <span class={styles.introducedBadge} title={INTRODUCED_TOOLTIP}>Introducerad</span>
           </Show>
         </A>
         <span class={styles.family}>{props.bird.family}</span>
