@@ -5,6 +5,8 @@ import { useAuth } from "../lib/auth";
 import type { Bird } from "../lib/types";
 import { me as meApi } from "../lib/api";
 import { allBirds } from "../lib/birdStore";
+import { selectableTaxa } from "../lib/birds";
+import { readSettings } from "../lib/settings";
 import { userLists, refreshLists } from "../lib/listStore";
 import { isOnline } from "../lib/useOnlineStatus";
 import { pendingObs } from "../lib/offlineDb";
@@ -53,9 +55,9 @@ export default function AppShell(props: RouteSectionProps) {
   });
 
   const filtered = createMemo(() => {
-    const list = allBirds();
     const q = query().toLowerCase().trim();
     if (!q) return [];
+    const list = selectableTaxa(allBirds(), readSettings(user()).showSubspecies);
     return list.filter(
       (b) =>
         b.swedish.toLowerCase().includes(q) ||

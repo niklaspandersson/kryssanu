@@ -4,9 +4,12 @@ import type { Bird } from "../../lib/types";
 import {
   INTRODUCED_TOOLTIP,
   RARITY_TOOLTIP,
+  SUBSPECIES_TOOLTIP,
   isIntroduced,
   isRarity,
+  isSubspecies,
 } from "../../lib/birds";
+import { allBirds } from "../../lib/birdStore";
 import ObserveButton from "../ObserveButton";
 import styles from "./BirdRow.module.css";
 
@@ -18,6 +21,8 @@ type Props = {
 };
 
 export default function BirdRow(props: Props) {
+  const parent = () => allBirds().find(b => b.id === props.bird.parentId);
+
   return (
     <div class={styles.row}>
       <ObserveButton
@@ -38,8 +43,15 @@ export default function BirdRow(props: Props) {
           <Show when={isIntroduced(props.bird)}>
             <span class={styles.introducedBadge} title={INTRODUCED_TOOLTIP}>Introducerad</span>
           </Show>
+          <Show when={isSubspecies(props.bird)}>
+            <span class={styles.subspeciesBadge} title={SUBSPECIES_TOOLTIP}>Underart</span>
+          </Show>
         </A>
-        <span class={styles.family}>{props.bird.family}</span>
+        <span class={styles.family}>
+          {isSubspecies(props.bird) && parent()
+            ? `underart av ${parent()!.swedish}`
+            : props.bird.family}
+        </span>
       </div>
     </div>
   );

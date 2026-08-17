@@ -6,7 +6,8 @@
 }
 
 .visitorBadge,
-.introducedBadge {
+.introducedBadge,
+.subspeciesBadge {
   display: inline-block;
   vertical-align: middle;
   margin-left: var(--space-sm);
@@ -21,6 +22,20 @@
 
 .introducedBadge {
   background: var(--color-text-secondary);
+}
+
+.subspeciesBadge {
+  background: var(--color-primary-light);
+}
+
+.parentSpecies {
+  margin: calc(-1 * var(--space-xs)) 0 var(--space-md);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.parentSpecies a {
+  color: var(--color-primary);
 }
 
 .family {

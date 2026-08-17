@@ -17,10 +17,14 @@ import type { Bird } from "../lib/types";
 import {
   INTRODUCED_TOOLTIP,
   RARITY_TOOLTIP,
+  SUBSPECIES_TOOLTIP,
   isIntroduced,
   isOfficial,
   isRarity,
+  isSubspecies,
+  selectableTaxa,
 } from "../lib/birds";
+import { readSettings } from "../lib/settings";
 import shared from "../styles/shared.module.css";
 import styles from "./BirdsPage.module.css";
 
@@ -29,7 +33,7 @@ type TimeFilter = "all" | "year";
 type SortMode = "alpha" | "family" | "chrono";
 
 export default function BirdsPage() {
-  const { isLoggedIn } = useAuth();
+  const { user, isLoggedIn } = useAuth();
 
   const stored = (() => {
     try {
@@ -99,7 +103,15 @@ export default function BirdsPage() {
     const birds = allBirds();
     if (birds.length === 0) return [];
     const obs = observedSet();
-    let list = birds;
+
+    // Catalog shape first — but never drop a bird the user has already logged,
+    // or an observed subspecies would silently vanish from their own checklist
+    // while subspecies are hidden.
+    const selectable = new Set(
+      selectableTaxa(birds, readSettings(user()).showSubspecies).map(b => b.id),
+    );
+    let list = birds.filter(b => selectable.has(b.id) || obs.has(b.id));
+
     if (officialOnly()) {
       list = list.filter(isOfficial);
     }
@@ -235,8 +247,19 @@ export default function BirdsPage() {
               <Show when={isIntroduced(bird)}>
                 <span class={styles.introducedBadge} title={INTRODUCED_TOOLTIP}>Introducerad</span>
               </Show>
+              <Show when={isSubspecies(bird)}>
+                <span class={styles.subspeciesBadge} title={SUBSPECIES_TOOLTIP}>Underart</span>
+              </Show>
             </span>
-            <span class={styles.birdLatin}>{bird.id}</span>
+            <span class={styles.birdLatin}>
+              {bird.id}
+              <Show when={isSubspecies(bird)}>
+                {(() => {
+                  const parent = allBirds().find(b => b.id === bird.parentId);
+                  return parent ? ` · underart av ${parent.swedish}` : "";
+                })()}
+              </Show>
+            </span>
           </A>
           <Show when={date()}>
             <span class={styles.birdDate}>

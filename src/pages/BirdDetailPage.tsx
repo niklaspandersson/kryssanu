@@ -10,8 +10,10 @@ import type { Observation } from "../lib/types";
 import {
   INTRODUCED_TOOLTIP,
   RARITY_TOOLTIP,
+  SUBSPECIES_TOOLTIP,
   isIntroduced,
   isRarity,
+  isSubspecies,
 } from "../lib/birds";
 import Icon from "../components/Icon";
 import EmptyState from "../components/EmptyState";
@@ -28,6 +30,10 @@ export default function BirdDetailPage() {
   // species names containing spaces — decode before matching/fetching.
   const birdId = () => decodeURIComponent(params.id);
   const bird = createMemo(() => allBirds().find(b => b.id === birdId()));
+  const parentSpecies = createMemo(() => {
+    const parentId = bird()?.parentId;
+    return parentId ? allBirds().find(b => b.id === parentId) : undefined;
+  });
   const [obs] = createResource(
     () => (isLoggedIn() ? { id: birdId(), rev: observationsRevision() } : null),
     (source) => meApi.observationsForBird(source.id)
@@ -80,8 +86,19 @@ export default function BirdDetailPage() {
               <Show when={isIntroduced(b()!)}>
                 <span class={styles.introducedBadge} title={INTRODUCED_TOOLTIP}>Introducerad</span>
               </Show>
+              <Show when={isSubspecies(b()!)}>
+                <span class={styles.subspeciesBadge} title={SUBSPECIES_TOOLTIP}>Underart</span>
+              </Show>
             </h1>
             <p class={styles.latin}>{b().id}</p>
+            <Show when={parentSpecies()}>
+              {(parent) => (
+                <p class={styles.parentSpecies}>
+                  Underart av{" "}
+                  <A href={`/birds/${encodeURIComponent(parent().id)}`}>{parent().swedish}</A>
+                </p>
+              )}
+            </Show>
             <div class={styles.family}>{b().family}</div>
 
             <Show when={heroImage()}>

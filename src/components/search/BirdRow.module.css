@@ -30,7 +30,8 @@
 }
 
 .visitorBadge,
-.introducedBadge {
+.introducedBadge,
+.subspeciesBadge {
   flex-shrink: 0;
   font-size: var(--font-size-xs);
   font-weight: 600;
@@ -43,6 +44,10 @@
 
 .introducedBadge {
   background: var(--color-text-secondary);
+}
+
+.subspeciesBadge {
+  background: var(--color-primary-light);
 }
 
 .family {
