@@ -257,7 +257,6 @@
 }
 
 .visitorBadge,
-.introducedBadge,
 .subspeciesBadge {
   flex-shrink: 0;
   font-size: var(--font-size-xs);
@@ -269,12 +268,14 @@
   color: #fff;
 }
 
-.introducedBadge {
-  background: var(--color-text-secondary);
-}
-
 .subspeciesBadge {
   background: var(--color-primary-light);
+}
+
+.officialIcon {
+  flex-shrink: 0;
+  color: var(--color-primary);
+  vertical-align: middle;
 }
 
 .birdLatin {

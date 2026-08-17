@@ -6,7 +6,6 @@
 }
 
 .visitorBadge,
-.introducedBadge,
 .subspeciesBadge {
   display: inline-block;
   vertical-align: middle;
@@ -20,12 +19,14 @@
   color: #fff;
 }
 
-.introducedBadge {
-  background: var(--color-text-secondary);
-}
-
 .subspeciesBadge {
   background: var(--color-primary-light);
+}
+
+.officialIcon {
+  flex-shrink: 0;
+  color: var(--color-primary);
+  vertical-align: middle;
 }
 
 .parentSpecies {

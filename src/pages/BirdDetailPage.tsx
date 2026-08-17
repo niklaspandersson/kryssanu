@@ -8,10 +8,10 @@ import { pendingObservations } from "../lib/offlineSync";
 import { observationsRevision } from "../lib/observationStore";
 import type { Observation } from "../lib/types";
 import {
-  INTRODUCED_TOOLTIP,
+  OFFICIAL_TOOLTIP,
   RARITY_TOOLTIP,
   SUBSPECIES_TOOLTIP,
-  isIntroduced,
+  isOfficial,
   isRarity,
   isSubspecies,
 } from "../lib/birds";
@@ -83,8 +83,13 @@ export default function BirdDetailPage() {
               <Show when={isRarity(b()!)}>
                 <span class={styles.visitorBadge} title={RARITY_TOOLTIP}>Raritet</span>
               </Show>
-              <Show when={isIntroduced(b()!)}>
-                <span class={styles.introducedBadge} title={INTRODUCED_TOOLTIP}>Introducerad</span>
+              <Show when={isOfficial(b()!)}>
+                <Icon
+                  name="verified"
+                  size={20}
+                  class={styles.officialIcon}
+                  title={OFFICIAL_TOOLTIP}
+                />
               </Show>
               <Show when={isSubspecies(b()!)}>
                 <span class={styles.subspeciesBadge} title={SUBSPECIES_TOOLTIP}>Underart</span>

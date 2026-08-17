@@ -15,10 +15,9 @@ import BottomSheet from "../components/BottomSheet";
 import QuickAddSheet from "../components/search/QuickAddSheet";
 import type { Bird } from "../lib/types";
 import {
-  INTRODUCED_TOOLTIP,
+  OFFICIAL_TOOLTIP,
   RARITY_TOOLTIP,
   SUBSPECIES_TOOLTIP,
-  isIntroduced,
   isOfficial,
   isRarity,
   isSubspecies,
@@ -244,8 +243,14 @@ export default function BirdsPage() {
               <Show when={isRarity(bird)}>
                 <span class={styles.visitorBadge} title={RARITY_TOOLTIP}>Raritet</span>
               </Show>
-              <Show when={isIntroduced(bird)}>
-                <span class={styles.introducedBadge} title={INTRODUCED_TOOLTIP}>Introducerad</span>
+              {/* Redundant when the list is already only official birds. */}
+              <Show when={!officialOnly() && isOfficial(bird)}>
+                <Icon
+                  name="verified"
+                  size={16}
+                  class={styles.officialIcon}
+                  title={OFFICIAL_TOOLTIP}
+                />
               </Show>
               <Show when={isSubspecies(bird)}>
                 <span class={styles.subspeciesBadge} title={SUBSPECIES_TOOLTIP}>Underart</span>
