@@ -14,6 +14,15 @@ export function isIntroduced(bird: Pick<Bird, 'kategori'>): boolean {
   return bird.kategori === 'E';
 }
 
+/**
+ * Kategori A-C together make up Sveriges officiella fågellista. D (uncertain
+ * origin) and E (escapes and introductions) are listed alongside them but are
+ * not part of it.
+ */
+export function isOfficial(bird: Pick<Bird, 'kategori'>): boolean {
+  return bird.kategori === 'A' || bird.kategori === 'B' || bird.kategori === 'C';
+}
+
 /** Sverigelistan lists subspecies alongside species; these are the subspecies. */
 export function isSubspecies(bird: Pick<Bird, 'parentId'>): boolean {
   return bird.parentId !== null;

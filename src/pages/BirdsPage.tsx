@@ -18,6 +18,7 @@ import {
   INTRODUCED_TOOLTIP,
   RARITY_TOOLTIP,
   isIntroduced,
+  isOfficial,
   isRarity,
 } from "../lib/birds";
 import shared from "../styles/shared.module.css";
@@ -42,16 +43,24 @@ export default function BirdsPage() {
   const [timeFilter, setTimeFilter] = createSignal<TimeFilter>(stored.time ?? "all");
   const [sortMode, setSortMode] = createSignal<SortMode>(stored.sort ?? "alpha");
   const [includeVisitors, setIncludeVisitors] = createSignal<boolean>(stored.visitors ?? false);
+  const [officialOnly, setOfficialOnly] = createSignal<boolean>(stored.official ?? true);
   const [filtersOpen, setFiltersOpen] = createSignal(false);
 
-  function persistFilters(show: ShowMode, time: TimeFilter, sort: SortMode, visitors: boolean) {
-    localStorage.setItem("mybirds-filters", JSON.stringify({ show, time, sort, visitors }));
+  function persistFilters() {
+    localStorage.setItem("mybirds-filters", JSON.stringify({
+      show: showMode(),
+      time: timeFilter(),
+      sort: sortMode(),
+      visitors: includeVisitors(),
+      official: officialOnly(),
+    }));
   }
 
-  function updateShowMode(v: ShowMode) { setShowMode(v); persistFilters(v, timeFilter(), sortMode(), includeVisitors()); }
-  function updateTimeFilter(v: TimeFilter) { setTimeFilter(v); persistFilters(showMode(), v, sortMode(), includeVisitors()); }
-  function updateSortMode(v: SortMode) { setSortMode(v); persistFilters(showMode(), timeFilter(), v, includeVisitors()); }
-  function updateIncludeVisitors(v: boolean) { setIncludeVisitors(v); persistFilters(showMode(), timeFilter(), sortMode(), v); }
+  function updateShowMode(v: ShowMode) { setShowMode(v); persistFilters(); }
+  function updateTimeFilter(v: TimeFilter) { setTimeFilter(v); persistFilters(); }
+  function updateSortMode(v: SortMode) { setSortMode(v); persistFilters(); }
+  function updateIncludeVisitors(v: boolean) { setIncludeVisitors(v); persistFilters(); }
+  function updateOfficialOnly(v: boolean) { setOfficialOnly(v); persistFilters(); }
   const [quickAddBird, setQuickAddBird] = createSignal<Bird | null>(null);
   const [observed, { refetch }] = createResource(() => isLoggedIn(), (loggedIn) =>
     loggedIn ? meApi.checklist() : undefined
@@ -91,6 +100,9 @@ export default function BirdsPage() {
     if (birds.length === 0) return [];
     const obs = observedSet();
     let list = birds;
+    if (officialOnly()) {
+      list = list.filter(isOfficial);
+    }
     if (!includeVisitors()) {
       list = list.filter(b => !isRarity(b));
     }
@@ -134,9 +146,11 @@ export default function BirdsPage() {
 
   const observedCount = createMemo(() => {
     const obs = observedSet();
-    if (includeVisitors()) return obs.size;
-    // Keep the count consistent with the visible list: exclude observed rarities.
-    return allBirds().filter(b => obs.has(b.id) && !isRarity(b)).length;
+    if (includeVisitors() && !officialOnly()) return obs.size;
+    // Keep the count consistent with the visible list.
+    return allBirds().filter(
+      b => obs.has(b.id) && (includeVisitors() || !isRarity(b)) && (!officialOnly() || isOfficial(b)),
+    ).length;
   });
 
   async function handleQuickAdd(addData: { note?: string; location?: string; latitude?: number; longitude?: number; listIds?: string[]; image?: File }) {
@@ -372,6 +386,30 @@ export default function BirdsPage() {
                 onClick={() => updateSortMode("family")}
               >
                 {sortLabel("family")}
+              </button>
+            </div>
+          </div>
+
+          <div class={styles.sheetSection}>
+            <div class={styles.sheetLabel}>Lista</div>
+            <div class={styles.sheetSegmented}>
+              <button
+                type="button"
+                class={styles.controlBtn}
+                classList={{ [styles.controlActive]: officialOnly() }}
+                onClick={() => updateOfficialOnly(true)}
+                title="Sveriges officiella fågellista"
+              >
+                Officiella
+              </button>
+              <button
+                type="button"
+                class={styles.controlBtn}
+                classList={{ [styles.controlActive]: !officialOnly() }}
+                onClick={() => updateOfficialOnly(false)}
+                title="Alla arter som setts i Sverige"
+              >
+                Alla
               </button>
             </div>
           </div>
