@@ -23,7 +23,7 @@ class SessionMiddleware implements MiddlewareInterface
             $db = Database::getConnection();
             $stmt = $db->prepare(
                 'SELECT s.id as sessionId, s.expiresAt,
-                        u.id, u.name, u.email, u.image, u.city, u.about
+                        u.id, u.name, u.email, u.image, u.city, u.about, u.settings
                  FROM Session s
                  JOIN User u ON u.id = s.userId
                  WHERE s.id = :sessionId AND s.expiresAt > NOW()'
@@ -48,6 +48,7 @@ class SessionMiddleware implements MiddlewareInterface
                     'image' => $row['image'],
                     'city' => $row['city'],
                     'about' => $row['about'],
+                    'settings' => $row['settings'],
                 ]);
             }
         }

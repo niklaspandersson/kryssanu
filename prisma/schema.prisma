@@ -68,6 +68,9 @@ model User {
   googleId      String?       @unique
   city          String?
   about         String?       @db.Text
+  /// Serialized user preferences. Shape and defaults live in src/lib/settings.ts.
+  /// Deliberately schemaless so adding a setting needs no migration.
+  settings      Json?
   sessions      Session[]
   observations  Observation[]
   createdEvents Event[]       @relation("EventCreator")

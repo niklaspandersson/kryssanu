@@ -110,6 +110,16 @@ export type CreateObservationInput = {
 };
 
 // ── User (public-facing) ───────────────────────────────────────────
+/**
+ * User preferences, stored as one serialized JSON column on User so that adding
+ * a setting needs no database migration. Defaults and reading live in
+ * src/lib/settings.ts.
+ */
+export type UserSettings = {
+  /** Offer subspecies alongside species when picking a bird. */
+  showSubspecies: boolean;
+};
+
 export type User = {
   id: string;
   name: string | null;
@@ -117,11 +127,18 @@ export type User = {
   image: string | null;
   city: string | null;
   about: string | null;
+  /**
+   * Only the keys the user has actually saved; read via readSettings().
+   * Absent on other users — formatUserMinimal does not expose it.
+   */
+  settings?: Partial<UserSettings> | null;
 };
 
 export type UpdateProfileInput = {
   city?: string;
   about?: string;
+  /** Merged into the stored settings server-side, so a partial patch is safe. */
+  settings?: Partial<UserSettings>;
 };
 
 // ── Observed birds map ──────────────────────────────────────────────

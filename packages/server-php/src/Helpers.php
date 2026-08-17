@@ -92,7 +92,10 @@ class Helpers
     }
 
     /**
-     * Format a User row for public JSON output.
+     * Format a User row for JSON output.
+     *
+     * Only ever used for the signed-in user — everyone else goes through
+     * formatUserMinimal — so it is safe to include their settings here.
      */
     public static function formatUser(array $row): array
     {
@@ -103,7 +106,24 @@ class Helpers
             'image' => $row['image'],
             'city' => $row['city'] ?? null,
             'about' => $row['about'] ?? null,
+            // Decoded as an object, not an associative array: json_decode('{}',
+            // true) gives [], which re-encodes to [] and reaches the client as
+            // an array where it expects an object.
+            'settings' => self::decodeSettings($row['settings'] ?? null),
         ];
+    }
+
+    /**
+     * Decode a stored settings blob. Always yields an object, so a user who has
+     * never saved a preference still gets {} rather than null or [].
+     */
+    public static function decodeSettings(?string $json): object
+    {
+        if ($json === null || $json === '') {
+            return new \stdClass();
+        }
+        $decoded = json_decode($json);
+        return $decoded instanceof \stdClass ? $decoded : new \stdClass();
     }
 
     /**

@@ -14,6 +14,9 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 
 class MeRoutes
 {
+    /** Cap on the serialized settings blob. */
+    private const MAX_SETTINGS_BYTES = 4096;
+
     public static function register(App $app): void
     {
         $app->group('/api/me', function (RouteCollectorProxy $group) {
@@ -55,6 +58,26 @@ class MeRoutes
             $errors['about'] = ['String must contain at most 500 character(s)'];
         }
 
+        // Settings are schemaless by design — the client owns their shape — so
+        // the only checks here are that it is a JSON object and stays small
+        // enough that a user-writable column cannot become general storage.
+        $mergedSettings = null;
+        if (array_key_exists('settings', $body)) {
+            if (!is_array($body['settings']) || array_is_list($body['settings'])) {
+                $errors['settings'] = ['Expected an object'];
+            } else {
+                $existing = (array) Helpers::decodeSettings($user['settings'] ?? null);
+                // Merged, not replaced: a partial save from one screen must not
+                // drop a key written by another.
+                $mergedSettings = json_encode(array_merge($existing, $body['settings']));
+                if (strlen($mergedSettings) > self::MAX_SETTINGS_BYTES) {
+                    $errors['settings'] = [
+                        'Must serialize to at most ' . self::MAX_SETTINGS_BYTES . ' bytes',
+                    ];
+                }
+            }
+        }
+
         if (!empty($errors)) {
             return Helpers::jsonResponse($response, [
                 'error' => ['fieldErrors' => $errors, 'formErrors' => []],
@@ -73,6 +96,10 @@ class MeRoutes
             $sets[] = 'about = :about';
             $params['about'] = $body['about'];
         }
+        if ($mergedSettings !== null) {
+            $sets[] = 'settings = :settings';
+            $params['settings'] = $mergedSettings;
+        }
 
         if (!empty($sets)) {
             $sql = 'UPDATE User SET ' . implode(', ', $sets) . ' WHERE id = :id';
@@ -81,7 +108,7 @@ class MeRoutes
         }
 
         $stmt = $db->prepare(
-            'SELECT id, name, email, image, city, about FROM User WHERE id = :id'
+            'SELECT id, name, email, image, city, about, settings FROM User WHERE id = :id'
         );
         $stmt->execute(['id' => $user['id']]);
         $updated = $stmt->fetch();
