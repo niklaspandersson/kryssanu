@@ -34,17 +34,28 @@ export default function BirdDetailPage() {
     const parentId = bird()?.parentId;
     return parentId ? allBirds().find(b => b.id === parentId) : undefined;
   });
+  /** This page's bird plus, on a species page, its subspecies. Mirrors the
+   * server's observationsByBird query. */
+  const relatedIds = createMemo(() => {
+    const id = birdId();
+    const ids = new Set([id]);
+    for (const b of allBirds()) {
+      if (b.parentId === id) ids.add(b.id);
+    }
+    return ids;
+  });
+  const nameFor = (id: string) => allBirds().find(b => b.id === id)?.swedish ?? id;
+
   const [obs] = createResource(
     () => (isLoggedIn() ? { id: birdId(), rev: observationsRevision() } : null),
     (source) => meApi.observationsForBird(source.id)
   );
 
   // Observations queued while offline aren't on the server yet, so `obs` (a
-  // server fetch) can't include them. Show this bird's pending kryss at the top.
+  // server fetch) can't include them. Show the pending kryss at the top.
   const rows = createMemo<ObsRow[]>(() => {
-    const id = birdId();
     const pending: ObsRow[] = pendingObservations()
-      .filter((p) => p.birdId === id)
+      .filter((p) => relatedIds().has(p.birdId))
       .map((p) => ({
         id: `pending-${p.id}`,
         date: p.createdAt,
@@ -155,7 +166,7 @@ export default function BirdDetailPage() {
                         <li class={styles.obsItem}>
                           <div class={styles.obsRow}>
                             <span class={styles.obsContent}>
-                              <span class={styles.obsBird}>{b().swedish}</span>
+                              <span class={styles.obsBird}>{nameFor(o.birdId)}</span>
                               <Show when={o.location}>
                                 {(loc) => (
                                   <span class={styles.obsLocation}> · {loc()}</span>

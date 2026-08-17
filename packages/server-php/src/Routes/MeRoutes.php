@@ -312,15 +312,22 @@ class MeRoutes
         $limit = min((int) ($request->getQueryParams()['limit'] ?? 50), 100);
         $offset = max((int) ($request->getQueryParams()['offset'] ?? 0), 0);
 
+        // A species' page also lists observations of its subspecies: someone who
+        // logged mörkbukig prutgås has seen a prutgås. The reverse does not hold,
+        // so a subspecies page only ever shows its own.
         $stmt = $db->prepare(
             'SELECT o.*,
                     (SELECT oi.id FROM ObservationImage oi WHERE oi.observationId = o.id ORDER BY oi.createdAt ASC LIMIT 1) AS img_id
              FROM Observation o
-             WHERE o.userId = :userId AND o.birdId = :birdId
+             JOIN Bird b ON b.id = o.birdId
+             WHERE o.userId = :userId AND (o.birdId = :birdId OR b.parentId = :parentId)
              ORDER BY o.date DESC LIMIT :limit OFFSET :offset'
         );
         $stmt->bindValue('userId', $user['id']);
+        // Two placeholders for one value: PDO with native prepares cannot reuse
+        // a named parameter.
         $stmt->bindValue('birdId', $args['birdId']);
+        $stmt->bindValue('parentId', $args['birdId']);
         $stmt->bindValue('limit', $limit, \PDO::PARAM_INT);
         $stmt->bindValue('offset', $offset, \PDO::PARAM_INT);
         $stmt->execute();
