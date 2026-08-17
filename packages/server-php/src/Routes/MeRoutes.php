@@ -150,7 +150,7 @@ class MeRoutes
         $offset = max((int) ($request->getQueryParams()['offset'] ?? 0), 0);
 
         $stmt = $db->prepare(
-            'SELECT o.*, b.id as b_id, b.swedish as b_swedish, b.family as b_family, b.visitor as b_visitor,
+            'SELECT o.*, b.id as b_id, b.swedish as b_swedish, b.family as b_family, b.parentId as b_parentId, b.kategori as b_kategori, b.status as b_status, b.delisted as b_delisted,
                     (SELECT oi.id FROM ObservationImage oi WHERE oi.observationId = o.id ORDER BY oi.createdAt ASC LIMIT 1) AS img_id
              FROM Observation o
              JOIN Bird b ON b.id = o.birdId
@@ -170,7 +170,10 @@ class MeRoutes
                 'id' => $row['b_id'],
                 'swedish' => $row['b_swedish'],
                 'family' => $row['b_family'],
-                'visitor' => $row['b_visitor'],
+                'parentId' => $row['b_parentId'],
+                'kategori' => $row['b_kategori'],
+                'status' => $row['b_status'],
+                'delisted' => $row['b_delisted'],
             ]);
             return $obs;
         }, $rows);
@@ -210,7 +213,7 @@ class MeRoutes
         $total = (int) $countStmt->fetchColumn();
 
         $stmt = $db->prepare(
-            "SELECT o.*, b.id as b_id, b.swedish as b_swedish, b.family as b_family, b.visitor as b_visitor,
+            "SELECT o.*, b.id as b_id, b.swedish as b_swedish, b.family as b_family, b.parentId as b_parentId, b.kategori as b_kategori, b.status as b_status, b.delisted as b_delisted,
                     (SELECT oi.id FROM ObservationImage oi WHERE oi.observationId = o.id ORDER BY oi.createdAt ASC LIMIT 1) AS img_id
              FROM Observation o
              JOIN Bird b ON b.id = o.birdId{$joins}
@@ -234,7 +237,10 @@ class MeRoutes
                 'id' => $row['b_id'],
                 'swedish' => $row['b_swedish'],
                 'family' => $row['b_family'],
-                'visitor' => $row['b_visitor'],
+                'parentId' => $row['b_parentId'],
+                'kategori' => $row['b_kategori'],
+                'status' => $row['b_status'],
+                'delisted' => $row['b_delisted'],
             ]);
             $obs['listIds'] = $listIdsByObs[$row['id']] ?? [];
             return $obs;
@@ -685,7 +691,7 @@ class MeRoutes
 
         $sql = "SELECT DISTINCT o.id, o.date,
                        u.id as u_id, u.name as u_name, u.email as u_email, u.image as u_image,
-                       b.id as b_id, b.swedish as b_swedish, b.family as b_family, b.visitor as b_visitor
+                       b.id as b_id, b.swedish as b_swedish, b.family as b_family, b.parentId as b_parentId, b.kategori as b_kategori, b.status as b_status, b.delisted as b_delisted
                 FROM Observation o
                 JOIN User u ON u.id = o.userId
                 JOIN Bird b ON b.id = o.birdId
@@ -722,7 +728,10 @@ class MeRoutes
                     'id' => $row['b_id'],
                     'swedish' => $row['b_swedish'],
                     'family' => $row['b_family'],
-                    'visitor' => (bool) $row['b_visitor'],
+                    'parentId' => $row['b_parentId'],
+                    'kategori' => $row['b_kategori'],
+                    'status' => $row['b_status'],
+                    'delisted' => $row['b_delisted'],
                 ],
             ];
         }, $items);

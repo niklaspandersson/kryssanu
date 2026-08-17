@@ -197,7 +197,7 @@ class ListRoutes
         $offset = max((int) ($request->getQueryParams()['offset'] ?? 0), 0);
 
         $stmt = $db->prepare(
-            'SELECT o.*, b.id as b_id, b.swedish as b_swedish, b.family as b_family, b.visitor as b_visitor
+            'SELECT o.*, b.id as b_id, b.swedish as b_swedish, b.family as b_family, b.parentId as b_parentId, b.kategori as b_kategori, b.status as b_status, b.delisted as b_delisted
              FROM ObservationList ol
              JOIN Observation o ON o.id = ol.observationId
              JOIN Bird b ON b.id = o.birdId
@@ -217,7 +217,10 @@ class ListRoutes
                 'id' => $row['b_id'],
                 'swedish' => $row['b_swedish'],
                 'family' => $row['b_family'],
-                'visitor' => $row['b_visitor'],
+                'parentId' => $row['b_parentId'],
+                'kategori' => $row['b_kategori'],
+                'status' => $row['b_status'],
+                'delisted' => $row['b_delisted'],
             ]);
             return $obs;
         }, $rows);

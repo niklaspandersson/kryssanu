@@ -64,14 +64,30 @@ class Helpers
 
     /**
      * Format a Bird row from DB for JSON output.
+     *
+     * Observation queries join in only the handful of bird columns they need,
+     * so every field past the name is optional here and falls back to null.
      */
     public static function formatBird(array $row): array
     {
         return [
             'id' => $row['id'],
             'swedish' => $row['swedish'],
+            'english' => $row['english'] ?? null,
             'family' => $row['family'],
-            'visitor' => (bool) $row['visitor'],
+            'familyLatin' => $row['familyLatin'] ?? null,
+            'orderLatin' => $row['orderLatin'] ?? null,
+            'orderSwedish' => $row['orderSwedish'] ?? null,
+            // A bird with a parent is a subspecies.
+            'parentId' => $row['parentId'] ?? null,
+            // Fyndkategori A-E and status H/h/F/T/R, straight from
+            // Sverigelistan. Every listed taxon has a category; status is null
+            // for kategori E taxa, which RK assigns no Swedish status. Empty
+            // means the bird is no longer listed, so report it as null.
+            'kategori' => ($row['kategori'] ?? '') !== '' ? $row['kategori'] : null,
+            'status' => ($row['status'] ?? '') !== '' ? $row['status'] : null,
+            'extinct' => (bool) ($row['extinct'] ?? false),
+            'delisted' => (bool) ($row['delisted'] ?? false),
         ];
     }
 
