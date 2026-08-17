@@ -5,7 +5,8 @@
   font-size: var(--font-size-sm);
 }
 
-.visitorBadge {
+.visitorBadge,
+.introducedBadge {
   display: inline-block;
   vertical-align: middle;
   margin-left: var(--space-sm);
@@ -16,6 +17,10 @@
   border-radius: var(--radius-sm);
   background: var(--color-accent);
   color: #fff;
+}
+
+.introducedBadge {
+  background: var(--color-text-secondary);
 }
 
 .family {
