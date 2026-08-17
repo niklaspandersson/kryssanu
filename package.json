@@ -9,7 +9,8 @@
     "preview": "vite preview",
     "db:push": "prisma db push",
     "db:seed": "tsx prisma/seed.ts",
-    "db:build-birds-csv": "tsx tools/data-import/build-birds-csv.ts"
+    "db:build-birds-csv": "tsx tools/data-import/build-birds-csv.ts",
+    "db:import-birds": "tsx tools/data-import/import-sverigelistan.ts"
   },
   "dependencies": {
     "@prisma/client": "6.19.2",
