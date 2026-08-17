@@ -7,12 +7,57 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+/// A taxon from Sverigelistan, BirdLife Sveriges official Swedish bird list.
+/// Species and subspecies are both rows; a subspecies points at its species
+/// through parentId. See tools/data-import/import-sverigelistan.ts.
 model Bird {
-  id           String        @id // latin name
+  id           String  @id // latin name
   swedish      String
-  family       String
-  visitor      Boolean
+  english      String?
+  family       String // swedish family name, e.g. "änder"
+  // Defaulted so `prisma db push` can add them to a Bird table that already has
+  // rows; the seed fills them in for every listed taxon. Only birds that have
+  // dropped off Sverigelistan keep the empty value.
+  familyLatin  String  @default("")
+  orderLatin   String  @default("")
+  orderSwedish String  @default("")
+
+  /// The species a subspecies belongs to; null on species rows. A bird with a
+  /// parent is a subspecies — there is no separate rank field.
+  parentId   String?
+  parent     Bird?   @relation("BirdSubspecies", fields: [parentId], references: [id])
+  /// Populated on species rows that have subspecies listed.
+  subspecies Bird[]  @relation("BirdSubspecies")
+
+  /// Fyndkategori A-E, per AERC definitions. Always set for a listed taxon: the
+  /// import rolls the value up from subspecies, or down from the species, for
+  /// the rows the spreadsheet leaves blank. The empty default is only so
+  /// `prisma db push` can add the column to a populated table, and only a
+  /// delisted bird keeps it — the API reports empty as null.
+  kategori String  @default("")
+  /// H = häckfågel, h = oklar/oregelbunden häckning, F = flyttfågel,
+  /// T = tillfällig, R = raritet (<100 fynd), I = introduktion.
+  ///
+  /// I is ours rather than Raritetskommittén's: it assigns kategori E taxa no
+  /// Swedish status at all. Empty default as for kategori.
+  ///
+  /// H and h differ only in case, and MySQL's default utf8mb4_unicode_ci makes
+  /// them the same value to compare against — `WHERE status = 'h'` would match
+  /// all 445 breeders instead of the 3 irregular ones. Prisma cannot express a
+  /// column collation, so after `prisma db push` on a fresh database run:
+  ///
+  ///   ALTER TABLE `Bird` MODIFY `status`
+  ///     VARCHAR(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT '';
+  status   String  @default("")
+  extinct  Boolean @default(false)
+
+  /// No longer on Sverigelistan. Kept so existing observations stay intact,
+  /// but not offered when logging new ones.
+  delisted Boolean @default(false)
+
   observations Observation[]
+
+  @@index([parentId])
 }
 
 model User {
@@ -54,18 +99,18 @@ model Session {
 }
 
 model Observation {
-  id        String   @id @default(cuid())
-  date      DateTime @default(now())
+  id        String             @id @default(cuid())
+  date      DateTime           @default(now())
   location  String?
   latitude  Float?
   longitude Float?
   note      String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
   birdId    String
   userId    String
-  bird      Bird     @relation(fields: [birdId], references: [id])
-  user      User     @relation(fields: [userId], references: [id])
+  bird      Bird               @relation(fields: [birdId], references: [id])
+  user      User               @relation(fields: [userId], references: [id])
   events    ObservationEvent[]
   lists     ObservationList[]
   images    ObservationImage[]
@@ -87,15 +132,15 @@ model ObservationImage {
 }
 
 model Event {
-  id           String        @id @default(cuid())
-  name         String
-  description  String?
-  isPublic     Boolean       @default(false)
-  startsAt     DateTime
-  endsAt       DateTime
-  createdAt    DateTime      @default(now())
-  creatorId    String
-  creator      User          @relation("EventCreator", fields: [creatorId], references: [id])
+  id                String             @id @default(cuid())
+  name              String
+  description       String?
+  isPublic          Boolean            @default(false)
+  startsAt          DateTime
+  endsAt            DateTime
+  createdAt         DateTime           @default(now())
+  creatorId         String
+  creator           User               @relation("EventCreator", fields: [creatorId], references: [id])
   participants      Participant[]
   observationEvents ObservationEvent[]
   inviteTokens      InviteToken[]
@@ -115,13 +160,13 @@ model ObservationEvent {
 }
 
 model Participant {
-  id       String            @id @default(cuid())
+  id       String   @id @default(cuid())
   userId   String
   eventId  String
-  status   String            @default("INVITED") // INVITED | ACCEPTED | DECLINED
-  joinedAt DateTime          @default(now())
-  user     User              @relation(fields: [userId], references: [id])
-  event    Event             @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  status   String   @default("INVITED") // INVITED | ACCEPTED | DECLINED
+  joinedAt DateTime @default(now())
+  user     User     @relation(fields: [userId], references: [id])
+  event    Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
 
   @@unique([userId, eventId])
   @@index([userId])
@@ -162,4 +207,3 @@ model InviteToken {
 
   @@index([eventId])
 }
-

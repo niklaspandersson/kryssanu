@@ -1,30 +1,58 @@
-import { type Bird, PrismaClient } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
 import { readFile } from 'fs/promises';
 
-async function importBirds(path: string) {
-  const text = await readFile(path, 'utf-8');
-  const rows = text.split('\n').filter(r => r.trim());
-  const birds: Bird[] = rows.map(row => {
-    const parts = row.split(',');
-    const latin = parts[1]!.slice(1, -1).toLocaleLowerCase();
-    const swedish = parts[2]!.slice(1, -1).toLocaleLowerCase();
-    const family = parts[3]!.slice(1, -1).toLocaleLowerCase();
-    const visitor = parts[4] === '1';
-    return { id: latin, swedish, family, visitor };
-  });
-  return birds;
+/** One taxon as written by tools/data-import/import-sverigelistan.ts. */
+interface Taxon {
+  id: string;
+  parentId: string | null;
+  swedish: string;
+  english: string | null;
+  family: string;
+  familyLatin: string;
+  orderLatin: string;
+  orderSwedish: string;
+  kategori: string;
+  status: string;
+  extinct: boolean;
+}
+
+async function readCatalog(path: string): Promise<Taxon[]> {
+  return JSON.parse(await readFile(path, 'utf-8'));
 }
 
 const prisma = new PrismaClient();
 
 async function main() {
-  const birds = await importBirds('tools/data-import/birds.csv');
-  console.log(`Seeding ${birds.length} birds...`);
-  const res = await prisma.bird.createMany({
-    data: birds,
-    // skipDuplicates: true,
+  const taxa = await readCatalog('tools/data-import/birds.json');
+  console.log(`Seeding ${taxa.length} birds...`);
+
+  // Species before subspecies: parentId is a self-relation, so the species row
+  // has to exist before a subspecies can point at it.
+  const ordered = [...taxa.filter(t => !t.parentId), ...taxa.filter(t => t.parentId)];
+
+  let count = 0;
+  for (const taxon of ordered) {
+    // delisted is absent from the catalog on purpose: it is owned by
+    // tools/data-import/migrate-bird-ids.ts, which marks taxa that dropped off
+    // the list, and a reseed must not resurrect them.
+    await prisma.bird.upsert({
+      where: { id: taxon.id },
+      create: taxon,
+      update: taxon,
+    });
+    count++;
+  }
+  console.log(`Upserted ${count} birds.`);
+
+  const stale = await prisma.bird.findMany({
+    where: { id: { notIn: taxa.map(t => t.id) }, delisted: false },
+    select: { id: true, swedish: true },
   });
-  console.log(`Created ${res.count} new birds.`);
+  if (stale.length > 0) {
+    console.log(`\n${stale.length} bird(s) in the database are not on the current list:`);
+    for (const bird of stale) console.log(`  ${bird.id} (${bird.swedish})`);
+    console.log('Run tools/data-import/migrate-bird-ids.ts to remap or flag them.');
+  }
 }
 
 main()
