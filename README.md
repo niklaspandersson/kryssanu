@@ -38,13 +38,13 @@ npm run dev
 
 ### Scripts
 
-| Command          | Description                                  |
-| ---------------- | -------------------------------------------- |
-| `npm run dev`    | Run the Vite client and PHP API concurrently |
-| `npm run build`  | Build the frontend to `/dist`                |
-| `npm run preview`| Preview the production build                  |
-| `npm run db:push`| Push the Prisma schema to the database       |
-| `npm run db:seed`| Seed bird data                               |
+| Command           | Description                                  |
+| ----------------- | -------------------------------------------- |
+| `npm run dev`     | Run the Vite client and PHP API concurrently |
+| `npm run build`   | Build the frontend to `/dist`                |
+| `npm run preview` | Preview the production build                 |
+| `npm run db:push` | Push the Prisma schema to the database       |
+| `npm run db:seed` | Seed bird data                               |
 
 There is no test runner or linter configured.
 
@@ -101,3 +101,7 @@ See `.env.example`:
 - Material Icons via the Google Fonts CDN (use the `<Icon>` component).
 - Mobile-first responsive design with bottom sheets for modals.
 - PHP dependencies managed with Composer (`packages/server-php/composer.json`).
+
+## Syncing with Sverigelistan
+
+For next year's sync the flow is: update SOURCE_URL in import-sverigelistan.ts, then db:import-birds → db:push → db:seed → db:migrate-bird-ids. The import fails loudly if a taxon appears with no category to inherit, and the migration refuses to apply if something falls off the list unexpectedly — so both will tell you rather than silently drifting. The one thing to re-check each year is the MISSING_METADATA override for aftonfalk, in case TK fills in that blank row.
