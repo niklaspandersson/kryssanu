@@ -3,6 +3,7 @@ import { useLocation } from "@solidjs/router";
 import { useAuth } from "../lib/auth";
 import { me as meApi, exportApi } from "../lib/api";
 import { isOnline } from "../lib/useOnlineStatus";
+import { readSettings } from "../lib/settings";
 import Avatar from "../components/Avatar";
 import StatCard from "../components/StatCard";
 import EmptyState from "../components/EmptyState";
@@ -74,6 +75,22 @@ export default function ProfilePage() {
       setCity(u.city ?? "");
       setAbout(u.about ?? "");
       setEditing(true);
+    }
+  }
+
+  const showSubspecies = () => readSettings(user()).showSubspecies;
+  const [savingSettings, setSavingSettings] = createSignal(false);
+
+  async function saveShowSubspecies(value: boolean) {
+    if (value === showSubspecies()) return;
+    setSavingSettings(true);
+    try {
+      // Only this key is sent; the server merges it into the stored settings.
+      updateUser(await meApi.update({ settings: { showSubspecies: value } }));
+    } catch (e) {
+      console.error("Failed to save settings", e);
+    } finally {
+      setSavingSettings(false);
     }
   }
 
@@ -195,6 +212,37 @@ export default function ProfilePage() {
             </Show>
           </>
         )}
+      </Show>
+
+      {/* Preferences */}
+      <Show when={isLoggedIn()}>
+        <div class={styles.settingsSection}>
+          <h2 class={styles.sectionTitle}>Underarter</h2>
+          <p class={styles.settingsDescription}>
+            Sverigelistan listar underarter vid sidan av arterna. Visa dem om du vill
+            kryssa på underartsnivå.
+          </p>
+          <div class={styles.segmented}>
+            <button
+              type="button"
+              class={styles.controlBtn}
+              classList={{ [styles.controlActive]: !showSubspecies() }}
+              disabled={savingSettings()}
+              onClick={() => saveShowSubspecies(false)}
+            >
+              Dölj
+            </button>
+            <button
+              type="button"
+              class={styles.controlBtn}
+              classList={{ [styles.controlActive]: showSubspecies() }}
+              disabled={savingSettings()}
+              onClick={() => saveShowSubspecies(true)}
+            >
+              Visa
+            </button>
+          </div>
+        </div>
       </Show>
 
       {/* Export */}
