@@ -89,7 +89,7 @@ export default function BirdDetailPage() {
       <Show when={bird()} fallback={<EmptyState icon="checklist" message="Laddar..." />}>
         {(b) => (
           <>
-            <h1 class={shared.heading}>
+            <h1 class={`${shared.heading} ${styles.birdHeading}`}>
               {b().swedish}
               <Show when={isRarity(b()!)}>
                 <span class={styles.visitorBadge} title={RARITY_TOOLTIP}>Raritet</span>

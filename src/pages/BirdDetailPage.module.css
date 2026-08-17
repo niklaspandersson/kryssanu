@@ -5,11 +5,17 @@
   font-size: var(--font-size-sm);
 }
 
+/* A flex row, so the icon centres on the text instead of sitting on its
+   baseline, and one gap spaces every badge and icon consistently. */
+.birdHeading {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+}
+
 .visitorBadge,
 .subspeciesBadge {
-  display: inline-block;
-  vertical-align: middle;
-  margin-left: var(--space-sm);
   font-size: var(--font-size-xs);
   font-weight: 600;
   line-height: 1;
@@ -26,7 +32,6 @@
 .officialIcon {
   flex-shrink: 0;
   color: var(--color-primary);
-  vertical-align: middle;
 }
 
 .parentSpecies {
