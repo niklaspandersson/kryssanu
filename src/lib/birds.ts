@@ -49,7 +49,6 @@ export function selectableTaxa(birds: Bird[], showSubspecies: boolean): Bird[] {
 
 /** Explanations shown as tooltips on the badges the predicates above drive. */
 export const RARITY_TOOLTIP = 'Raritet: färre än 100 fynd i Sverige';
-export const OFFICIAL_TOOLTIP =
-  'Med på Sveriges officiella fågellista (fyndkategori A–C)';
+export const OFFICIAL_TOOLTIP = 'Med på Sveriges officiella fågellista';
 export const SUBSPECIES_TOOLTIP =
   'Underart: en av flera former av arten, som Sverigelistan listar separat';
