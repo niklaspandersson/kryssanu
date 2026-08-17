@@ -23,3 +23,17 @@
 .promptText {
   font-size: var(--font-size-sm);
 }
+
+.notFoundNotice {
+  margin: 0 auto;
+  max-width: 34ch;
+  padding: 0 var(--space-2xl) var(--space-2xl);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+  line-height: 1.5;
+  text-align: center;
+}
+
+.notFoundNotice a {
+  color: var(--color-primary);
+}

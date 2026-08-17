@@ -11,7 +11,7 @@ type Props = {
   query: string;
   onQueryChange: (q: string) => void;
   filtered: Bird[];
-  observedBirds: Record<number, boolean>;
+  observedBirds: Record<string, boolean>;
   onAdd: (bird: Bird) => void;
   onNavigate?: () => void;
 };
