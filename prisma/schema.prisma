@@ -99,6 +99,9 @@ model Session {
   user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+  // bin/cleanup-sessions.php runs `DELETE FROM Session WHERE expiresAt < NOW()`
+  // nightly; the table grows with users × logins.
+  @@index([expiresAt])
 }
 
 model Observation {
@@ -118,7 +121,14 @@ model Observation {
   lists     ObservationList[]
   images    ObservationImage[]
 
-  @@index([userId])
+  // Every observation list is `WHERE userId = ? ORDER BY date DESC LIMIT n`.
+  // A bare userId index carries no date, so MySQL reads all of a user's rows
+  // and filesorts them for every page — LIMIT does not bound the work. The
+  // trailing id also matches `ORDER BY date DESC, id DESC` exactly.
+  @@index([userId, date, id])
+  // Serves the checklist's per-species aggregate, COUNT(DISTINCT birdId), and
+  // the birdId-filtered observation pages, all covering.
+  @@index([userId, birdId, date])
   @@index([birdId])
 }
 
@@ -130,8 +140,10 @@ model ObservationImage {
   createdAt     DateTime    @default(now())
   observation   Observation @relation(fields: [observationId], references: [id], onDelete: Cascade)
 
-  @@index([observationId])
-  @@index([createdAt])
+  // The thumbnail lookup is `WHERE observationId = ? ORDER BY createdAt ASC
+  // LIMIT 1`, run once per observation row in every list query. The bare
+  // createdAt index it replaces served no query in the codebase.
+  @@index([observationId, createdAt])
 }
 
 model Event {
@@ -149,6 +161,10 @@ model Event {
   inviteTokens      InviteToken[]
 
   @@index([creatorId])
+  // `ORDER BY startsAt DESC` on the event browse, and the active-window filter
+  // `startsAt <= NOW() AND endsAt >= NOW()` behind the feed, both full-scan
+  // Event today.
+  @@index([startsAt])
 }
 
 model ObservationEvent {
