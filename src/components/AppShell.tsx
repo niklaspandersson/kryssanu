@@ -50,8 +50,10 @@ export default function AppShell(props: RouteSectionProps) {
     }
   );
 
+  // Keyed on isOnline() as well as login state: a load that failed while
+  // offline would otherwise never be retried, since nothing else re-runs this.
   createEffect(() => {
-    if (isLoggedIn()) refreshLists();
+    if (isLoggedIn() && isOnline()) refreshLists();
   });
 
   // A one-character query matches most of the ~1300-taxon catalog, and this
