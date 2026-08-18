@@ -11,6 +11,8 @@ type Props = {
   query: string;
   onQueryChange: (q: string) => void;
   filtered: Bird[];
+  /** Total matches before the display cap, so the sheet can flag trimming. */
+  matchCount: number;
   observedBirds: Record<string, boolean>;
   onAdd: (bird: Bird) => void;
   onNavigate?: () => void;
@@ -70,6 +72,7 @@ export default function SearchSheet(props: Props) {
           <SearchResults
             query={props.query}
             filtered={props.filtered}
+            matchCount={props.matchCount}
             observedBirds={props.observedBirds}
             onAdd={props.onAdd}
             onNavigate={props.onNavigate}

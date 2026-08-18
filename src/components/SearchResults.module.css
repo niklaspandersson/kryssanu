@@ -37,3 +37,12 @@
 .notFoundNotice a {
   color: var(--color-primary);
 }
+
+.truncatedNotice {
+  margin: 0;
+  padding: var(--space-md) var(--space-lg) var(--space-xl);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+  line-height: 1.5;
+  text-align: center;
+}

@@ -54,7 +54,13 @@ export default function AppShell(props: RouteSectionProps) {
     if (isLoggedIn()) refreshLists();
   });
 
-  const filtered = createMemo(() => {
+  // A one-character query matches most of the ~1300-taxon catalog, and this
+  // re-runs on every keystroke, so cap what reaches the DOM. matchCount is kept
+  // so the sheet can say the result set was trimmed rather than silently
+  // showing a partial list.
+  const MAX_SEARCH_RESULTS = 50;
+
+  const matches = createMemo(() => {
     const q = query().toLowerCase().trim();
     if (!q) return [];
     const list = selectableTaxa(allBirds(), readSettings(user()).showSubspecies);
@@ -64,6 +70,8 @@ export default function AppShell(props: RouteSectionProps) {
         b.family.toLowerCase().includes(q)
     );
   });
+
+  const filtered = createMemo(() => matches().slice(0, MAX_SEARCH_RESULTS));
 
   function handleAdd(bird: Bird) {
     if (!isLoggedIn()) {
@@ -148,6 +156,7 @@ export default function AppShell(props: RouteSectionProps) {
         query={query()}
         onQueryChange={setQuery}
         filtered={filtered()}
+        matchCount={matches().length}
         observedBirds={observedBirds() ?? {}}
         onAdd={handleAdd}
         onNavigate={handleSearchClose}

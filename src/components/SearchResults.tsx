@@ -7,6 +7,8 @@ import styles from "./SearchResults.module.css";
 type Props = {
   query: string;
   filtered: Bird[];
+  /** Total matches before the display cap; may exceed filtered.length. */
+  matchCount: number;
   observedBirds: Record<string, boolean>;
   onAdd: (bird: Bird) => void;
   onNavigate?: () => void;
@@ -63,6 +65,14 @@ export default function SearchResults(props: Props) {
               />
             )}
           </For>
+          {/* Short queries match most of the catalog; say so rather than
+              presenting a truncated list as the whole result. */}
+          <Show when={props.matchCount > props.filtered.length}>
+            <p class={styles.truncatedNotice}>
+              Visar {props.filtered.length} av {props.matchCount} träffar –
+              förfina sökningen för att se fler.
+            </p>
+          </Show>
         </Show>
       </Show>
     </div>
