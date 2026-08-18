@@ -88,6 +88,39 @@ export default function HelpPage() {
 
       <section class={styles.section}>
         <div class={styles.sectionHeader}>
+          <span class="md-icon">install_mobile</span>
+          <h2>Lägg till på hemskärmen</h2>
+        </div>
+        <p>
+          kryssa.nu kan installeras som en app på telefonen eller datorn. Då får
+          du en egen ikon, appen startar i helskärm utan webbläsarens adressfält
+          och den fungerar bättre offline. Du behöver inte hämta något från App
+          Store eller Google Play.
+        </p>
+        <ul class={styles.list}>
+          <li>
+            <strong>iPhone och iPad:</strong> öppna kryssa.nu i Safari (andra
+            webbläsare på iOS kan inte installera appar), tryck på Dela-ikonen
+            längst ner och välj ”Lägg till på hemskärmen”.
+          </li>
+          <li>
+            <strong>Android:</strong> öppna kryssa.nu i Chrome och välj
+            ”Installera app” i menyn — eller tryck på ”Installera” i rutan som
+            visas överst på din sammanfattning.
+          </li>
+          <li>
+            <strong>Dator:</strong> i Chrome och Edge dyker en installationsikon
+            upp till höger i adressfältet.
+          </li>
+        </ul>
+        <p>
+          Rutan på sammanfattningssidan visas bara om din enhet kan installera
+          appen. Stänger du den kommer den inte tillbaka på den enheten.
+        </p>
+      </section>
+
+      <section class={styles.section}>
+        <div class={styles.sectionHeader}>
           <span class="md-icon">wifi_off</span>
           <h2>Fungerar offline</h2>
         </div>

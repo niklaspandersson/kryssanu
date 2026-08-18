@@ -1,0 +1,59 @@
+.notice {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  padding: var(--space-md);
+  margin-bottom: var(--space-lg);
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-secondary);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.title {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+/* Negative margin keeps the 44px tap target from inflating the header. */
+.close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  margin: -12px calc(var(--space-xs) * -1) -12px 0;
+  color: var(--color-text-muted);
+}
+
+.text {
+  margin: 0;
+  font-size: var(--font-size-sm);
+}
+
+.hint {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+
+.inlineIcon {
+  vertical-align: -3px;
+  margin: 0 2px;
+}
+
+.actions {
+  display: flex;
+  margin-top: var(--space-sm);
+}

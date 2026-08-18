@@ -11,6 +11,7 @@ import StatCard from "../components/StatCard";
 import Avatar from "../components/Avatar";
 import EmptyState from "../components/EmptyState";
 import Icon from "../components/Icon";
+import InstallPrompt from "../components/InstallPrompt";
 import shared from "../styles/shared.module.css";
 import styles from "./SummaryPage.module.css";
 
@@ -89,6 +90,8 @@ export default function SummaryPage() {
           Här är din sammanfattning
         </p>
       </div>
+
+      <InstallPrompt />
 
       {/* Quick stats */}
       <Show when={myStats()}>
