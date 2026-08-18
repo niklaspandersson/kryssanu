@@ -91,6 +91,14 @@ export default function BirdsPage() {
     return timeFilter() === "year" ? entry.lastThisYear : entry.lastDate;
   }
 
+  // Subspecies rows resolve their parent by id while rendering. Doing that
+  // with allBirds().find() was a scan of the whole catalog per row.
+  const birdById = createMemo(() => {
+    const map = new Map<string, Bird>();
+    for (const b of allBirds()) map.set(b.id, b);
+    return map;
+  });
+
   const filteredBirds = createMemo(() => {
     const birds = allBirds();
     if (birds.length === 0) return [];
@@ -123,9 +131,13 @@ export default function BirdsPage() {
         if (obs.has(b.id)) observedBirds.push(b);
         else unobservedBirds.push(b);
       }
+      // Dates resolved once per bird rather than on every comparison, which
+      // otherwise re-reads the observed() and timeFilter() signals O(n log n)
+      // times.
+      const dateFor = new Map(observedBirds.map((b) => [b.id, latestObsDate(b.id)]));
       observedBirds.sort((a, b) => {
-        const da = latestObsDate(a.id);
-        const db = latestObsDate(b.id);
+        const da = dateFor.get(a.id);
+        const db = dateFor.get(b.id);
         if (!da && !db) return 0;
         if (!da) return 1;
         if (!db) return -1;
@@ -260,7 +272,7 @@ export default function BirdsPage() {
               <span class={styles.latinName}>{bird.id}</span>
               <Show when={isSubspecies(bird)}>
                 {(() => {
-                  const parent = allBirds().find(b => b.id === bird.parentId);
+                  const parent = birdById().get(bird.parentId!);
                   return parent ? (
                     <span class={styles.parentLabel} title={SUBSPECIES_TOOLTIP}>
                       underart av {parent.swedish}
