@@ -235,29 +235,76 @@
   min-width: 0;
 }
 
+/* Below the rail breakpoint the row can't carry the binomial as well, so the
+   second line is given over to the rarity badge and the parent-species label,
+   side by side. Only the binomial itself is dropped. */
 .birdInfo {
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
+  /* Pinned down rather than left to `normal`, so the reserved row height below
+     is exact. Inherited by .birdName. */
+  --name-line-height: calc(var(--font-size-sm) * 1.2);
+
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  /* The second track is always reserved — a badge is exactly this tall
+     (--font-size-xs at line-height 1, plus its 2px padding). Held as a
+     min-height too, so a row keeps it even when the track isn't there. */
+  grid-template-rows: auto calc(var(--font-size-xs) + 4px);
+  grid-template-areas:
+    "name   name"
+    "badges latin";
+  min-height: calc(var(--name-line-height) + 1px + var(--font-size-xs) + 4px);
+  align-items: center;
+  /* No column gap: the badge carries its own trailing margin instead, so the
+     label starts flush left on the rows that have no badge. */
+  gap: 1px 0;
   min-width: 0;
   text-decoration: none;
   color: inherit;
 }
 
+/* Neither a badge nor a label to put on the second line. Dropping to a single
+   `1fr` track lets it stretch to the min-height above so the name centres in
+   the row, rather than sitting pinned above an empty line. (Spanning both
+   tracks would instead let the row collapse to the name's own height.) */
+.birdInfo:not(:has(.birdBadges, .parentLabel)) {
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: 1fr;
+  grid-template-areas: "name";
+}
+
+/* Empty here, and it would otherwise be auto-placed into an implicit row. */
+.birdInfo:not(:has(.birdBadges, .parentLabel)) .birdLatin {
+  display: none;
+}
+
 .birdName {
-  font-weight: 600;
-  font-size: var(--font-size-sm);
-  color: var(--color-text);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  grid-area: name;
   display: flex;
   align-items: center;
   gap: var(--space-xs);
+  min-width: 0;
+  font-weight: 600;
+  font-size: var(--font-size-sm);
+  line-height: var(--name-line-height);
+  color: var(--color-text);
 }
 
-.visitorBadge,
-.subspeciesBadge {
+/* Carries the ellipsis so the official icon beside it never gets clipped. */
+.birdNameText {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.birdBadges {
+  grid-area: badges;
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  margin-inline-end: var(--space-xs);
+}
+
+.visitorBadge {
   flex-shrink: 0;
   font-size: var(--font-size-xs);
   font-weight: 600;
@@ -268,10 +315,6 @@
   color: #fff;
 }
 
-.subspeciesBadge {
-  background: var(--color-primary-light);
-}
-
 .officialIcon {
   flex-shrink: 0;
   color: var(--color-primary);
@@ -279,12 +322,20 @@
 }
 
 .birdLatin {
+  grid-area: latin;
+  min-width: 0;
   font-size: var(--font-size-xs);
   color: var(--color-text-muted);
   font-style: italic;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+/* The binomial is what does not fit beside the badge on a phone; the
+   parent-species label is the more useful half, so it is the half that stays. */
+.latinName {
+  display: none;
 }
 
 .birdDate {
@@ -294,4 +345,45 @@
   color: var(--color-text-muted);
   white-space: nowrap;
   font-style: italic;
+}
+
+/* From the sidebar-rail breakpoint up (see AppShell/SideDrawer) there is room
+   for the badge beside the name, with the full latin line below it.
+   Wrapping flex rather than grid: in a grid the latin line spans both columns,
+   and track sizing feeds its width back into the name column, stranding the
+   badge far to the right of the name it belongs to. */
+@media (min-width: 750px) {
+  /* Second selector only to outweigh the empty-second-line rule above — here
+     the latin line always fills that row, so there is nothing to centre. */
+  .birdInfo,
+  .birdInfo:not(:has(.birdBadges, .parentLabel)) {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    column-gap: var(--space-xs);
+    row-gap: 1px;
+  }
+
+  .birdInfo:not(:has(.birdBadges, .parentLabel)) .birdLatin {
+    display: block;
+  }
+
+  /* Full-width basis is what forces it onto its own line. */
+  .birdLatin {
+    flex: 0 0 100%;
+  }
+
+  .birdBadges {
+    flex-shrink: 0;
+    margin-inline-end: 0;
+  }
+
+  .latinName {
+    display: inline;
+  }
+
+  /* Separator only once the binomial is actually there to separate from. */
+  .parentLabel::before {
+    content: " · ";
+  }
 }

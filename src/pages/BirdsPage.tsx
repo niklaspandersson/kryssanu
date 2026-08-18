@@ -239,11 +239,10 @@ export default function BirdsPage() {
         <div class={styles.birdContent}>
           <A href={`/birds/${encodeURIComponent(bird.id)}`} class={styles.birdInfo}>
             <span class={styles.birdName}>
-              {bird.swedish}
-              <Show when={isRarity(bird)}>
-                <span class={styles.visitorBadge} title={RARITY_TOOLTIP}>Raritet</span>
-              </Show>
-              {/* Redundant when the list is already only official birds. */}
+              <span class={styles.birdNameText}>{bird.swedish}</span>
+              {/* Stays inside the name at every width — it qualifies the name
+                  itself, unlike the badges below.
+                  Redundant when the list is already only official birds. */}
               <Show when={!officialOnly() && isOfficial(bird)}>
                 <Icon
                   name="verified"
@@ -252,16 +251,28 @@ export default function BirdsPage() {
                   title={OFFICIAL_TOOLTIP}
                 />
               </Show>
-              <Show when={isSubspecies(bird)}>
-                <span class={styles.subspeciesBadge} title={SUBSPECIES_TOOLTIP}>Underart</span>
-              </Show>
             </span>
+            {/* A sibling of the name rather than a child, so the stylesheet can
+                put the badge beside it or on the line below. Left out entirely
+                when absent, which the stylesheet keys off to centre the name —
+                an empty element would defeat `:has()`. */}
+            <Show when={isRarity(bird)}>
+              <span class={styles.birdBadges}>
+                <span class={styles.visitorBadge} title={RARITY_TOOLTIP}>Raritet</span>
+              </span>
+            </Show>
+            {/* Two spans, not one string: the binomial is dropped on a phone
+                while the parent-species label stays. */}
             <span class={styles.birdLatin}>
-              {bird.id}
+              <span class={styles.latinName}>{bird.id}</span>
               <Show when={isSubspecies(bird)}>
                 {(() => {
                   const parent = allBirds().find(b => b.id === bird.parentId);
-                  return parent ? ` · underart av ${parent.swedish}` : "";
+                  return parent ? (
+                    <span class={styles.parentLabel} title={SUBSPECIES_TOOLTIP}>
+                      underart av {parent.swedish}
+                    </span>
+                  ) : null;
                 })()}
               </Show>
             </span>

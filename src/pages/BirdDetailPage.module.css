@@ -14,8 +14,7 @@
   gap: var(--space-xs);
 }
 
-.visitorBadge,
-.subspeciesBadge {
+.visitorBadge {
   font-size: var(--font-size-xs);
   font-weight: 600;
   line-height: 1;
@@ -23,10 +22,6 @@
   border-radius: var(--radius-sm);
   background: var(--color-accent);
   color: #fff;
-}
-
-.subspeciesBadge {
-  background: var(--color-primary-light);
 }
 
 .officialIcon {

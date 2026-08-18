@@ -4,7 +4,6 @@ import type { Bird } from "../../lib/types";
 import {
   OFFICIAL_TOOLTIP,
   RARITY_TOOLTIP,
-  SUBSPECIES_TOOLTIP,
   isOfficial,
   isRarity,
   isSubspecies,
@@ -48,9 +47,6 @@ export default function BirdRow(props: Props) {
               class={styles.officialIcon}
               title={OFFICIAL_TOOLTIP}
             />
-          </Show>
-          <Show when={isSubspecies(props.bird)}>
-            <span class={styles.subspeciesBadge} title={SUBSPECIES_TOOLTIP}>Underart</span>
           </Show>
         </A>
         <span class={styles.family}>

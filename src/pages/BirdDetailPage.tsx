@@ -10,10 +10,8 @@ import type { Observation } from "../lib/types";
 import {
   OFFICIAL_TOOLTIP,
   RARITY_TOOLTIP,
-  SUBSPECIES_TOOLTIP,
   isOfficial,
   isRarity,
-  isSubspecies,
 } from "../lib/birds";
 import Icon from "../components/Icon";
 import EmptyState from "../components/EmptyState";
@@ -101,9 +99,6 @@ export default function BirdDetailPage() {
                   class={styles.officialIcon}
                   title={OFFICIAL_TOOLTIP}
                 />
-              </Show>
-              <Show when={isSubspecies(b()!)}>
-                <span class={styles.subspeciesBadge} title={SUBSPECIES_TOOLTIP}>Underart</span>
               </Show>
             </h1>
             <p class={styles.latin}>{b().id}</p>
