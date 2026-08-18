@@ -69,33 +69,26 @@ export default function BirdsPage() {
     loggedIn ? meApi.checklist() : undefined
   );
 
+  // Only used for the filter labels. The year boundary that decides which
+  // observations count is applied server-side, in UTC.
   const currentYear = new Date().getFullYear();
 
   const observedSet = createMemo(() => {
     const d = observed();
     if (!d) return new Set<string>();
     const set = new Set<string>();
-    for (const [birdId, dates] of Object.entries(d.observed)) {
-      if (timeFilter() === "year") {
-        if (dates.some(date => new Date(date).getFullYear() === currentYear)) {
-          set.add(birdId);
-        }
-      } else {
-        set.add(birdId);
-      }
+    for (const [birdId, entry] of Object.entries(d.observed)) {
+      // "I år" hides a species seen only in earlier years.
+      if (timeFilter() === "year" && entry.lastThisYear === null) continue;
+      set.add(birdId);
     }
     return set;
   });
 
   function latestObsDate(birdId: string): string | null {
-    const d = observed();
-    if (!d || !d.observed[birdId]) return null;
-    const dates = d.observed[birdId];
-    if (timeFilter() === "year") {
-      const yearDates = dates.filter(date => new Date(date).getFullYear() === currentYear);
-      return yearDates.length > 0 ? yearDates[yearDates.length - 1] : null;
-    }
-    return dates[dates.length - 1] ?? null;
+    const entry = observed()?.observed[birdId];
+    if (!entry) return null;
+    return timeFilter() === "year" ? entry.lastThisYear : entry.lastDate;
   }
 
   const filteredBirds = createMemo(() => {
@@ -202,15 +195,15 @@ export default function BirdsPage() {
     refetch();
   }
 
+  // Chronological sorting reads as "most recently seen", every other mode as
+  // "first seen" — so each shows the matching end of the date range.
   function displayObsDate(birdId: string): string | null {
-    const d = observed();
-    if (!d || !d.observed[birdId]) return null;
-    const dates = d.observed[birdId];
-    const pool = timeFilter() === "year"
-      ? dates.filter(date => new Date(date).getFullYear() === currentYear)
-      : dates;
-    if (pool.length === 0) return null;
-    return sortMode() === "chrono" ? pool[pool.length - 1] : pool[0];
+    const entry = observed()?.observed[birdId];
+    if (!entry) return null;
+    const inYear = timeFilter() === "year";
+    return sortMode() === "chrono"
+      ? (inYear ? entry.lastThisYear : entry.lastDate)
+      : (inYear ? entry.firstThisYear : entry.firstDate);
   }
 
   const filtersActive = createMemo(

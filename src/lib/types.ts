@@ -145,8 +145,21 @@ export type UpdateProfileInput = {
 export type ObservedBirds = Record<string, boolean>;
 
 // ── Checklist ───────────────────────────────────────────────────────
+/**
+ * Per-species observation dates, aggregated server-side. Only the endpoints of
+ * each bucket are sent — the page never needed the dates in between, and
+ * returning them all made the payload grow with the user's observation count.
+ * The `ThisYear` fields are null when the species has not been seen this year.
+ */
+export type ChecklistEntry = {
+  firstDate: string;
+  lastDate: string;
+  firstThisYear: string | null;
+  lastThisYear: string | null;
+};
+
 export type ChecklistData = {
-  observed: Record<string, string[]>;
+  observed: Record<string, ChecklistEntry>;
 };
 
 // ── Event ───────────────────────────────────────────────────────────

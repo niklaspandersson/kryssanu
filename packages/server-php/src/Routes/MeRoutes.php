@@ -129,21 +129,47 @@ class MeRoutes
         $user = $request->getAttribute('user');
         $db = Database::getConnection();
 
+        // One row per species rather than per observation. The page only ever
+        // reads the first and last date in each bucket (overall, and within the
+        // current year), so returning every date made the payload grow with the
+        // user's observation count for no gain — and it is cached to IndexedDB
+        // client-side on top of that. Aggregating here bounds the response by
+        // the size of the Bird table instead.
+        //
+        // The year boundary is UTC, matching StatsRoutes::getUserStats.
+        $startOfYear = gmdate('Y') . '-01-01 00:00:00';
+
         $stmt = $db->prepare(
-            'SELECT birdId, date FROM Observation WHERE userId = :userId ORDER BY date ASC'
+            'SELECT birdId,
+                    MIN(date) AS firstDate,
+                    MAX(date) AS lastDate,
+                    MIN(CASE WHEN date >= :startOfYear THEN date END) AS firstThisYear,
+                    MAX(CASE WHEN date >= :startOfYear2 THEN date END) AS lastThisYear
+             FROM Observation
+             WHERE userId = :userId
+             GROUP BY birdId'
         );
-        $stmt->execute(['userId' => $user['id']]);
-        $observations = $stmt->fetchAll();
+        $stmt->execute([
+            'userId' => $user['id'],
+            'startOfYear' => $startOfYear,
+            'startOfYear2' => $startOfYear,
+        ]);
 
         $observed = [];
-        foreach ($observations as $o) {
-            $birdId = $o['birdId'];
-            if (!isset($observed[$birdId])) {
-                $observed[$birdId] = [];
-            }
-            $observed[$birdId][] = Helpers::toISOString($o['date']);
+        while ($row = $stmt->fetch()) {
+            $observed[$row['birdId']] = [
+                'firstDate' => Helpers::toISOString($row['firstDate']),
+                'lastDate' => Helpers::toISOString($row['lastDate']),
+                'firstThisYear' => $row['firstThisYear'] !== null
+                    ? Helpers::toISOString($row['firstThisYear'])
+                    : null,
+                'lastThisYear' => $row['lastThisYear'] !== null
+                    ? Helpers::toISOString($row['lastThisYear'])
+                    : null,
+            ];
         }
 
+        $response = $response->withHeader('Cache-Control', 'private, max-age=60');
         return Helpers::jsonResponse($response, [
             'observed' => (object) $observed,
         ]);
