@@ -498,11 +498,16 @@ export default function EventDetailPage() {
           fallback={<p class={styles.obsLoading}>Laddar observationer...</p>}
         >
           <Show
-            when={(participantObs() ?? []).length > 0}
+            when={(participantObs()?.observations ?? []).length > 0}
             fallback={<EmptyState icon="visibility_off" message="Inga observationer i detta event" />}
           >
+            <Show when={participantObs()!.total > participantObs()!.observations.length}>
+              <p class={styles.obsCount}>
+                Visar {participantObs()!.observations.length} av {participantObs()!.total}
+              </p>
+            </Show>
             <div class={styles.obsList}>
-              <For each={participantObs()}>
+              <For each={participantObs()?.observations}>
                 {(obs) => (
                   <div class={styles.obsItem}>
                     <span class={styles.obsSpecies}>{obs.bird.swedish}</span>

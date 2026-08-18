@@ -17,6 +17,7 @@ import type {
   UpdateProfileInput,
   InviteTokenResponse,
   PaginatedObservations,
+  PaginatedBirdObservations,
   Memberships,
   ListWithDetails,
   CreateListInput,
@@ -108,10 +109,18 @@ export const me = {
     const qs = params.toString();
     return fetchJson<PaginatedObservations>(`/me/observations/all${qs ? `?${qs}` : ''}`);
   },
-  observationsForBird: (birdId: string) =>
-    fetchJson<(Observation & { listIds?: string[] })[]>(
-      `/me/observations/bird/${encodeURIComponent(birdId)}`
-    ),
+  observationsForBird: (
+    birdId: string,
+    opts: { limit?: number; offset?: number } = {}
+  ) => {
+    const params = new URLSearchParams();
+    if (opts.limit != null) params.set('limit', String(opts.limit));
+    if (opts.offset != null) params.set('offset', String(opts.offset));
+    const qs = params.toString();
+    return fetchJson<PaginatedBirdObservations>(
+      `/me/observations/bird/${encodeURIComponent(birdId)}${qs ? `?${qs}` : ''}`
+    );
+  },
   createObservation: (input: CreateObservationInput) =>
     fetchJson<Observation>('/me/observations', {
       method: 'POST',
@@ -257,10 +266,19 @@ export const events = {
       `/events/${encodeURIComponent(eventId)}/participants${qs ? `?${qs}` : ''}`
     );
   },
-  participantObservations: (eventId: string, userId: string) =>
-    fetchJson<ObservationWithBird[]>(
-      `/events/${encodeURIComponent(eventId)}/participants/${encodeURIComponent(userId)}/observations`
-    ),
+  participantObservations: (
+    eventId: string,
+    userId: string,
+    opts: { limit?: number; offset?: number } = {}
+  ) => {
+    const params = new URLSearchParams();
+    if (opts.limit != null) params.set('limit', String(opts.limit));
+    if (opts.offset != null) params.set('offset', String(opts.offset));
+    const qs = params.toString();
+    return fetchJson<PaginatedObservations>(
+      `/events/${encodeURIComponent(eventId)}/participants/${encodeURIComponent(userId)}/observations${qs ? `?${qs}` : ''}`
+    );
+  },
   createInviteToken: (eventId: string) =>
     fetchJson<InviteTokenResponse>(
       `/events/${encodeURIComponent(eventId)}/invite-token`,

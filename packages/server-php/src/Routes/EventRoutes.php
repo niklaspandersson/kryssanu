@@ -728,6 +728,17 @@ class EventRoutes
 
         ['limit' => $limit, 'offset' => $offset] = Helpers::paginationParams($request, 50, 100);
 
+        // Returned with the rows so the sheet can show how many observations
+        // the participant logged, not how many fit in one page.
+        $countStmt = $db->prepare(
+            'SELECT COUNT(*)
+             FROM ObservationEvent oe
+             JOIN Observation o ON o.id = oe.observationId
+             WHERE oe.eventId = :eventId AND o.userId = :userId'
+        );
+        $countStmt->execute(['eventId' => $args['id'], 'userId' => $args['userId']]);
+        $total = (int) $countStmt->fetchColumn();
+
         $stmt = $db->prepare(
             'SELECT o.*, b.id as b_id, b.swedish as b_swedish, b.family as b_family, b.parentId as b_parentId, b.kategori as b_kategori, b.status as b_status, b.delisted as b_delisted
              FROM ObservationEvent oe
@@ -758,7 +769,10 @@ class EventRoutes
             return $obs;
         }, $rows);
 
-        return Helpers::jsonResponse($response, $observations);
+        return Helpers::jsonResponse($response, [
+            'observations' => $observations,
+            'total' => $total,
+        ]);
     }
 
     public static function createInviteToken(Request $request, Response $response, array $args): Response

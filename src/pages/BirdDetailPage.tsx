@@ -67,8 +67,15 @@ export default function BirdDetailPage() {
         userId: user()?.id ?? "",
         pending: true,
       }));
-    return [...pending, ...(obs() ?? [])];
+    return [...pending, ...(obs()?.observations ?? [])];
   });
+
+  // The server's count, plus anything still queued locally. rows().length was
+  // shown here before, which is the size of one page — a user with more
+  // observations than the page holds saw an undercount.
+  const totalCount = () =>
+    (obs()?.total ?? 0) +
+    pendingObservations().filter((p) => relatedIds().has(p.birdId)).length;
 
   // Public first image for this bird, shown to everyone (incl. logged-out users).
   const [heroImage] = createResource(
@@ -137,7 +144,7 @@ export default function BirdDetailPage() {
                   <Icon name="visibility" size={20} />
                   Mina observationer
                   <Show when={rows().length > 0}>
-                    <span class={styles.count}>({rows().length})</span>
+                    <span class={styles.count}>({totalCount()})</span>
                     <A
                       href={`/observations/bird/${encodeURIComponent(birdId())}`}
                       class={styles.sectionLink}

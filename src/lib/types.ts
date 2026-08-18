@@ -100,6 +100,15 @@ export type PaginatedObservations = {
   total: number;
 };
 
+/**
+ * Observations for a single species, which carry list membership but not the
+ * bird (the caller already knows which species it asked for).
+ */
+export type PaginatedBirdObservations = {
+  observations: (Observation & { listIds?: string[] })[];
+  total: number;
+};
+
 export type CreateObservationInput = {
   birdId: string;
   note?: string;

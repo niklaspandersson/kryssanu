@@ -335,6 +335,21 @@ class MeRoutes
 
         ['limit' => $limit, 'offset' => $offset] = Helpers::paginationParams($request, 50, 100);
 
+        // Returned alongside the rows so the page can say how many observations
+        // exist rather than how many this response happened to carry.
+        $countStmt = $db->prepare(
+            'SELECT COUNT(*)
+             FROM Observation o
+             JOIN Bird b ON b.id = o.birdId
+             WHERE o.userId = :userId AND (o.birdId = :birdId OR b.parentId = :parentId)'
+        );
+        $countStmt->execute([
+            'userId' => $user['id'],
+            'birdId' => $args['birdId'],
+            'parentId' => $args['birdId'],
+        ]);
+        $total = (int) $countStmt->fetchColumn();
+
         // A species' page also lists observations of its subspecies: someone who
         // logged mörkbukig prutgås has seen a prutgås. The reverse does not hold,
         // so a subspecies page only ever shows its own.
@@ -364,7 +379,10 @@ class MeRoutes
             return $obs;
         }, $rows);
 
-        return Helpers::jsonResponse($response, $observations);
+        return Helpers::jsonResponse($response, [
+            'observations' => $observations,
+            'total' => $total,
+        ]);
     }
 
     public static function createObservation(Request $request, Response $response): Response
