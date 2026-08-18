@@ -14,6 +14,34 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 
 class ExportRoutes
 {
+    /**
+     * Rows per append call. Large enough that a typical export is one or two
+     * requests, small enough that peak memory stays flat however long the
+     * user's history is.
+     */
+    private const EXPORT_BATCH_SIZE = 5000;
+
+    /**
+     * Append one batch of rows to the export sheet.
+     *
+     * RAW, not USER_ENTERED: a note or place name beginning with `=` or `+`
+     * would otherwise be interpreted as a formula by Sheets.
+     *
+     * @param string[][] $rows
+     */
+    private static function appendRows(
+        \Google\Service\Sheets $sheetsService,
+        string $spreadsheetId,
+        array $rows
+    ): void {
+        $sheetsService->spreadsheets_values->append(
+            $spreadsheetId,
+            'Observationer!A1',
+            new \Google\Service\Sheets\ValueRange(['values' => $rows]),
+            ['valueInputOption' => 'RAW', 'insertDataOption' => 'INSERT_ROWS']
+        );
+    }
+
     public static function register(App $app): void
     {
         $app->group('/api/export', function (RouteCollectorProxy $group) {
@@ -245,39 +273,18 @@ class ExportRoutes
                 ]);
             }
 
-            // Fetch all observations with bird data
-            $stmt = $db->prepare(
-                'SELECT o.date, o.location, o.latitude, o.longitude, o.note, b.swedish, b.id as birdId, b.family
-                 FROM Observation o
-                 JOIN Bird b ON b.id = o.birdId
-                 WHERE o.userId = :userId
-                 ORDER BY o.date ASC, b.swedish ASC'
-            );
-            $stmt->execute(['userId' => $user['id']]);
-            $observations = $stmt->fetchAll();
-
-            // Build spreadsheet data
-            $header = ['Svenskt namn', 'Latinskt namn', 'Familj', 'Datum', 'Plats', 'Latitud', 'Longitud', 'Anteckning'];
-            $rows = [$header];
-            foreach ($observations as $obs) {
-                $date = (new \DateTime($obs['date'], new \DateTimeZone('UTC')))->format('Y-m-d');
-                $rows[] = [
-                    $obs['swedish'],
-                    $obs['birdId'],
-                    $obs['family'],
-                    $date,
-                    $obs['location'] ?? '',
-                    $obs['latitude'] ?? '',
-                    $obs['longitude'] ?? '',
-                    $obs['note'] ?? '',
-                ];
-            }
-
-            // Create spreadsheet
+            // Create the spreadsheet with just the header, then stream the rows
+            // in. Building the whole export inline held three full copies of the
+            // dataset in PHP at once — the fetched rows, the formatted rows, and
+            // the nested API object graph — and sent them as a single request,
+            // which hits Google's request-size limit or the memory limit well
+            // before the database struggles.
             $sheetsService = new \Google\Service\Sheets($client);
             $userName = $user['name'] ?? 'Användare';
             $dateStr = date('Y-m-d');
             $title = "Kryssanu – {$userName} – {$dateStr}";
+
+            $header = ['Svenskt namn', 'Latinskt namn', 'Familj', 'Datum', 'Plats', 'Latitud', 'Longitud', 'Anteckning'];
 
             $spreadsheet = new \Google\Service\Sheets\Spreadsheet([
                 'properties' => ['title' => $title],
@@ -285,23 +292,18 @@ class ExportRoutes
                     [
                         'properties' => [
                             'title' => 'Observationer',
-                            'gridProperties' => [
-                                'frozenRowCount' => 1,
-                            ],
+                            'gridProperties' => ['frozenRowCount' => 1],
                         ],
                         'data' => [
                             [
                                 'startRow' => 0,
                                 'startColumn' => 0,
-                                'rowData' => array_map(function ($row) {
-                                    return [
-                                        'values' => array_map(function ($cell) {
-                                            return [
-                                                'userEnteredValue' => ['stringValue' => (string) $cell],
-                                            ];
-                                        }, $row),
-                                    ];
-                                }, $rows),
+                                'rowData' => [[
+                                    'values' => array_map(
+                                        fn($cell) => ['userEnteredValue' => ['stringValue' => (string) $cell]],
+                                        $header
+                                    ),
+                                ]],
                             ],
                         ],
                     ],
@@ -311,6 +313,39 @@ class ExportRoutes
             $created = $sheetsService->spreadsheets->create($spreadsheet, [
                 'fields' => 'spreadsheetId,spreadsheetUrl,sheets.properties.sheetId',
             ]);
+
+            // Streamed with an unbuffered cursor and flushed in batches, so peak
+            // memory is one batch rather than the user's whole history.
+            $stmt = $db->prepare(
+                'SELECT o.date, o.location, o.latitude, o.longitude, o.note, b.swedish, b.id as birdId, b.family
+                 FROM Observation o
+                 JOIN Bird b ON b.id = o.birdId
+                 WHERE o.userId = :userId
+                 ORDER BY o.date ASC, b.swedish ASC'
+            );
+            $stmt->execute(['userId' => $user['id']]);
+
+            $batch = [];
+            while ($obs = $stmt->fetch()) {
+                $batch[] = [
+                    $obs['swedish'],
+                    $obs['birdId'],
+                    $obs['family'],
+                    (new \DateTime($obs['date'], new \DateTimeZone('UTC')))->format('Y-m-d'),
+                    $obs['location'] ?? '',
+                    $obs['latitude'] ?? '',
+                    $obs['longitude'] ?? '',
+                    $obs['note'] ?? '',
+                ];
+
+                if (count($batch) >= self::EXPORT_BATCH_SIZE) {
+                    self::appendRows($sheetsService, $created->getSpreadsheetId(), $batch);
+                    $batch = [];
+                }
+            }
+            if (!empty($batch)) {
+                self::appendRows($sheetsService, $created->getSpreadsheetId(), $batch);
+            }
 
             // Bold header row
             $sheetId = $created->getSheets()[0]->getProperties()->getSheetId();
