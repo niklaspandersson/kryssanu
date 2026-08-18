@@ -2,6 +2,7 @@ import { Show, For, createResource, createSignal, createEffect, createMemo } fro
 import { A } from "@solidjs/router";
 import { events as eventsApi } from "../lib/api";
 import { useAuth } from "../lib/auth";
+import { isOnline } from "../lib/useOnlineStatus";
 import type { EventWithDetails } from "../lib/types";
 import { userLists } from "../lib/listStore";
 import styles from "./SideDrawer.module.css";
@@ -55,10 +56,24 @@ export default function SideDrawer(props: Props) {
     if (props.open) setHasOpened(true);
   });
 
-  const [allEvents] = createResource(
-    () => (isLoggedIn() && hasOpened() ? true : null),
+  // The source has to keep changing, not latch. Gating only on "has been
+  // opened" made it flip to a constant once and never move again, so a first
+  // open while offline left the resource stuck in an error state for the rest
+  // of the session — the drawer said "Inga event" even after reconnecting.
+  //
+  // Including isOnline() means the fetcher does not run at all while offline
+  // (a falsy source is skipped, so nothing can throw), and reconnecting flips
+  // the source and fetches.
+  const [allEvents, { refetch }] = createResource(
+    () => (isLoggedIn() && hasOpened() ? isOnline() : false),
     () => eventsApi.getAll({ limit: 20 })
   );
+
+  // A request that fails while online — a server error, say — would still
+  // stick, since the source value does not change. Retry on the next open.
+  createEffect(() => {
+    if (props.open && allEvents.error) void refetch();
+  });
 
   const displayEvents = createMemo(() => categorizeEvents(allEvents()?.events ?? []));
 
