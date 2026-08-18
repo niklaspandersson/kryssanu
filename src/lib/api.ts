@@ -176,8 +176,6 @@ export const birdImages = {
 // ── Lists ───────────────────────────────────────────────────────────
 export const lists = {
   getAll: () => fetchJson<ListWithDetails[]>('/me/lists'),
-  getOne: (id: string) =>
-    fetchJson<ListWithDetails>(`/lists/${encodeURIComponent(id)}`),
   create: (input: CreateListInput) =>
     fetchJson<ListWithDetails>('/lists', {
       method: 'POST',
@@ -192,20 +190,6 @@ export const lists = {
     fetchJson<{ ok: boolean }>(`/lists/${encodeURIComponent(id)}`, {
       method: 'DELETE',
     }),
-  observations: (id: string) =>
-    fetchJson<ObservationWithBird[]>(
-      `/lists/${encodeURIComponent(id)}/observations`
-    ),
-  addObservation: (id: string, observationId: string) =>
-    fetchJson<{ ok: boolean }>(
-      `/lists/${encodeURIComponent(id)}/observations`,
-      { method: 'POST', body: JSON.stringify({ observationId }) }
-    ),
-  removeObservation: (id: string, observationId: string) =>
-    fetchJson<{ ok: boolean }>(
-      `/lists/${encodeURIComponent(id)}/observations/${encodeURIComponent(observationId)}`,
-      { method: 'DELETE' }
-    ),
 };
 
 // ── Events ──────────────────────────────────────────────────────────
@@ -293,12 +277,6 @@ export const events = {
     fetchJson<{ eventId: string }>(`/invite/${encodeURIComponent(token)}`, {
       method: 'POST',
     }),
-};
-
-// ── Stats ───────────────────────────────────────────────────────────
-export const stats = {
-  user: (userId: string) =>
-    fetchJson<UserStats>(`/stats/user/${encodeURIComponent(userId)}`),
 };
 
 // ── Export ──────────────────────────────────────────────────────────
