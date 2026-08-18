@@ -93,6 +93,17 @@ export const birdCache = {
 
 type CachedApiRow = { key: string; data: unknown; cachedAt: number };
 
+/**
+ * Entries are keyed by URL, so every distinct query string — every page of
+ * observations, every event, every species — creates a permanent row. Nothing
+ * removed them except logout, so the store grew for the lifetime of the
+ * install. These bounds keep it to roughly a session's worth of browsing;
+ * anything evicted is re-fetched when online, and the offline app shell itself
+ * lives in the service worker's precache, not here.
+ */
+const MAX_CACHED_RESPONSES = 100;
+const MAX_CACHE_AGE_MS = 7 * 24 * 60 * 60 * 1000;
+
 export const apiCache = {
   async set(key: string, data: unknown): Promise<void> {
     const db = await openDb();
@@ -103,6 +114,39 @@ export const apiCache = {
         cachedAt: Date.now(),
       } satisfies CachedApiRow),
     );
+    // After the write, so a prune failure never loses the value just cached.
+    await apiCache.prune().catch(() => {});
+  },
+
+  /**
+   * Drop stale rows, then oldest-first until the count is under the cap.
+   */
+  async prune(): Promise<void> {
+    const db = await openDb();
+    const rows = await wrap<CachedApiRow[]>(
+      tx(db, 'cachedApiData', 'readonly').getAll(),
+    );
+
+    const cutoff = Date.now() - MAX_CACHE_AGE_MS;
+    const fresh: CachedApiRow[] = [];
+    const doomed: string[] = [];
+
+    for (const row of rows) {
+      if (row.cachedAt < cutoff) doomed.push(row.key);
+      else fresh.push(row);
+    }
+
+    if (fresh.length > MAX_CACHED_RESPONSES) {
+      fresh.sort((a, b) => a.cachedAt - b.cachedAt);
+      for (const row of fresh.slice(0, fresh.length - MAX_CACHED_RESPONSES)) {
+        doomed.push(row.key);
+      }
+    }
+
+    if (doomed.length === 0) return;
+
+    const store = tx(db, 'cachedApiData', 'readwrite');
+    await Promise.all(doomed.map((key) => wrap(store.delete(key))));
   },
 
   async get<T>(key: string): Promise<{ data: T; cachedAt: number } | null> {
