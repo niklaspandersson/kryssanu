@@ -1,4 +1,4 @@
-import { Show, For, createResource } from "solid-js";
+import { Show, For, createResource, createSignal, createEffect, createMemo } from "solid-js";
 import { A } from "@solidjs/router";
 import { events as eventsApi } from "../lib/api";
 import { useAuth } from "../lib/auth";
@@ -45,14 +45,31 @@ function categorizeEvents(list: EventWithDetails[]) {
 export default function SideDrawer(props: Props) {
   const { isLoggedIn } = useAuth();
 
-  // categorizeEvents shows at most 5, so there is no reason to pull the
-  // endpoint's default page of 50 on every authenticated page load.
+  // The drawer is mounted by AppShell on every authenticated page, so keying
+  // this on isLoggedIn() alone fired a request on every page load for a panel
+  // that is usually closed. Fetch on first open instead; createResource caches
+  // the result, so reopening does not refetch. The limit covers what
+  // categorizeEvents can show (5) with room for the mix it sorts through.
+  const [hasOpened, setHasOpened] = createSignal(false);
+  createEffect(() => {
+    if (props.open) setHasOpened(true);
+  });
+
   const [allEvents] = createResource(
-    () => isLoggedIn(),
+    () => (isLoggedIn() && hasOpened() ? true : null),
     () => eventsApi.getAll({ limit: 20 })
   );
 
-  const displayEvents = () => categorizeEvents(allEvents()?.events ?? []);
+  const displayEvents = createMemo(() => categorizeEvents(allEvents()?.events ?? []));
+
+  // Sorting a fresh copy on every render was wasteful for a list rendered five
+  // items at a time.
+  const recentLists = createMemo(() =>
+    userLists()
+      .slice()
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+      .slice(0, 5)
+  );
 
   return (
     <>
@@ -152,7 +169,7 @@ export default function SideDrawer(props: Props) {
                 </span>
               }
             >
-              <For each={userLists().slice().sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).slice(0, 5)}>
+              <For each={recentLists()}>
                 {(list) => (
                   <A href={`/observations/list/${list.id}`} class={styles.eventItem} onClick={() => props.onClose()}>
                     <div class={styles.eventInfo}>
