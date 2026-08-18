@@ -1,6 +1,6 @@
 import { createSignal, createResource, Show, For } from "solid-js";
 import { A } from "@solidjs/router";
-import { events as eventsApi, me as meApi } from "../lib/api";
+import { events as eventsApi } from "../lib/api";
 import { useAuth } from "../lib/auth";
 import { isOnline } from "../lib/useOnlineStatus";
 import Icon from "../components/Icon";
@@ -14,36 +14,39 @@ export default function EventsPage() {
   const { isLoggedIn } = useAuth();
   const [tab, setTab] = createSignal<Tab>("active");
 
-  const [allEvents, { refetch }] = createResource(
-    () => isLoggedIn(),
-    () => eventsApi.getAll()
+  const PAGE_SIZE = 20;
+  const [page, setPage] = createSignal(0);
+
+  // Each tab is its own server-side query. Filtering client-side over one
+  // fetch meant the tabs shared a single truncated result set, so the
+  // "Avslutade" tab progressively lost events as they accumulated.
+  const [eventPage, { refetch }] = createResource(
+    () => (isLoggedIn() ? { status: tab(), offset: page() * PAGE_SIZE } : null),
+    (source) =>
+      eventsApi.getAll({
+        status: source.status,
+        limit: PAGE_SIZE,
+        offset: source.offset,
+      })
   );
-  const [memberships] = createResource(
+  const [invites, { refetch: refetchInvites }] = createResource(
     () => isLoggedIn(),
-    () => meApi.memberships()
+    () => eventsApi.invites()
   );
 
-  const filtered = () => {
-    const list = allEvents() ?? [];
-    const now = Date.now();
-    return list.filter((e) => {
-      const start = new Date(e.startsAt).getTime();
-      const end = new Date(e.endsAt).getTime();
-      if (tab() === "active") return start <= now && end >= now;
-      if (tab() === "upcoming") return start > now;
-      return end < now;
-    });
-  };
+  const events = () => eventPage()?.events ?? [];
+  const total = () => eventPage()?.total ?? 0;
+  const pageCount = () => Math.max(1, Math.ceil(total() / PAGE_SIZE));
 
-  const pendingInvites = () => {
-    const list = allEvents() ?? [];
-    const m = memberships() ?? {};
-    return list.filter((e) => m[e.id] === "INVITED");
-  };
+  function selectTab(t: Tab) {
+    setTab(t);
+    setPage(0);
+  }
 
   async function handleRespond(eventId: string, status: "ACCEPTED" | "DECLINED") {
     await eventsApi.respond(eventId, status);
     refetch();
+    refetchInvites();
   }
 
   return (
@@ -67,9 +70,9 @@ export default function EventsPage() {
       </div>
 
       {/* Pending invites */}
-      <Show when={isOnline() && pendingInvites().length > 0}>
+      <Show when={isOnline() && (invites() ?? []).length > 0}>
         <div class={styles.invites}>
-          <For each={pendingInvites()}>
+          <For each={(invites() ?? [])}>
             {(event) => (
               <div class={styles.inviteCard}>
                 <div class={styles.inviteInfo}>
@@ -104,7 +107,7 @@ export default function EventsPage() {
           <button
             class={styles.tab}
             classList={{ [styles.tabActive]: tab() === t }}
-            onClick={() => setTab(t)}
+            onClick={() => selectTab(t)}
           >
             {t === "active" ? "Aktiva" : t === "upcoming" ? "Kommande" : "Avslutade"}
           </button>
@@ -113,11 +116,16 @@ export default function EventsPage() {
 
       {/* Event list */}
       <Show
-        when={filtered().length > 0}
+        when={events().length > 0}
         fallback={<EmptyState icon="event" message="Inga event här" />}
       >
+        <Show when={total() > PAGE_SIZE}>
+          <div class={styles.resultCount}>
+            Visar {page() * PAGE_SIZE + 1}–{page() * PAGE_SIZE + events().length} av {total()}
+          </div>
+        </Show>
         <div class={shared.itemList}>
-          <For each={filtered()}>
+          <For each={events()}>
             {(event) => (
               <A href={`/events/${event.id}`} class={shared.card}>
                 <div class={shared.cardInfo}>
@@ -141,6 +149,27 @@ export default function EventsPage() {
             )}
           </For>
         </div>
+        <Show when={pageCount() > 1}>
+          <div class={styles.pagination}>
+            <button
+              class={styles.pageBtn}
+              onClick={() => setPage((p) => Math.max(0, p - 1))}
+              disabled={page() === 0 || eventPage.loading}
+            >
+              <Icon name="chevron_left" size={18} />
+            </button>
+            <span class={styles.pageInfo}>
+              Sida {page() + 1} av {pageCount()}
+            </span>
+            <button
+              class={styles.pageBtn}
+              onClick={() => setPage((p) => p + 1)}
+              disabled={page() >= pageCount() - 1 || eventPage.loading}
+            >
+              <Icon name="chevron_right" size={18} />
+            </button>
+          </div>
+        </Show>
       </Show>
     </div>
   );

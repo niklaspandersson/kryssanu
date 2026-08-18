@@ -220,6 +220,12 @@ export type LeaderboardEntry = {
   totalObservations: number;
 };
 
+export type PaginatedEvents = {
+  events: EventWithDetails[];
+  /** Events visible to the user in this time window, not the page size. */
+  total: number;
+};
+
 export type PaginatedLeaderboard = {
   entries: LeaderboardEntry[];
   /** Accepted participants in the event, not the number of entries returned. */

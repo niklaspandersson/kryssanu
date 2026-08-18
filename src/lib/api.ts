@@ -10,6 +10,7 @@ import type {
   BulkObservationPayload,
   CreateEventInput,
   EventWithDetails,
+  PaginatedEvents,
   PaginatedLeaderboard,
   FeedItem,
   ParticipantWithUser,
@@ -200,10 +201,22 @@ export const lists = {
 
 // ── Events ──────────────────────────────────────────────────────────
 export const events = {
-  getAll: (status?: string) =>
-    fetchJson<EventWithDetails[]>(
-      `/events${status ? `?status=${status}` : ''}`
-    ),
+  getAll: (
+    opts: { status?: string; limit?: number; offset?: number } = {}
+  ) => {
+    const params = new URLSearchParams();
+    if (opts.status != null) params.set('status', opts.status);
+    if (opts.limit != null) params.set('limit', String(opts.limit));
+    if (opts.offset != null) params.set('offset', String(opts.offset));
+    const qs = params.toString();
+    return fetchJson<PaginatedEvents>(`/events${qs ? `?${qs}` : ''}`);
+  },
+  /**
+   * Events the user has been invited to but not responded to. Separate from
+   * getAll because that is paged per time window and an invite can be in any
+   * of them.
+   */
+  invites: () => fetchJson<EventWithDetails[]>('/me/invites'),
   getOne: (id: string) =>
     fetchJson<EventWithDetails>(`/events/${encodeURIComponent(id)}`),
   create: (input: CreateEventInput) =>

@@ -23,7 +23,11 @@ export default function SummaryPage() {
     () => (isLoggedIn() ? observationsRevision() : undefined),
     () => feed.get()
   );
-  const [activeEvents] = createResource(() => isLoggedIn(), () => eventsApi.getAll("active"));
+  // A dashboard summary, not a browsable list — the full set lives on /events.
+  const [activeEvents] = createResource(
+    () => isLoggedIn(),
+    () => eventsApi.getAll({ status: "active", limit: 5 })
+  );
   const [latestObs] = createResource(
     () => (isLoggedIn() ? observationsRevision() : undefined),
     () => meApi.observations()
@@ -120,13 +124,13 @@ export default function SummaryPage() {
           </section>
         }
       >
-        <Show when={(activeEvents() ?? []).length > 0}>
+        <Show when={(activeEvents()?.events ?? []).length > 0}>
           <section class={shared.section}>
             <h2 class={shared.sectionTitle}>
               <Icon name="event" size={20} />
               Aktiva event
             </h2>
-            <For each={activeEvents()}>
+            <For each={activeEvents()?.events}>
               {(event) => (
                 <A href={`/events/${event.id}`} class={styles.eventCard}>
                   <div class={styles.eventInfo}>

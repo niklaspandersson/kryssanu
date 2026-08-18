@@ -45,12 +45,14 @@ function categorizeEvents(list: EventWithDetails[]) {
 export default function SideDrawer(props: Props) {
   const { isLoggedIn } = useAuth();
 
+  // categorizeEvents shows at most 5, so there is no reason to pull the
+  // endpoint's default page of 50 on every authenticated page load.
   const [allEvents] = createResource(
     () => isLoggedIn(),
-    () => eventsApi.getAll()
+    () => eventsApi.getAll({ limit: 20 })
   );
 
-  const displayEvents = () => categorizeEvents(allEvents() ?? []);
+  const displayEvents = () => categorizeEvents(allEvents()?.events ?? []);
 
   return (
     <>

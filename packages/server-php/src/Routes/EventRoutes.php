@@ -30,8 +30,74 @@ class EventRoutes
             $group->delete('/{id}/invite-token', [self::class, 'deleteInviteToken']);
         })->add(new AuthMiddleware());
 
+        // Lives here rather than in MeRoutes so all event shaping stays in one
+        // place. The events list is paged per time window, and an invite can
+        // fall in any of them, so pending invites need their own source.
+        $app->get('/api/me/invites', [self::class, 'listInvites'])
+            ->add(new AuthMiddleware());
+
         $app->post('/api/invite/{token}', [self::class, 'acceptInvite'])
             ->add(new AuthMiddleware());
+    }
+
+    /**
+     * Creator columns and both counts, for queries that return whole events.
+     * Paired with formatEventRow().
+     */
+    private const EVENT_COLUMNS =
+        "e.*,
+         u.id AS c_id, u.name AS c_name, u.email AS c_email, u.image AS c_image,
+         (SELECT COUNT(*) FROM Participant pc
+           WHERE pc.eventId = e.id AND pc.status != 'DECLINED') AS participantCount,
+         (SELECT COUNT(*) FROM ObservationEvent oe
+           WHERE oe.eventId = e.id) AS observationCount";
+
+    /** Shape a row selected with EVENT_COLUMNS. */
+    private static function formatEventRow(array $row): array
+    {
+        return self::formatEvent(
+            $row,
+            Helpers::formatUserMinimal([
+                'id' => $row['c_id'],
+                'name' => $row['c_name'],
+                'email' => $row['c_email'],
+                'image' => $row['c_image'],
+            ]),
+            (int) $row['participantCount'],
+            (int) $row['observationCount']
+        );
+    }
+
+    public static function listInvites(Request $request, Response $response): Response
+    {
+        $user = $request->getAttribute('user');
+        $db = Database::getConnection();
+
+        // Pending invites are few by nature; bounded anyway so nothing here can
+        // grow without a ceiling.
+        ['limit' => $limit, 'offset' => $offset] = Helpers::paginationParams($request, 50, 50);
+
+        $stmt = $db->prepare(
+            'SELECT ' . self::EVENT_COLUMNS . '
+             FROM Participant p
+             JOIN Event e ON e.id = p.eventId
+             JOIN User u ON u.id = e.creatorId
+             WHERE p.userId = :userId AND p.status = :invited
+             ORDER BY e.startsAt DESC
+             LIMIT :limit OFFSET :offset'
+        );
+        $stmt->bindValue('userId', $user['id']);
+        $stmt->bindValue('invited', 'INVITED');
+        $stmt->bindValue('limit', $limit, \PDO::PARAM_INT);
+        $stmt->bindValue('offset', $offset, \PDO::PARAM_INT);
+        $stmt->execute();
+
+        $events = [];
+        while ($row = $stmt->fetch()) {
+            $events[] = self::formatEventRow($row);
+        }
+
+        return Helpers::jsonResponse($response, $events);
     }
 
     /**
@@ -58,6 +124,20 @@ class EventRoutes
         $stmt->execute(['eventId' => $event['id']]);
         $obsCount = (int) $stmt->fetchColumn();
 
+        return self::formatEvent($event, $creator, $participantCount, $obsCount);
+    }
+
+    /**
+     * Shape an event for JSON. Split out so the list endpoint, which gets the
+     * creator and both counts from a single query, and the single-event path,
+     * which looks them up separately, cannot drift apart.
+     */
+    private static function formatEvent(
+        array $event,
+        array $creator,
+        int $participantCount,
+        int $obsCount
+    ): array {
         return [
             'id' => $event['id'],
             'name' => $event['name'],
@@ -90,14 +170,37 @@ class EventRoutes
             $statusCondition = 'AND e.endsAt < NOW()';
         }
 
-        $sql = "SELECT DISTINCT e.* FROM Event e
+        // Public events are visible to everyone, so this candidate set grows
+        // with the whole platform, not with the caller's memberships — hence a
+        // real total and offset paging rather than a silent cap.
+        //
+        // No DISTINCT: Participant is unique on (userId, eventId), so the join
+        // matches at most one row per event. DISTINCT over e.* would also force
+        // a temp table and defeat the startsAt index.
+        $visible = "FROM Event e
+                JOIN User u ON u.id = e.creatorId
                 LEFT JOIN Participant p ON p.eventId = e.id AND p.userId = :userId2
                 WHERE (e.creatorId = :userId OR (p.userId = :userId3 AND p.status != :declined) OR e.isPublic = 1)
-                {$statusCondition}
-                ORDER BY e.startsAt DESC
-                LIMIT :limit OFFSET :offset";
+                {$statusCondition}";
 
-        $stmt = $db->prepare($sql);
+        $stmt = $db->prepare("SELECT COUNT(*) {$visible}");
+        $stmt->execute([
+            'userId' => $user['id'],
+            'userId2' => $user['id'],
+            'userId3' => $user['id'],
+            'declined' => 'DECLINED',
+        ]);
+        $total = (int) $stmt->fetchColumn();
+
+        // Creator and both counts come back with the row. This used to be three
+        // extra queries per event inside a loop — 151 round trips at the
+        // default limit of 50.
+        $stmt = $db->prepare(
+            'SELECT ' . self::EVENT_COLUMNS . "
+             {$visible}
+             ORDER BY e.startsAt DESC
+             LIMIT :limit OFFSET :offset"
+        );
         $stmt->bindValue('userId', $user['id']);
         $stmt->bindValue('userId2', $user['id']);
         $stmt->bindValue('userId3', $user['id']);
@@ -105,14 +208,13 @@ class EventRoutes
         $stmt->bindValue('limit', $limit, \PDO::PARAM_INT);
         $stmt->bindValue('offset', $offset, \PDO::PARAM_INT);
         $stmt->execute();
-        $events = $stmt->fetchAll();
 
-        $result = [];
-        foreach ($events as $event) {
-            $result[] = self::buildEventResponse($db, $event);
+        $events = [];
+        while ($row = $stmt->fetch()) {
+            $events[] = self::formatEventRow($row);
         }
 
-        return Helpers::jsonResponse($response, $result);
+        return Helpers::jsonResponse($response, ['events' => $events, 'total' => $total]);
     }
 
     public static function create(Request $request, Response $response): Response
