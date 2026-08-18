@@ -1,4 +1,4 @@
-import { createSignal, createResource, createMemo, createEffect, Show, ErrorBoundary } from "solid-js";
+import { createSignal, createResource, createMemo, createEffect, on, Show, ErrorBoundary } from "solid-js";
 import type { RouteSectionProps } from "@solidjs/router";
 import { A } from "@solidjs/router";
 import { useAuth } from "../lib/auth";
@@ -50,11 +50,16 @@ export default function AppShell(props: RouteSectionProps) {
     }
   );
 
-  // Keyed on isOnline() as well as login state: a load that failed while
-  // offline would otherwise never be retried, since nothing else re-runs this.
-  createEffect(() => {
-    if (isLoggedIn() && isOnline()) refreshLists();
-  });
+  // Tracks connectivity, but does not gate on it. fetchJson serves GETs from
+  // the cache while offline, so refreshLists() succeeds without a network at
+  // all — skipping the call when offline would throw away the one mechanism
+  // that makes the list available there. Re-running on the online edge just
+  // replaces the cached copy with a fresh one.
+  createEffect(
+    on([isLoggedIn, isOnline], ([loggedIn]) => {
+      if (loggedIn) refreshLists();
+    })
+  );
 
   // A one-character query matches most of the ~1300-taxon catalog, and this
   // re-runs on every keystroke, so cap what reaches the DOM. matchCount is kept
