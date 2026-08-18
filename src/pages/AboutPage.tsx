@@ -24,9 +24,7 @@ export default function AboutPage() {
         >
           Förteckning över Sveriges fågeltaxa
         </a>{" "}
-        - Sverigelistan - som ges ut av BirdLife Sveriges taxonomikommitté (TK)
-        och raritetskommitté (RK). Därifrån kommer arterna, underarterna, de
-        svenska namnen, fyndkategorierna och statusen.
+        - Sverigelistan - som ges ut av BirdLife Sveriges taxonomikommitté (TK). Därifrån kommer arterna, underarterna, de svenska namnen och statusen.
       </p>
       <p>
         Systematik och taxonomi i Sverigelistan följer i sin tur{" "}
@@ -38,15 +36,15 @@ export default function AboutPage() {
           AviList
         </a>
         , den globala checklistan över världens fåglar. Listan uppdateras en
-        gång om året, när TK och RK publicerar en ny version.
+        gång om året, när TK publicerar en ny version.
       </p>
       <p>
-        Sverigelistan innehåller alla fåglar som någon gång setts i Sverige. Har
+        Listan innehåller alla fåglar som någon gång setts i Sverige. Har
         du sett något som inte finns i listan? Rapportera fyndet i{" "}
         <a href="https://artportalen.se" target="_blank" rel="noopener noreferrer">
           Artportalen
         </a>{" "}
-        så granskas det av Raritetskommittén.
+        så registreras fyndet genom rätt kanaler.
       </p>
 
       <h2>Vem ligger bakom sajten?</h2>

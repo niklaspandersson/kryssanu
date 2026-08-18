@@ -7,11 +7,16 @@
 .page h1 {
   font-size: 1.5rem;
   margin-bottom: 1rem;
+  margin-top: 0;
 }
 
 .page p {
   line-height: 1.6;
   color: var(--text-secondary, #555);
+}
+
+a {
+  color: black;
 }
 
 .section {
