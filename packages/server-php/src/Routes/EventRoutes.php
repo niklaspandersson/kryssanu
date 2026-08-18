@@ -78,8 +78,7 @@ class EventRoutes
         $user = $request->getAttribute('user');
         $db = Database::getConnection();
         $status = $request->getQueryParams()['status'] ?? null;
-        $limit = min((int) ($request->getQueryParams()['limit'] ?? 50), 100);
-        $offset = max((int) ($request->getQueryParams()['offset'] ?? 0), 0);
+        ['limit' => $limit, 'offset' => $offset] = Helpers::paginationParams($request, 50, 100);
 
         // Build status filter in SQL
         $statusCondition = '';
@@ -483,8 +482,7 @@ class EventRoutes
             return Helpers::jsonResponse($response, ['error' => 'Not a member of this event'], 403);
         }
 
-        $limit = min((int) ($request->getQueryParams()['limit'] ?? 20), 50);
-        $offset = max((int) ($request->getQueryParams()['offset'] ?? 0), 0);
+        ['limit' => $limit, 'offset' => $offset] = Helpers::paginationParams($request, 20, 50);
 
         $stmt = $db->prepare(
             'SELECT p.status, u.id, u.name, u.email, u.image
@@ -536,8 +534,7 @@ class EventRoutes
             return Helpers::jsonResponse($response, ['error' => 'Not a member of this event'], 403);
         }
 
-        $limit = min((int) ($request->getQueryParams()['limit'] ?? 50), 100);
-        $offset = max((int) ($request->getQueryParams()['offset'] ?? 0), 0);
+        ['limit' => $limit, 'offset' => $offset] = Helpers::paginationParams($request, 50, 100);
 
         $stmt = $db->prepare(
             'SELECT o.*, b.id as b_id, b.swedish as b_swedish, b.family as b_family, b.parentId as b_parentId, b.kategori as b_kategori, b.status as b_status, b.delisted as b_delisted

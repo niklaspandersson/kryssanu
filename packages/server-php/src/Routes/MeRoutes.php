@@ -173,8 +173,7 @@ class MeRoutes
         $user = $request->getAttribute('user');
         $db = Database::getConnection();
 
-        $limit = min((int) ($request->getQueryParams()['limit'] ?? 10), 50);
-        $offset = max((int) ($request->getQueryParams()['offset'] ?? 0), 0);
+        ['limit' => $limit, 'offset' => $offset] = Helpers::paginationParams($request, 10, 50);
 
         $stmt = $db->prepare(
             'SELECT o.*, b.id as b_id, b.swedish as b_swedish, b.family as b_family, b.parentId as b_parentId, b.kategori as b_kategori, b.status as b_status, b.delisted as b_delisted,
@@ -213,8 +212,7 @@ class MeRoutes
         $user = $request->getAttribute('user');
         $db = Database::getConnection();
 
-        $limit = min(max((int) ($request->getQueryParams()['limit'] ?? 100), 1), 100);
-        $offset = max((int) ($request->getQueryParams()['offset'] ?? 0), 0);
+        ['limit' => $limit, 'offset' => $offset] = Helpers::paginationParams($request, 100, 100);
 
         $listId = $request->getQueryParams()['listId'] ?? null;
         $birdId = $request->getQueryParams()['birdId'] ?? null;
@@ -309,8 +307,7 @@ class MeRoutes
         $user = $request->getAttribute('user');
         $db = Database::getConnection();
 
-        $limit = min((int) ($request->getQueryParams()['limit'] ?? 50), 100);
-        $offset = max((int) ($request->getQueryParams()['offset'] ?? 0), 0);
+        ['limit' => $limit, 'offset' => $offset] = Helpers::paginationParams($request, 50, 100);
 
         // A species' page also lists observations of its subspecies: someone who
         // logged mörkbukig prutgås has seen a prutgås. The reverse does not hold,
@@ -699,7 +696,8 @@ class MeRoutes
         $user = $request->getAttribute('user');
         $db = Database::getConnection();
         $cursor = $request->getQueryParams()['cursor'] ?? null;
-        $limit = min((int) ($request->getQueryParams()['limit'] ?? 20), 20);
+        // Cursor-paginated, so only the limit half of the helper is used here.
+        ['limit' => $limit] = Helpers::paginationParams($request, 20, 20);
 
         $eventId = $request->getQueryParams()['eventId'] ?? null;
 

@@ -193,8 +193,7 @@ class ListRoutes
             return Helpers::jsonResponse($response, ['error' => 'List not found'], 404);
         }
 
-        $limit = min((int) ($request->getQueryParams()['limit'] ?? 100), 200);
-        $offset = max((int) ($request->getQueryParams()['offset'] ?? 0), 0);
+        ['limit' => $limit, 'offset' => $offset] = Helpers::paginationParams($request, 100, 200);
 
         $stmt = $db->prepare(
             'SELECT o.*, b.id as b_id, b.swedish as b_swedish, b.family as b_family, b.parentId as b_parentId, b.kategori as b_kategori, b.status as b_status, b.delisted as b_delisted

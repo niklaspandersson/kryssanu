@@ -49,6 +49,31 @@ class Helpers
     }
 
     /**
+     * Read the `limit`/`offset` query params, clamped to a usable range.
+     *
+     * The lower bound matters as much as the upper one: PDO binds a negative
+     * limit straight through as `LIMIT -1`, which MySQL rejects as a syntax
+     * error, so `?limit=-1` surfaces as a 500 rather than an empty page.
+     * Non-numeric values fall back to the default instead of casting to 0.
+     *
+     * @return array{limit: int, offset: int}
+     */
+    public static function paginationParams(
+        \Psr\Http\Message\ServerRequestInterface $request,
+        int $default,
+        int $max
+    ): array {
+        $params = $request->getQueryParams();
+        $rawLimit = $params['limit'] ?? null;
+        $rawOffset = $params['offset'] ?? null;
+
+        return [
+            'limit' => min(max(is_numeric($rawLimit) ? (int) $rawLimit : $default, 1), $max),
+            'offset' => max(is_numeric($rawOffset) ? (int) $rawOffset : 0, 0),
+        ];
+    }
+
+    /**
      * Return JSON response from a Slim response object.
      */
     public static function jsonResponse(
