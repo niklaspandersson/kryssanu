@@ -704,7 +704,14 @@ class MeRoutes
         $user = $request->getAttribute('user');
         $db = Database::getConnection();
 
-        $stmt = $db->prepare('SELECT eventId, status FROM Participant WHERE userId = :userId');
+        // Grows with events joined. The client uses this as a lookup map for
+        // events already on screen, so a ceiling well above any realistic
+        // membership count costs nothing.
+        $stmt = $db->prepare(
+            'SELECT eventId, status FROM Participant WHERE userId = :userId
+             ORDER BY joinedAt DESC
+             LIMIT 500'
+        );
         $stmt->execute(['userId' => $user['id']]);
         $rows = $stmt->fetchAll();
 
@@ -850,13 +857,19 @@ class MeRoutes
         $user = $request->getAttribute('user');
         $db = Database::getConnection();
 
+        // Bounded by the same ceiling ListRoutes::create enforces, so a full
+        // response is always the user's complete set — the UI reads this into a
+        // global signal and renders it as chips in several sheets.
         $stmt = $db->prepare(
             'SELECT l.*, (SELECT COUNT(*) FROM ObservationList ol WHERE ol.listId = l.id) AS observationCount
              FROM `List` l
              WHERE l.userId = :userId
-             ORDER BY l.createdAt DESC'
+             ORDER BY l.createdAt DESC
+             LIMIT :limit'
         );
-        $stmt->execute(['userId' => $user['id']]);
+        $stmt->bindValue('userId', $user['id']);
+        $stmt->bindValue('limit', ListRoutes::MAX_LISTS_PER_USER, \PDO::PARAM_INT);
+        $stmt->execute();
         $rows = $stmt->fetchAll();
 
         $result = array_map(fn($row) => [

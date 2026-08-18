@@ -14,6 +14,9 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 
 class ListRoutes
 {
+    /** Guardrail, not a UX limit — see create(). Mirrored by MeRoutes::lists. */
+    public const MAX_LISTS_PER_USER = 200;
+
     public static function register(App $app): void
     {
         $app->group('/api/lists', function (RouteCollectorProxy $group) {
@@ -65,6 +68,23 @@ class ListRoutes
         if (!empty($errors)) {
             return Helpers::jsonResponse($response, [
                 'error' => ['fieldErrors' => $errors, 'formErrors' => []],
+            ], 400);
+        }
+
+        // Nothing else caps how many lists a user can create, and /me/lists is
+        // loaded into a global signal that several sheets render as chips. The
+        // ceiling is far above any real use — it exists so the endpoint cannot
+        // grow without bound, not to shape the UX.
+        $stmt = $db->prepare('SELECT COUNT(*) FROM `List` WHERE userId = :userId');
+        $stmt->execute(['userId' => $user['id']]);
+        if ((int) $stmt->fetchColumn() >= self::MAX_LISTS_PER_USER) {
+            return Helpers::jsonResponse($response, [
+                'error' => [
+                    'fieldErrors' => [],
+                    'formErrors' => [
+                        'Du har nått det maximala antalet listor (' . self::MAX_LISTS_PER_USER . ').',
+                    ],
+                ],
             ], 400);
         }
 
