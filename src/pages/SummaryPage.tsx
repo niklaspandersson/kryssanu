@@ -1,4 +1,4 @@
-import { createResource, createMemo, Show, For } from "solid-js";
+import { createResource, createMemo, createSignal, createEffect, on, Show, For } from "solid-js";
 import { A } from "@solidjs/router";
 import { feed, me as meApi, events as eventsApi } from "../lib/api";
 import { useAuth } from "../lib/auth";
@@ -6,7 +6,7 @@ import { isOnline } from "../lib/useOnlineStatus";
 import { allBirds } from "../lib/birdStore";
 import { pendingObservations } from "../lib/offlineSync";
 import { observationsRevision } from "../lib/observationStore";
-import type { ObservationWithBird } from "../lib/types";
+import type { ObservationWithBird, FeedItem } from "../lib/types";
 import StatCard from "../components/StatCard";
 import Avatar from "../components/Avatar";
 import EmptyState from "../components/EmptyState";
@@ -19,9 +19,28 @@ export default function SummaryPage() {
   const { user, isLoggedIn } = useAuth();
 
   const [myStats] = createResource(() => isLoggedIn(), () => meApi.stats());
+  const FEED_PAGE_SIZE = 10;
+  const [feedCursor, setFeedCursor] = createSignal<string | null>(null);
+  const [feedItems, setFeedItems] = createSignal<FeedItem[]>([]);
+
+  // Pages append behind "Visa fler". nextCursor used to be discarded entirely,
+  // so the feed was capped at whatever the first request returned.
   const [feedData] = createResource(
-    () => (isLoggedIn() ? observationsRevision() : undefined),
-    () => feed.get()
+    () => (isLoggedIn() ? { rev: observationsRevision(), cursor: feedCursor() } : null),
+    async (source) => {
+      const res = await feed.get({
+        limit: FEED_PAGE_SIZE,
+        cursor: source.cursor ?? undefined,
+      });
+      setFeedItems((prev) => (source.cursor ? [...prev, ...res.items] : res.items));
+      return res;
+    }
+  );
+
+  // A new observation makes the existing cursor stale, so start the feed over
+  // rather than appending a page taken from a shifted result set.
+  createEffect(
+    on(observationsRevision, () => { setFeedCursor(null); setFeedItems([]); }, { defer: true })
   );
   // A dashboard summary, not a browsable list — the full set lives on /events.
   const [activeEvents] = createResource(
@@ -163,7 +182,7 @@ export default function SummaryPage() {
           }
         >
           <Show
-            when={(feedData()?.items ?? []).length > 0}
+            when={feedItems().length > 0}
             fallback={
               <EmptyState
                 icon="group"
@@ -171,7 +190,7 @@ export default function SummaryPage() {
               />
             }
           >
-            <For each={feedData()!.items.slice(0, 15)}>
+            <For each={feedItems()}>
               {(item) => (
                 <div class={shared.activityItem}>
                   <Avatar
@@ -197,6 +216,15 @@ export default function SummaryPage() {
                 </div>
               )}
             </For>
+            <Show when={feedData()?.nextCursor}>
+              <button
+                class={styles.loadMoreBtn}
+                disabled={feedData.loading}
+                onClick={() => setFeedCursor(feedData()!.nextCursor)}
+              >
+                {feedData.loading ? "Laddar..." : "Visa fler"}
+              </button>
+            </Show>
           </Show>
         </Show>
       </section>

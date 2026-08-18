@@ -1,8 +1,8 @@
-import { createSignal, createResource, Show, For, onCleanup } from "solid-js";
+import { createSignal, createResource, createEffect, on, Show, For, onCleanup } from "solid-js";
 import { useParams } from "@solidjs/router";
 import QRCode from "qrcode";
 import { events as eventsApi, feed, me as meApi } from "../lib/api";
-import type { LeaderboardEntry } from "../lib/types";
+import type { LeaderboardEntry, FeedItem } from "../lib/types";
 import { useAuth } from "../lib/auth";
 import { isOnline } from "../lib/useOnlineStatus";
 import { observationsRevision } from "../lib/observationStore";
@@ -60,9 +60,30 @@ export default function EventDetailPage() {
     () => params.id ? { eventId: params.id, offset: participantPage() * PARTICIPANTS_PER_PAGE } : null,
     (source) => eventsApi.participants(source.eventId, { limit: PARTICIPANTS_PER_PAGE, offset: source.offset })
   );
+  // Same append-behind-"Visa fler" shape as the leaderboard; nextCursor used to
+  // be dropped, capping the section at one page.
+  const ACTIVITY_PAGE_SIZE = 10;
+  const [activityCursor, setActivityCursor] = createSignal<string | null>(null);
+  const [activityItems, setActivityItems] = createSignal<FeedItem[]>([]);
+
   const [recentActivity] = createResource(
-    () => (isActive() ? { id: params.id, rev: observationsRevision() } : null),
-    (source) => feed.get({ eventId: source.id, limit: 10 })
+    () =>
+      isActive()
+        ? { id: params.id, rev: observationsRevision(), cursor: activityCursor() }
+        : null,
+    async (source) => {
+      const res = await feed.get({
+        eventId: source.id,
+        limit: ACTIVITY_PAGE_SIZE,
+        cursor: source.cursor ?? undefined,
+      });
+      setActivityItems((prev) => (source.cursor ? [...prev, ...res.items] : res.items));
+      return res;
+    }
+  );
+
+  createEffect(
+    on(observationsRevision, () => { setActivityCursor(null); setActivityItems([]); }, { defer: true })
   );
   const [participantObs] = createResource(
     () => {
@@ -333,8 +354,8 @@ export default function EventDetailPage() {
                     </div>
                   }
                 >
-                  <Show when={(recentActivity()?.items ?? []).length > 0}>
-                    <For each={recentActivity()!.items}>
+                  <Show when={activityItems().length > 0}>
+                    <For each={activityItems()}>
                       {(item) => (
                         <div class={shared.activityItem}>
                           <Avatar name={item.user.name} image={item.user.image} size={28} />
@@ -351,6 +372,15 @@ export default function EventDetailPage() {
                         </div>
                       )}
                     </For>
+                    <Show when={recentActivity()?.nextCursor}>
+                      <button
+                        class={styles.loadMoreBtn}
+                        disabled={recentActivity.loading}
+                        onClick={() => setActivityCursor(recentActivity()!.nextCursor)}
+                      >
+                        {recentActivity.loading ? "Laddar..." : "Visa fler"}
+                      </button>
+                    </Show>
                   </Show>
                 </Show>
               </section>

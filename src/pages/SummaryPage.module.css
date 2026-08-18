@@ -148,3 +148,21 @@
   color: var(--color-text-muted);
   white-space: nowrap;
 }
+
+.loadMoreBtn {
+  display: block;
+  width: 100%;
+  margin-top: var(--space-md);
+  padding: var(--space-sm);
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-sm);
+  color: var(--color-primary);
+  cursor: pointer;
+}
+
+.loadMoreBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}

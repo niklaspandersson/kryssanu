@@ -717,6 +717,24 @@ class MeRoutes
         return Helpers::jsonResponse($response, $result);
     }
 
+    /**
+     * Validate the datetime half of a feed cursor.
+     *
+     * The cursor carries the raw column value rather than an ISO string:
+     * Observation.date is a DATETIME(3) and Helpers::toISOString hardcodes
+     * `.000`, so round-tripping through it would drop the milliseconds and the
+     * `o.date = ?` half of the keyset would stop matching its own row.
+     *
+     * A malformed value yields a date far in the future, which just returns the
+     * first page instead of erroring on a tampered cursor.
+     */
+    private static function cursorDateToSql(?string $value): string
+    {
+        $valid = $value !== null
+            && preg_match('/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}(\.\d{1,6})?$/', $value) === 1;
+        return $valid ? $value : '9999-12-31 23:59:59';
+    }
+
     public static function feed(Request $request, Response $response): Response
     {
         $user = $request->getAttribute('user');
@@ -745,23 +763,42 @@ class MeRoutes
         }
 
         $placeholders = implode(',', array_fill(0, count($eventIds), '?'));
-        $cursorCondition = $cursor ? 'AND o.id < ?' : '';
 
-        $sql = "SELECT DISTINCT o.id, o.date,
+        // Keyset on the same columns the query sorts by. This used to filter on
+        // `o.id < ?` while ordering by date: ids are cuids, which are neither
+        // monotonic nor correlated with the observation date, so the cursor
+        // dropped and repeated arbitrary rows. Unnoticed only because no caller
+        // passed a cursor yet.
+        $cursorCondition = '';
+        $cursorDate = null;
+        $cursorId = null;
+        if ($cursor !== null && str_contains($cursor, '|')) {
+            [$cursorDate, $cursorId] = explode('|', $cursor, 2);
+            $cursorCondition = 'AND (o.date < ? OR (o.date = ? AND o.id < ?))';
+        }
+
+        // EXISTS rather than a join to ObservationEvent: an observation
+        // attached to two of the user's events matched twice, and the DISTINCT
+        // that hid it also forced a temp table and filesort.
+        $sql = "SELECT o.id, o.date,
                        u.id as u_id, u.name as u_name, u.email as u_email, u.image as u_image,
                        b.id as b_id, b.swedish as b_swedish, b.family as b_family, b.parentId as b_parentId, b.kategori as b_kategori, b.status as b_status, b.delisted as b_delisted
                 FROM Observation o
                 JOIN User u ON u.id = o.userId
                 JOIN Bird b ON b.id = o.birdId
-                JOIN ObservationEvent oe ON oe.observationId = o.id
-                WHERE oe.eventId IN ({$placeholders})
+                WHERE EXISTS (
+                    SELECT 1 FROM ObservationEvent oe
+                    WHERE oe.observationId = o.id AND oe.eventId IN ({$placeholders})
+                )
                 {$cursorCondition}
-                ORDER BY o.date DESC
+                ORDER BY o.date DESC, o.id DESC
                 LIMIT ?";
 
         $queryParams = [...$eventIds];
-        if ($cursor) {
-            $queryParams[] = $cursor;
+        if ($cursorCondition !== '') {
+            $queryParams[] = self::cursorDateToSql($cursorDate);
+            $queryParams[] = self::cursorDateToSql($cursorDate);
+            $queryParams[] = $cursorId;
         }
         $queryParams[] = $limit + 1;
 
@@ -794,7 +831,13 @@ class MeRoutes
             ];
         }, $items);
 
-        $nextCursor = $hasMore ? end($formatted)['id'] : null;
+        // Both halves of the sort key, so the next page resumes exactly where
+        // this one stopped even when several observations share a date.
+        $nextCursor = null;
+        if ($hasMore) {
+            $last = $items[$limit - 1];
+            $nextCursor = $last['date'] . '|' . $last['id'];
+        }
 
         return Helpers::jsonResponse($response, [
             'items' => $formatted,
