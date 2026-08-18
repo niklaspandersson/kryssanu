@@ -97,12 +97,55 @@ type CachedApiRow = { key: string; data: unknown; cachedAt: number };
  * Entries are keyed by URL, so every distinct query string — every page of
  * observations, every event, every species — creates a permanent row. Nothing
  * removed them except logout, so the store grew for the lifetime of the
- * install. These bounds keep it to roughly a session's worth of browsing;
- * anything evicted is re-fetched when online, and the offline app shell itself
- * lives in the service worker's precache, not here.
+ * install.
+ *
+ * Eviction is split in two tiers. Plain recency is not enough on its own:
+ * browsing a hundred species pages would otherwise push out /me/checklist and
+ * /me/observed, i.e. exactly the responses the offline app is built on, in
+ * favour of a hundred pages the user will never open again.
  */
 const MAX_CACHED_RESPONSES = 100;
 const MAX_CACHE_AGE_MS = 7 * 24 * 60 * 60 * 1000;
+
+/**
+ * Ceiling for the pinned tier. Normal use fills roughly a dozen of these; the
+ * limit only exists so a future pinned path cannot make the store unbounded
+ * again.
+ */
+const MAX_PINNED_RESPONSES = 40;
+
+/** Responses that back a whole offline view, keyed by path with no parameters. */
+const PINNED_PATHS = new Set([
+  '/me',
+  '/me/stats',
+  '/me/checklist',
+  '/me/observed',
+  '/me/lists',
+  '/me/memberships',
+  '/me/observations',
+]);
+
+/**
+ * Paths where only the unfiltered first page is pinned. Later pages and
+ * per-list/per-species variants are browsing history — keeping them all pinned
+ * would reintroduce unbounded growth, since there is one variant per list and
+ * per species.
+ */
+const PINNED_FIRST_PAGE_PATHS = new Set([
+  '/me/observations/all',
+  '/events',
+]);
+
+function isPinned(key: string): boolean {
+  const [path, queryString = ''] = key.split('?');
+  if (PINNED_PATHS.has(path)) return true;
+  if (!PINNED_FIRST_PAGE_PATHS.has(path)) return false;
+
+  const params = new URLSearchParams(queryString);
+  if (params.has('listId') || params.has('birdId')) return false;
+  const offset = params.get('offset');
+  return offset === null || offset === '0';
+}
 
 export const apiCache = {
   async set(key: string, data: unknown): Promise<void> {
@@ -119,7 +162,14 @@ export const apiCache = {
   },
 
   /**
-   * Drop stale rows, then oldest-first until the count is under the cap.
+   * Evict in two tiers.
+   *
+   * Pinned rows ignore the age cutoff: a week-old checklist still renders the
+   * bird list offline, and a user who has been away that long is exactly the
+   * one who needs it. They are overwritten on every successful fetch anyway,
+   * so they are only ever stale when the user has been offline.
+   *
+   * Everything else expires by age, then oldest-first down to the cap.
    */
   async prune(): Promise<void> {
     const db = await openDb();
@@ -128,20 +178,24 @@ export const apiCache = {
     );
 
     const cutoff = Date.now() - MAX_CACHE_AGE_MS;
+    const pinned: CachedApiRow[] = [];
     const fresh: CachedApiRow[] = [];
     const doomed: string[] = [];
 
     for (const row of rows) {
-      if (row.cachedAt < cutoff) doomed.push(row.key);
+      if (isPinned(row.key)) pinned.push(row);
+      else if (row.cachedAt < cutoff) doomed.push(row.key);
       else fresh.push(row);
     }
 
-    if (fresh.length > MAX_CACHED_RESPONSES) {
-      fresh.sort((a, b) => a.cachedAt - b.cachedAt);
-      for (const row of fresh.slice(0, fresh.length - MAX_CACHED_RESPONSES)) {
-        doomed.push(row.key);
-      }
-    }
+    const overflow = (list: CachedApiRow[], max: number) => {
+      if (list.length <= max) return;
+      list.sort((a, b) => a.cachedAt - b.cachedAt);
+      for (const row of list.slice(0, list.length - max)) doomed.push(row.key);
+    };
+
+    overflow(fresh, MAX_CACHED_RESPONSES);
+    overflow(pinned, MAX_PINNED_RESPONSES);
 
     if (doomed.length === 0) return;
 
