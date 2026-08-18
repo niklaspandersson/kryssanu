@@ -29,23 +29,35 @@ export default defineConfig({
         ],
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,webp,png,svg,woff2}'],
-        //navigateFallback: 'index.html',
-        //navigateFallbackDenylist: [/^\/api/],
+        // index.html must stay in the precache: it is the offline app shell, and
+        // it is precached together with the hashed assets it references, so the
+        // two can never drift apart.
+        globPatterns: ['**/*.{html,js,css,webp,png,svg,woff2}'],
+        // vite-plugin-pwa defaults this to 'index.html'. Leaving it enabled
+        // would answer every navigation from the precache, i.e. serve a stale
+        // shell while the network is perfectly fine. Navigations are handled by
+        // the network-only route below instead.
+        navigateFallback: undefined,
+        // Same reason: without this, a navigation to '/' falls back to the
+        // precached index.html rather than hitting the network.
+        directoryIndex: null,
         navigationPreload: true,
         runtimeCaching: [
           {
+            // Navigations always go to the network, so a deploy is picked up on
+            // the next page load. Only when the network fails do we fall back to
+            // the precached app shell. (No networkTimeoutSeconds here: workbox
+            // only accepts it on NetworkFirst, and NetworkFirst would mean
+            // serving stale HTML from a runtime cache.)
             urlPattern: ({ request }) => request.mode === 'navigate',
-            handler: 'NetworkFirst',
+            handler: 'NetworkOnly',
             options: {
-              cacheName: 'html-cache',
-              networkTimeoutSeconds: 3,
-              // This is your offline fallback for SPAs
               plugins: [
                 {
-                  handlerDidError: async () => {
-                    return caches.match('/index.html');
-                  },
+                  // The precache stores index.html under a revisioned cache key
+                  // (`/index.html?__WB_REVISION__=...`), hence ignoreSearch.
+                  handlerDidError: async () =>
+                    caches.match('/index.html', { ignoreSearch: true }),
                 },
               ],
             },
