@@ -207,6 +207,17 @@ export type LeaderboardEntry = {
   totalObservations: number;
 };
 
+export type PaginatedLeaderboard = {
+  entries: LeaderboardEntry[];
+  /** Accepted participants in the event, not the number of entries returned. */
+  total: number;
+  /**
+   * The current user's own row and rank, ranked over the whole event rather
+   * than the returned page. Null when they are not an accepted participant.
+   */
+  me: { rank: number; entry: LeaderboardEntry } | null;
+};
+
 // ── List ──────────────────────────────────────────────────────────
 export type CreateListInput = {
   name: string;

@@ -2,6 +2,7 @@ import { createSignal, createResource, Show, For, onCleanup } from "solid-js";
 import { useParams } from "@solidjs/router";
 import QRCode from "qrcode";
 import { events as eventsApi, feed, me as meApi } from "../lib/api";
+import type { LeaderboardEntry } from "../lib/types";
 import { useAuth } from "../lib/auth";
 import { isOnline } from "../lib/useOnlineStatus";
 import { observationsRevision } from "../lib/observationStore";
@@ -25,6 +26,10 @@ export default function EventDetailPage() {
   const [participantPage, setParticipantPage] = createSignal(0);
   const PARTICIPANTS_PER_PAGE = 10;
 
+  const LEADERBOARD_PAGE_SIZE = 20;
+  const [leaderboardPage, setLeaderboardPage] = createSignal(0);
+  const [leaderboardEntries, setLeaderboardEntries] = createSignal<LeaderboardEntry[]>([]);
+
   const isActive = () => {
     const ev = event();
     if (!ev) return false;
@@ -33,7 +38,23 @@ export default function EventDetailPage() {
   };
 
   const [event, { refetch }] = createResource(() => params.id, eventsApi.getOne);
-  const [leaderboard] = createResource(() => params.id, eventsApi.leaderboard);
+  // Pages are appended rather than replaced, so "Visa fler" grows the list.
+  // Only the current page ever crosses the wire — a large public event used to
+  // send every participant at once.
+  const [leaderboard] = createResource(
+    () => (params.id ? { eventId: params.id, page: leaderboardPage() } : null),
+    async (source) => {
+      const offset = source.page * LEADERBOARD_PAGE_SIZE;
+      const res = await eventsApi.leaderboard(source.eventId, {
+        limit: LEADERBOARD_PAGE_SIZE,
+        offset,
+      });
+      setLeaderboardEntries((prev) =>
+        offset === 0 ? res.entries : [...prev, ...res.entries]
+      );
+      return res;
+    }
+  );
   const [memberships] = createResource(() => user(), () => meApi.memberships());
   const [participants, { refetch: refetchParticipants }] = createResource(
     () => params.id ? { eventId: params.id, offset: participantPage() * PARTICIPANTS_PER_PAGE } : null,
@@ -72,18 +93,22 @@ export default function EventDetailPage() {
     return Math.ceil(ev.participantCount / PARTICIPANTS_PER_PAGE);
   };
 
-  const resultsTop10 = () => {
-    const lb = leaderboard() ?? [];
-    return lb.slice(0, 10);
-  };
+  // A finished event only ever shows a podium; an active one grows on demand.
+  const resultsTop10 = () => leaderboardEntries().slice(0, 10);
 
+  const shownLeaderboardCount = () =>
+    isPast() ? Math.min(leaderboardEntries().length, 10) : leaderboardEntries().length;
+
+  const hasMoreLeaderboard = () =>
+    leaderboardEntries().length < (leaderboard()?.total ?? 0);
+
+  // The server ranks the caller across the whole event, since a paginated
+  // response no longer lets the client find them by scanning. Suppressed when
+  // they are already visible in the rows above.
   const currentUserEntry = () => {
-    const lb = leaderboard() ?? [];
-    const uid = user()?.id;
-    if (!uid) return null;
-    const idx = lb.findIndex((e) => e.user.id === uid);
-    if (idx === -1 || idx < 10) return null;
-    return { rank: idx + 1, entry: lb[idx] };
+    const me = leaderboard()?.me;
+    if (!me || me.rank <= shownLeaderboardCount()) return null;
+    return me;
   };
 
   async function handleInvite(e: Event) {
@@ -242,11 +267,11 @@ export default function EventDetailPage() {
                   }
                 >
                   <Show
-                    when={(leaderboard() ?? []).length > 0}
+                    when={leaderboardEntries().length > 0}
                     fallback={<EmptyState icon="emoji_events" message="Inga observationer annu" />}
                   >
                     <div class={styles.leaderboard}>
-                      <For each={leaderboard()}>
+                      <For each={leaderboardEntries()}>
                         {(entry, i) => (
                           <div class={styles.lbRow} onClick={() => setSelectedParticipant({ id: entry.user.id, name: entry.user.name ?? "Deltagare" })}>
                             <span class={styles.lbRank}>{i() + 1}</span>
@@ -260,7 +285,36 @@ export default function EventDetailPage() {
                           </div>
                         )}
                       </For>
+                      {/* Current user, when they rank below the loaded rows */}
+                      <Show when={currentUserEntry()}>
+                        {(cu) => (
+                          <>
+                            <div class={styles.lbDivider}>···</div>
+                            <div class={`${styles.lbRow} ${styles.lbRowHighlight}`} onClick={() => setSelectedParticipant({ id: cu().entry.user.id, name: cu().entry.user.name ?? "Deltagare" })}>
+                              <span class={styles.lbRank}>{cu().rank}</span>
+                              <Avatar name={cu().entry.user.name} image={cu().entry.user.image} size={32} />
+                              <div class={styles.lbInfo}>
+                                <span class={styles.lbName}>{cu().entry.user.name}</span>
+                                <span class={styles.lbMeta}>
+                                  {cu().entry.uniqueSpecies} arter · {cu().entry.totalObservations} observationer
+                                </span>
+                              </div>
+                            </div>
+                          </>
+                        )}
+                      </Show>
                     </div>
+                    <Show when={hasMoreLeaderboard()}>
+                      <button
+                        class={styles.loadMoreBtn}
+                        disabled={leaderboard.loading}
+                        onClick={() => setLeaderboardPage((p) => p + 1)}
+                      >
+                        {leaderboard.loading
+                          ? "Laddar..."
+                          : `Visa fler (${leaderboardEntries().length} av ${leaderboard()?.total ?? 0})`}
+                      </button>
+                    </Show>
                   </Show>
                 </Show>
               </section>

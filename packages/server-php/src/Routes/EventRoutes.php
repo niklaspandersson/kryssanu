@@ -398,63 +398,162 @@ class EventRoutes
             return Helpers::jsonResponse($response, ['error' => 'Event not found'], 404);
         }
 
-        // Get accepted participants
-        $stmt = $db->prepare(
-            'SELECT p.userId, u.id, u.name, u.email, u.image
-             FROM Participant p
-             JOIN User u ON u.id = p.userId
-             WHERE p.eventId = :eventId AND p.status = :status'
-        );
-        $stmt->execute(['eventId' => $args['id'], 'status' => 'ACCEPTED']);
-        $participants = $stmt->fetchAll();
-
-        // Check membership
-        $isMember = $event['creatorId'] === $user['id'] ||
-            in_array($user['id'], array_column($participants, 'userId'));
-
-        if (!$isMember && !$event['isPublic']) {
+        if (!self::isMember($db, $args['id'], $user['id'], $event) && !$event['isPublic']) {
             return Helpers::jsonResponse($response, ['error' => 'Not a member of this event'], 403);
         }
 
-        // Get observation events
+        ['limit' => $limit, 'offset' => $offset] = Helpers::paginationParams($request, 20, 50);
+
         $stmt = $db->prepare(
-            'SELECT oe.*, o.userId, o.birdId
-             FROM ObservationEvent oe
-             JOIN Observation o ON o.id = oe.observationId
-             WHERE oe.eventId = :eventId'
+            'SELECT COUNT(*) FROM Participant WHERE eventId = :eventId AND status = :status'
         );
-        $stmt->execute(['eventId' => $args['id']]);
-        $observationEvents = $stmt->fetchAll();
+        $stmt->execute(['eventId' => $args['id'], 'status' => 'ACCEPTED']);
+        $total = (int) $stmt->fetchColumn();
 
-        // Build stats per participant
-        $statsMap = [];
-        foreach ($participants as $p) {
-            $statsMap[$p['userId']] = ['species' => [], 'total' => 0];
-        }
+        $scores = self::leaderboardScoresSql('Main');
+        $stmt = $db->prepare(
+            "SELECT t.uniqueSpecies, t.totalObservations, u.id, u.name, u.email, u.image
+             FROM ({$scores}) t
+             JOIN User u ON u.id = t.userId
+             ORDER BY t.uniqueSpecies DESC, t.totalObservations DESC, u.id ASC
+             LIMIT :limit OFFSET :offset"
+        );
+        $stmt->bindValue('innerEventMain', $args['id']);
+        $stmt->bindValue('outerEventMain', $args['id']);
+        $stmt->bindValue('limit', $limit, \PDO::PARAM_INT);
+        $stmt->bindValue('offset', $offset, \PDO::PARAM_INT);
+        $stmt->execute();
 
-        foreach ($observationEvents as $oe) {
-            if (isset($statsMap[$oe['userId']])) {
-                $statsMap[$oe['userId']]['species'][$oe['birdId']] = true;
-                $statsMap[$oe['userId']]['total']++;
-            }
-        }
-
-        // Build leaderboard
-        $leaderboard = [];
-        foreach ($participants as $p) {
-            $s = $statsMap[$p['userId']];
-            $leaderboard[] = [
-                'user' => Helpers::formatUserMinimal($p),
-                'uniqueSpecies' => count($s['species']),
-                'totalObservations' => $s['total'],
+        $entries = [];
+        while ($row = $stmt->fetch()) {
+            $entries[] = [
+                'user' => Helpers::formatUserMinimal($row),
+                'uniqueSpecies' => (int) $row['uniqueSpecies'],
+                'totalObservations' => (int) $row['totalObservations'],
             ];
         }
 
-        // Sort by unique species descending
-        usort($leaderboard, fn($a, $b) => $b['uniqueSpecies'] - $a['uniqueSpecies']);
-
         $response = $response->withHeader('Cache-Control', 'private, max-age=60');
-        return Helpers::jsonResponse($response, $leaderboard);
+        return Helpers::jsonResponse($response, [
+            'entries' => $entries,
+            'total' => $total,
+            'me' => self::leaderboardRankFor($db, $args['id'], $user['id']),
+        ]);
+    }
+
+    /**
+     * One scored row per accepted participant, including those who have logged
+     * nothing.
+     *
+     * The observation side is aggregated in its own derived table before being
+     * joined to Participant. Joining the two directly would pair every
+     * participant with every observation in the event first and only then
+     * group — a cross product that is worse than the PHP aggregation this
+     * replaced. Grouping first means the event's observations are scanned once,
+     * via ObservationEvent(eventId).
+     *
+     * Prepared statements are not emulated (see Database.php), so a named
+     * parameter cannot appear twice; callers embedding this more than once pass
+     * a distinct $suffix per copy and bind `innerEvent{$suffix}` /
+     * `outerEvent{$suffix}`.
+     */
+    private static function leaderboardScoresSql(string $suffix): string
+    {
+        return
+            "SELECT p.userId,
+                    COALESCE(s.uniqueSpecies, 0) AS uniqueSpecies,
+                    COALESCE(s.totalObservations, 0) AS totalObservations
+             FROM Participant p
+             LEFT JOIN (
+                 SELECT o.userId,
+                        COUNT(DISTINCT o.birdId) AS uniqueSpecies,
+                        COUNT(*) AS totalObservations
+                 FROM ObservationEvent oe
+                 JOIN Observation o ON o.id = oe.observationId
+                 WHERE oe.eventId = :innerEvent{$suffix}
+                 GROUP BY o.userId
+             ) s ON s.userId = p.userId
+             WHERE p.eventId = :outerEvent{$suffix} AND p.status = 'ACCEPTED'";
+    }
+
+    /**
+     * The caller's own leaderboard row and rank, or null if they are not an
+     * accepted participant.
+     *
+     * The client used to derive this by scanning the whole leaderboard, which
+     * a paginated response no longer allows. Ranking happens in SQL so the
+     * result is one scalar rather than every participant's row, and the tie
+     * breaks must stay identical to the listing query or the rank disagrees
+     * with the rows around it.
+     *
+     * @return array{rank: int, entry: array}|null
+     */
+    private static function leaderboardRankFor(\PDO $db, string $eventId, string $userId): ?array
+    {
+        $mineSql = self::leaderboardScoresSql('Mine');
+        $stmt = $db->prepare(
+            "SELECT t.uniqueSpecies, t.totalObservations, u.id, u.name, u.email, u.image
+             FROM ({$mineSql}) t
+             JOIN User u ON u.id = t.userId
+             WHERE t.userId = :userId"
+        );
+        $stmt->execute([
+            'innerEventMine' => $eventId,
+            'outerEventMine' => $eventId,
+            'userId' => $userId,
+        ]);
+        $mine = $stmt->fetch();
+
+        if (!$mine) {
+            return null;
+        }
+
+        $rankSql = self::leaderboardScoresSql('Rank');
+        $stmt = $db->prepare(
+            "SELECT COUNT(*) FROM ({$rankSql}) t
+             WHERE t.uniqueSpecies > :uniqueSpecies
+                OR (t.uniqueSpecies = :uniqueSpecies2 AND t.totalObservations > :totalObservations)
+                OR (t.uniqueSpecies = :uniqueSpecies3 AND t.totalObservations = :totalObservations2
+                    AND t.userId < :userId)"
+        );
+        $stmt->execute([
+            'innerEventRank' => $eventId,
+            'outerEventRank' => $eventId,
+            'userId' => $userId,
+            'uniqueSpecies' => $mine['uniqueSpecies'],
+            'uniqueSpecies2' => $mine['uniqueSpecies'],
+            'uniqueSpecies3' => $mine['uniqueSpecies'],
+            'totalObservations' => $mine['totalObservations'],
+            'totalObservations2' => $mine['totalObservations'],
+        ]);
+
+        return [
+            'rank' => (int) $stmt->fetchColumn() + 1,
+            'entry' => [
+                'user' => Helpers::formatUserMinimal($mine),
+                'uniqueSpecies' => (int) $mine['uniqueSpecies'],
+                'totalObservations' => (int) $mine['totalObservations'],
+            ],
+        ];
+    }
+
+    /**
+     * Whether a user may see an event's contents: its creator, or an accepted
+     * participant. A single indexed lookup — the callers used to load every
+     * participant row just to run in_array() over it.
+     */
+    private static function isMember(\PDO $db, string $eventId, string $userId, array $event): bool
+    {
+        if ($event['creatorId'] === $userId) {
+            return true;
+        }
+
+        $stmt = $db->prepare(
+            'SELECT 1 FROM Participant
+             WHERE eventId = :eventId AND userId = :userId AND status = :status'
+        );
+        $stmt->execute(['eventId' => $eventId, 'userId' => $userId, 'status' => 'ACCEPTED']);
+        return (bool) $stmt->fetchColumn();
     }
 
     public static function participants(Request $request, Response $response, array $args): Response
@@ -521,16 +620,7 @@ class EventRoutes
             return Helpers::jsonResponse($response, ['error' => 'Event not found'], 404);
         }
 
-        // Check membership
-        $stmt = $db->prepare(
-            'SELECT p.userId FROM Participant p WHERE p.eventId = :eventId AND p.status = :status'
-        );
-        $stmt->execute(['eventId' => $args['id'], 'status' => 'ACCEPTED']);
-        $acceptedUserIds = $stmt->fetchAll(\PDO::FETCH_COLUMN);
-
-        $isMember = $event['creatorId'] === $user['id'] || in_array($user['id'], $acceptedUserIds);
-
-        if (!$isMember && !$event['isPublic']) {
+        if (!self::isMember($db, $args['id'], $user['id'], $event) && !$event['isPublic']) {
             return Helpers::jsonResponse($response, ['error' => 'Not a member of this event'], 403);
         }
 

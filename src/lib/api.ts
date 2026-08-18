@@ -10,7 +10,7 @@ import type {
   BulkObservationPayload,
   CreateEventInput,
   EventWithDetails,
-  LeaderboardEntry,
+  PaginatedLeaderboard,
   FeedItem,
   ParticipantWithUser,
   UpdateProfileInput,
@@ -226,10 +226,15 @@ export const events = {
       `/events/${encodeURIComponent(eventId)}/join`,
       { method: 'PUT' }
     ),
-  leaderboard: (eventId: string) =>
-    fetchJson<LeaderboardEntry[]>(
-      `/events/${encodeURIComponent(eventId)}/leaderboard`
-    ),
+  leaderboard: (eventId: string, opts: { limit?: number; offset?: number } = {}) => {
+    const params = new URLSearchParams();
+    if (opts.limit != null) params.set('limit', String(opts.limit));
+    if (opts.offset != null) params.set('offset', String(opts.offset));
+    const qs = params.toString();
+    return fetchJson<PaginatedLeaderboard>(
+      `/events/${encodeURIComponent(eventId)}/leaderboard${qs ? `?${qs}` : ''}`
+    );
+  },
   participants: (eventId: string, opts: { limit?: number; offset?: number } = {}) => {
     const params = new URLSearchParams();
     if (opts.limit != null) params.set('limit', String(opts.limit));
