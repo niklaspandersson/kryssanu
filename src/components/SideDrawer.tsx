@@ -1,4 +1,4 @@
-import { Show, For, createResource, createSignal, createEffect, createMemo } from "solid-js";
+import { Show, For, createResource, createSignal, createEffect, createMemo, onCleanup } from "solid-js";
 import { A } from "@solidjs/router";
 import { events as eventsApi } from "../lib/api";
 import { useAuth } from "../lib/auth";
@@ -48,13 +48,26 @@ export default function SideDrawer(props: Props) {
 
   // The drawer is mounted by AppShell on every authenticated page, so keying
   // this on isLoggedIn() alone fired a request on every page load for a panel
-  // that is usually closed. Fetch on first open instead; createResource caches
-  // the result, so reopening does not refetch. The limit covers what
+  // that is on mobile usually closed. Fetch once it is actually on screen;
+  // createResource caches, so reopening does not refetch. The limit covers what
   // categorizeEvents can show (5) with room for the mix it sorts through.
   const [hasOpened, setHasOpened] = createSignal(false);
   createEffect(() => {
     if (props.open) setHasOpened(true);
   });
+
+  // From 750px up the sidebar is on screen permanently (see the media queries
+  // in SideDrawer.module.css) and props.open is never set — above 1000px there
+  // is not even a control to set it. "Has been opened" is therefore a
+  // mobile-only signal, and gating the fetch on it alone left the desktop
+  // sidebar showing "Inga event" forever, having issued no request at all.
+  const railQuery = window.matchMedia('(min-width: 750px)');
+  const [alwaysVisible, setAlwaysVisible] = createSignal(railQuery.matches);
+  const onRailChange = (e: MediaQueryListEvent) => setAlwaysVisible(e.matches);
+  railQuery.addEventListener('change', onRailChange);
+  onCleanup(() => railQuery.removeEventListener('change', onRailChange));
+
+  const isVisible = () => alwaysVisible() || hasOpened();
 
   // The source has to keep changing, not latch. Gating only on "has been
   // opened" made it flip to a constant once and never move again, so a first
@@ -65,14 +78,14 @@ export default function SideDrawer(props: Props) {
   // (a falsy source is skipped, so nothing can throw), and reconnecting flips
   // the source and fetches.
   const [allEvents, { refetch }] = createResource(
-    () => (isLoggedIn() && hasOpened() ? isOnline() : false),
+    () => (isLoggedIn() && isVisible() ? isOnline() : false),
     () => eventsApi.getAll({ limit: 20 })
   );
 
   // A request that fails while online — a server error, say — would still
   // stick, since the source value does not change. Retry on the next open.
   createEffect(() => {
-    if (props.open && allEvents.error) void refetch();
+    if (isVisible() && allEvents.error) void refetch();
   });
 
   const displayEvents = createMemo(() => categorizeEvents(allEvents()?.events ?? []));
