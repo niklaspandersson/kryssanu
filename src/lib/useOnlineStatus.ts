@@ -43,15 +43,17 @@ function startPolling() {
   }, POLL_INTERVAL_MS);
 }
 
+function markOffline() {
+  setIsOnline(false);
+  startPolling();
+}
+
 window.addEventListener('online', () => {
   setIsOnline(true);
   stopPolling();
 });
 
-window.addEventListener('offline', () => {
-  setIsOnline(false);
-  startPolling();
-});
+window.addEventListener('offline', markOffline);
 
 // Probe immediately when tab becomes visible while offline
 document.addEventListener('visibilitychange', async () => {
@@ -63,4 +65,4 @@ document.addEventListener('visibilitychange', async () => {
 // Start polling on load if already offline
 if (!navigator.onLine) startPolling();
 
-export { isOnline };
+export { isOnline, markOffline };

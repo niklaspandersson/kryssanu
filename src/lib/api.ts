@@ -26,9 +26,10 @@ import type {
   BirdImage,
 } from './types';
 import { apiCache } from './offlineDb';
-import { isOnline } from './useOnlineStatus';
+import { isOnline, markOffline } from './useOnlineStatus';
 
 const BASE = '/api';
+const REQUEST_TIMEOUT_MS = 15000;
 
 let unauthorizedHandler: (() => void) | null = null;
 
@@ -46,11 +47,24 @@ async function fetchJson<T>(url: string, init?: RequestInit): Promise<T> {
   }
 
   try {
-    const res = await fetch(`${BASE}${url}`, {
-      credentials: 'include',
-      headers: { 'Content-Type': 'application/json' },
-      ...init,
-    });
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+    let res: Response;
+    try {
+      res = await fetch(`${BASE}${url}`, {
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        signal: controller.signal,
+        ...init,
+      });
+    } catch (e) {
+      // A network error or an aborted (timed-out) request means the server
+      // is unreachable, even though no dedicated 'offline' event fired.
+      markOffline();
+      throw e;
+    } finally {
+      clearTimeout(timer);
+    }
     if (!res.ok) {
       if (res.status === 401) unauthorizedHandler?.();
       throw new Error(`${res.status} ${res.statusText}`);
