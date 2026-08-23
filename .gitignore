@@ -11,6 +11,11 @@ tools/data-import/*.csv
 
 # testing
 /coverage
+/test-results
+/playwright-report
+/blob-report
+/playwright/.cache
+/e2e/.auth
 
 # database
 /prisma/db.sqlite

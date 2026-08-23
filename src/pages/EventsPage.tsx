@@ -74,7 +74,11 @@ export default function EventsPage() {
         <div class={styles.invites}>
           <For each={(invites() ?? [])}>
             {(event) => (
-              <div class={styles.inviteCard}>
+              <div
+                class={styles.inviteCard}
+                data-testid="invite-card"
+                data-event-id={event.id}
+              >
                 <div class={styles.inviteInfo}>
                   <span class={styles.inviteLabel}>Inbjudan</span>
                   <span class={styles.inviteName}>{event.name}</span>
@@ -108,6 +112,9 @@ export default function EventsPage() {
             class={styles.tab}
             classList={{ [styles.tabActive]: tab() === t }}
             onClick={() => selectTab(t)}
+            aria-selected={tab() === t}
+            data-testid="events-tab"
+            data-tab={t}
           >
             {t === "active" ? "Aktiva" : t === "upcoming" ? "Kommande" : "Avslutade"}
           </button>
@@ -127,7 +134,12 @@ export default function EventsPage() {
         <div class={shared.itemList}>
           <For each={events()}>
             {(event) => (
-              <A href={`/events/${event.id}`} class={shared.card}>
+              <A
+                href={`/events/${event.id}`}
+                class={shared.card}
+                data-testid="event-card"
+                data-event-id={event.id}
+              >
                 <div class={shared.cardInfo}>
                   <span class={`${shared.cardTitle} ${styles.eventName}`}>
                     {event.name}

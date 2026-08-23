@@ -14,6 +14,7 @@ export default function ObserveButton(props: Props) {
       classList={{ [styles.observed]: props.observed }}
       onClick={() => props.onAdd()}
       aria-label={`Kryssa ${props.birdName}`}
+      aria-pressed={props.observed}
     >
       <svg viewBox="0 0 28 28" class={styles.icon} aria-hidden="true">
         <rect x="3" y="5" width="16" height="16" rx="2" class={styles.box} />

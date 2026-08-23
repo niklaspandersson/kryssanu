@@ -238,7 +238,7 @@ export default function EventDetailPage() {
                     <div class={styles.leaderboard}>
                       <For each={resultsTop10()}>
                         {(entry, i) => (
-                          <div class={styles.lbRow} onClick={() => setSelectedParticipant({ id: entry.user.id, name: entry.user.name ?? "Deltagare" })}>
+                          <div class={styles.lbRow} data-testid="leaderboard-row" data-rank={i() + 1} data-user-id={entry.user.id} onClick={() => setSelectedParticipant({ id: entry.user.id, name: entry.user.name ?? "Deltagare" })}>
                             <span class={styles.lbRank}>{i() + 1}</span>
                             <Avatar name={entry.user.name} image={entry.user.image} size={32} />
                             <div class={styles.lbInfo}>
@@ -255,7 +255,7 @@ export default function EventDetailPage() {
                         {(cu) => (
                           <>
                             <div class={styles.lbDivider}>···</div>
-                            <div class={`${styles.lbRow} ${styles.lbRowHighlight}`} onClick={() => setSelectedParticipant({ id: cu().entry.user.id, name: cu().entry.user.name ?? "Deltagare" })}>
+                            <div class={`${styles.lbRow} ${styles.lbRowHighlight}`} data-testid="leaderboard-row-me" data-user-id={cu().entry.user.id} onClick={() => setSelectedParticipant({ id: cu().entry.user.id, name: cu().entry.user.name ?? "Deltagare" })}>
                               <span class={styles.lbRank}>{cu().rank}</span>
                               <Avatar name={cu().entry.user.name} image={cu().entry.user.image} size={32} />
                               <div class={styles.lbInfo}>
@@ -294,7 +294,7 @@ export default function EventDetailPage() {
                     <div class={styles.leaderboard}>
                       <For each={leaderboardEntries()}>
                         {(entry, i) => (
-                          <div class={styles.lbRow} onClick={() => setSelectedParticipant({ id: entry.user.id, name: entry.user.name ?? "Deltagare" })}>
+                          <div class={styles.lbRow} data-testid="leaderboard-row" data-rank={i() + 1} data-user-id={entry.user.id} onClick={() => setSelectedParticipant({ id: entry.user.id, name: entry.user.name ?? "Deltagare" })}>
                             <span class={styles.lbRank}>{i() + 1}</span>
                             <Avatar name={entry.user.name} image={entry.user.image} size={32} />
                             <div class={styles.lbInfo}>
@@ -311,7 +311,7 @@ export default function EventDetailPage() {
                         {(cu) => (
                           <>
                             <div class={styles.lbDivider}>···</div>
-                            <div class={`${styles.lbRow} ${styles.lbRowHighlight}`} onClick={() => setSelectedParticipant({ id: cu().entry.user.id, name: cu().entry.user.name ?? "Deltagare" })}>
+                            <div class={`${styles.lbRow} ${styles.lbRowHighlight}`} data-testid="leaderboard-row-me" data-user-id={cu().entry.user.id} onClick={() => setSelectedParticipant({ id: cu().entry.user.id, name: cu().entry.user.name ?? "Deltagare" })}>
                               <span class={styles.lbRank}>{cu().rank}</span>
                               <Avatar name={cu().entry.user.name} image={cu().entry.user.image} size={32} />
                               <div class={styles.lbInfo}>
@@ -396,6 +396,9 @@ export default function EventDetailPage() {
                   {(p) => (
                     <div
                       class={styles.participant}
+                      data-testid="participant"
+                      data-user-id={p.user.id}
+                      data-status={p.status}
                       classList={{ [styles.clickable]: p.status === "ACCEPTED" && (isActive() || isPast()) }}
                       onClick={() => {
                         if (p.status === "ACCEPTED" && (isActive() || isPast())) {

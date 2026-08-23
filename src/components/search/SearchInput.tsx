@@ -20,7 +20,11 @@ export default function SearchInput(props: Props) {
         autofocus
       />
       {props.value && (
-        <button class={styles.clear} onClick={() => props.onInput("")}>
+        <button
+          class={styles.clear}
+          onClick={() => props.onInput("")}
+          aria-label="Rensa sökning"
+        >
           <span class="md-icon">close</span>
         </button>
       )}

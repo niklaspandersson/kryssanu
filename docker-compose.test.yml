@@ -1,0 +1,29 @@
+# MySQL for the end-to-end test suite.
+#
+# Port 3307 on purpose: 3306 is left free for whatever MySQL a developer already
+# runs locally, so `npm run test:db:up` never collides with a real database.
+#
+# The password is deliberately alphanumeric — packages/server-php/src/Database.php
+# parses DATABASE_URL with plain parse_url() and never urldecode()s the password,
+# so anything containing @ / # % would authenticate with the wrong string.
+services:
+  mysql:
+    image: mysql:8
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+    environment:
+      MYSQL_ROOT_PASSWORD: kryssanutest
+      MYSQL_DATABASE: kryssanu_test
+    ports:
+      - '3307:3306'
+    # The data directory is a tmpfs: the suite recreates the schema on every run,
+    # so persistence buys nothing and costs startup time.
+    tmpfs:
+      - /var/lib/mysql
+    healthcheck:
+      test: ['CMD', 'mysqladmin', 'ping', '-h', '127.0.0.1', '-uroot', '-pkryssanutest']
+      interval: 2s
+      timeout: 5s
+      retries: 30
+      start_period: 20s

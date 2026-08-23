@@ -29,7 +29,10 @@ import { apiCache } from './offlineDb';
 import { isOnline, markOffline } from './useOnlineStatus';
 
 const BASE = '/api';
-const REQUEST_TIMEOUT_MS = 15000;
+// Overridable so the end-to-end suite can exercise the hung-request path in a
+// couple of seconds instead of fifteen. Unset everywhere but the test run.
+const REQUEST_TIMEOUT_MS =
+  Number(import.meta.env.VITE_REQUEST_TIMEOUT_MS) || 15000;
 
 let unauthorizedHandler: (() => void) | null = null;
 

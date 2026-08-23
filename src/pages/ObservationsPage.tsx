@@ -366,6 +366,8 @@ export default function ObservationsPage() {
                   <li
                     class={styles.obsItem}
                     classList={{ [styles.rowSelectable]: selectMode() }}
+                    data-testid="observation-row"
+                    data-obs-id={obs.id}
                   >
                     <Show when={selectMode()}>
                       <span
@@ -373,6 +375,7 @@ export default function ObservationsPage() {
                         onClick={() => toggleSelect(obs.id)}
                         role="checkbox"
                         aria-checked={isSel()}
+                        data-testid="observation-select"
                       >
                         <span class={styles.checkbox} classList={{ [styles.checkboxChecked]: isSel() }}>
                           <Icon name="check" size={16} />

@@ -45,8 +45,27 @@ npm run dev
 | `npm run preview` | Preview the production build                 |
 | `npm run db:push` | Push the Prisma schema to the database       |
 | `npm run db:seed` | Seed bird data                               |
+| `npm run typecheck` | Typecheck `src/` and `e2e/`                |
+| `npm run test:e2e` | Provision the test DB and run the E2E suite |
+| `npm run test:db:up` / `:down` | Start / stop the test MySQL     |
 
-There is no test runner or linter configured.
+No linter is configured (the two `.eslintrc.*` files are stale leftovers and
+ESLint is not a dependency).
+
+## Tests
+
+End-to-end tests run with [Playwright](https://playwright.dev/) against a real
+MySQL and the real PHP API — see `e2e/`.
+
+```bash
+npm run test:db:up    # MySQL 8 via docker compose, on port 3307
+npm run test:e2e      # provisions the test DB, then runs the suite
+npm run test:db:down  # stop and wipe it
+```
+
+They authenticate through `/api/auth/dev-login`, a route that only exists when
+`APP_ENV !== 'production'`, so no Google OAuth is needed. The same suite runs on
+every pull request via `.github/workflows/test.yml`.
 
 ## Features
 

@@ -28,9 +28,46 @@ npm run db:push
 
 # Seed bird data
 npm run db:seed
+
+# End-to-end tests (Playwright)
+npm run test:db:up      # start the test MySQL (docker compose, port 3307)
+npm run test:e2e        # provision the test DB, then run the suite
+npm run test:e2e:ui     # same, in Playwright's UI mode
+npm run test:db:down    # stop and wipe the test MySQL
+
+npm run typecheck       # tsc --noEmit over src/ and e2e/
 ```
 
-No test runner or linter is configured.
+No linter is configured. (`.eslintrc.cjs` and `.eslintrc.json` are stale
+leftovers — two conflicting configs, one of them a Next.js preset in a Solid
+app — and ESLint is not a dependency. Ignore them.)
+
+## Testing
+
+End-to-end tests live in `e2e/` and run with Playwright against a real MySQL
+and the real PHP API. There are no unit tests.
+
+- `e2e/provision.ts` — pushes the schema, applies the `Bird.status`
+  `utf8mb4_bin` collation fix, seeds birds, creates the fixture users. Runs
+  before Playwright starts, not from a global setup: Playwright boots its
+  `webServer` first, and the API readiness probe reads the `Bird` table.
+- `e2e/auth.setup.ts` — a setup project that mints a session via
+  `GET /api/auth/dev-login?email=…` (registered whenever `APP_ENV !== 'production'`)
+  and saves it to `e2e/.auth/user.json`. No Google OAuth is involved.
+- `e2e/db.ts` — `resetData()` truncates user-owned tables between tests but
+  leaves `Bird`, `User` and `Session` alone, so the stored session stays valid.
+- `e2e/fixtures.ts` — the shared `page` fixture: data reset, third-party stubs,
+  localStorage seeding.
+
+Writing specs, two things to know:
+
+- **Material Icons are ligature icons.** `Icon.tsx` renders the icon name as the
+  span's text, so an icon+text button's accessible name is polluted
+  (`<Icon name="edit"/> Ändra` → `"edit Ändra"`, and whether the space survives
+  depends on JSX line breaks). Match Swedish fragments with a regex; never use
+  `exact: true` on a mixed icon+text button.
+- **Only `ConfirmDialog` has `role="dialog"`.** `TopSheet` and `BottomSheet` have
+  no role and no Escape handler — they close on backdrop click.
 
 ## Architecture
 

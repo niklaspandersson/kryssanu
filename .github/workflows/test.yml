@@ -1,0 +1,75 @@
+name: Tests
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8
+        env:
+          MYSQL_ROOT_PASSWORD: kryssanutest
+          MYSQL_DATABASE: kryssanu_test
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -pkryssanutest"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
+
+    env:
+      # The service container maps to 3306; docker-compose.test.yml uses 3307
+      # locally so it never collides with a developer's own MySQL.
+      DATABASE_URL: mysql://root:kryssanutest@127.0.0.1:3306/kryssanu_test
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          # Matches deploy-vendor.yml. ext-gd is required by composer.json
+          # (intervention/image), pdo_mysql by src/Database.php.
+          php-version: '8.3'
+          extensions: gd, pdo_mysql
+
+      - run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Cache Composer packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/composer
+          key: composer-${{ hashFiles('packages/server-php/composer.lock') }}
+          restore-keys: composer-
+
+      # vendor/ is gitignored, so the API cannot boot until this runs.
+      - run: composer install --no-interaction --no-progress
+        working-directory: packages/server-php
+
+      - name: Install Playwright browser
+        run: npx playwright install --with-deps chromium
+
+      - name: Run end-to-end tests
+        run: npm run test:e2e
+
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7

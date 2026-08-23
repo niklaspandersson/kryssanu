@@ -7,7 +7,12 @@ import styles from './OfflineBanner.module.css';
 export default function OfflineBanner() {
   return (
     <Show when={!isOnline()}>
-      <div class={styles.banner}>
+      <div
+        class={styles.banner}
+        role="status"
+        data-testid="offline-banner"
+        data-pending-count={pendingCount()}
+      >
         <Icon name="cloud_off" class={styles.icon} />
         <span>
           Du är offline.
