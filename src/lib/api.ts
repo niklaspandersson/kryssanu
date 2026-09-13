@@ -26,14 +26,64 @@ import type {
   BirdImage,
 } from './types';
 import { apiCache } from './offlineDb';
-import { isOnline } from './useOnlineStatus';
+import { isOnline, reportReachable, reportUnreachable } from './useOnlineStatus';
 
 const BASE = '/api';
+
+/**
+ * Deadlines. A hung request is the failure mode this app has to survive: on a
+ * weak mobile connection fetch() does not reject, it stalls until the OS gives
+ * up, which on iOS can take well over a minute. Without a deadline the cache
+ * fallbacks below are unreachable for that entire time.
+ *
+ * Reads are short, because a cached copy is a good answer and the user is
+ * waiting for the screen to fill. Writes get longer: there is nothing cached to
+ * fall back on, and abandoning a request the server may already have processed
+ * is worse than waiting a while.
+ */
+const READ_TIMEOUT_MS = 8_000;
+const WRITE_TIMEOUT_MS = 25_000;
+/** Uploads carry a downscaled photo, so they need real headroom. */
+const UPLOAD_TIMEOUT_MS = 60_000;
 
 let unauthorizedHandler: (() => void) | null = null;
 
 export function setUnauthorizedHandler(fn: () => void) {
   unauthorizedHandler = fn;
+}
+
+/**
+ * An error carrying a response the server actually sent, as opposed to a
+ * transport failure. The distinction drives both the cache fallback and the
+ * connectivity signal.
+ *
+ * The message format is load-bearing: callers test it for specific statuses.
+ */
+export class HttpError extends Error {
+  constructor(readonly status: number, statusText: string) {
+    super(`${status} ${statusText}`);
+    this.name = 'HttpError';
+  }
+}
+
+/** fetch() that rejects once `timeoutMs` has passed instead of stalling. */
+export async function fetchWithTimeout(
+  url: string,
+  init: RequestInit,
+  timeoutMs: number,
+): Promise<Response> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(url, { ...init, signal: controller.signal });
+  } catch (e) {
+    if (e instanceof DOMException && e.name === 'AbortError') {
+      throw new Error(`Nätverksanropet tog för lång tid (${timeoutMs} ms)`);
+    }
+    throw e;
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 async function fetchJson<T>(url: string, init?: RequestInit): Promise<T> {
@@ -45,15 +95,24 @@ async function fetchJson<T>(url: string, init?: RequestInit): Promise<T> {
     throw new Error('Offline och ingen cachad data tillgänglig');
   }
 
+  let reachedServer = false;
+
   try {
-    const res = await fetch(`${BASE}${url}`, {
-      credentials: 'include',
-      headers: { 'Content-Type': 'application/json' },
-      ...init,
-    });
+    const res = await fetchWithTimeout(
+      `${BASE}${url}`,
+      {
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        ...init,
+      },
+      isGet ? READ_TIMEOUT_MS : WRITE_TIMEOUT_MS,
+    );
+    // The server answered, whatever it answered with.
+    reachedServer = true;
+    reportReachable();
     if (!res.ok) {
       if (res.status === 401) unauthorizedHandler?.();
-      throw new Error(`${res.status} ${res.statusText}`);
+      throw new HttpError(res.status, res.statusText);
     }
     const data = await res.json() as T;
     if (isGet) {
@@ -61,7 +120,10 @@ async function fetchJson<T>(url: string, init?: RequestInit): Promise<T> {
     }
     return data;
   } catch (e) {
-    if (e instanceof Error && e.message.startsWith('401')) throw e;
+    // Timed out or never left the device: that says something about the
+    // network. A response, even an error response, does not.
+    if (!reachedServer) reportUnreachable();
+    if (e instanceof HttpError && e.status === 401) throw e;
     if (isGet) {
       const cached = await apiCache.get<T>(url);
       if (cached) return cached.data;
@@ -149,13 +211,21 @@ export const me = {
   ): Promise<ObservationImage> => {
     const fd = new FormData();
     fd.append('image', file);
-    const res = await fetch(
-      `${BASE}/me/observations/${encodeURIComponent(observationId)}/images`,
-      { method: 'POST', credentials: 'include', body: fd },
-    );
+    let res: Response;
+    try {
+      res = await fetchWithTimeout(
+        `${BASE}/me/observations/${encodeURIComponent(observationId)}/images`,
+        { method: 'POST', credentials: 'include', body: fd },
+        UPLOAD_TIMEOUT_MS,
+      );
+    } catch (e) {
+      reportUnreachable();
+      throw e;
+    }
+    reportReachable();
     if (!res.ok) {
       if (res.status === 401) unauthorizedHandler?.();
-      throw new Error(`${res.status} ${res.statusText}`);
+      throw new HttpError(res.status, res.statusText);
     }
     return res.json() as Promise<ObservationImage>;
   },
