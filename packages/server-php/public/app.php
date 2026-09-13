@@ -49,6 +49,7 @@ $app->addErrorMiddleware(
 
 // Register routes
 $routeFiles = [
+    'HealthRoutes',
     'AuthRoutes',
     'MeRoutes',
     'BirdRoutes',

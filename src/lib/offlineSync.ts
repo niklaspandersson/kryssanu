@@ -2,6 +2,7 @@ import { createSignal } from 'solid-js';
 import type { PendingObservation } from './types';
 import { pendingObs } from './offlineDb';
 import { me as meApi } from './api';
+import { isOnline, onReconnect } from './useOnlineStatus';
 import { notifyObservationCreated } from './observationStore';
 
 export const [pendingCount, setPendingCount] = createSignal(0);
@@ -63,13 +64,16 @@ export async function refreshPendingCount(): Promise<void> {
 export function startAutoSync(): void {
   // Sync any leftover pending observations on startup
   refreshPendingCount().then(() => {
-    if (pendingCount() > 0 && navigator.onLine) {
+    if (pendingCount() > 0 && isOnline()) {
       syncPendingObservations();
     }
   });
 
-  // Sync when the browser comes back online
-  window.addEventListener('online', () => {
+  // Sync once the server is actually reachable again. The browser's 'online'
+  // event fires for an interface coming up, which on a phone routinely happens
+  // while nothing can be reached yet; every observation in the queue would then
+  // fail its POST and stay queued until the next event that never comes.
+  onReconnect(() => {
     syncPendingObservations();
   });
 }
