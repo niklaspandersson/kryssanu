@@ -6,7 +6,10 @@ export default defineConfig({
   plugins: [
     solidPlugin(),
     VitePWA({
-      registerType: 'autoUpdate',
+      // 'prompt' rather than 'autoUpdate': the new build is fetched and staged
+      // in the background either way, but it is applied when the user taps
+      // "Ladda om" instead of reloading the page under someone mid-kryss.
+      registerType: 'prompt',
       includeAssets: ['favicon.png', 'logo-v2-solid.webp', 'logo-v2.webp'],
       manifest: {
         name: 'Kryssa.nu',
@@ -29,56 +32,30 @@ export default defineConfig({
         ],
       },
       workbox: {
-        // index.html must stay in the precache: it is the offline app shell, and
-        // it is precached together with the hashed assets it references, so the
-        // two can never drift apart.
+        // The app shell. index.html is precached together with the hashed
+        // assets it references, so the two can never drift apart: a navigation
+        // answered from here always gets a self-consistent build.
         globPatterns: ['**/*.{html,js,css,webp,png,svg,woff2}'],
-        // vite-plugin-pwa defaults this to 'index.html'. Leaving it enabled
-        // would answer every navigation from the precache, i.e. serve a stale
-        // shell while the network is perfectly fine. Navigations are handled by
-        // the network-only route below instead.
-        navigateFallback: undefined,
-        // Same reason: without this, a navigation to '/' falls back to the
-        // precached index.html rather than hitting the network.
-        directoryIndex: null,
-        navigationPreload: true,
+        // Serve every navigation from the precached shell. This is what makes a
+        // launch instant and independent of the network — the previous
+        // network-only route only fell back to the cache when fetch *rejected*,
+        // and a stalled mobile connection does not reject, it hangs.
+        //
+        // Freshness is not this route's job. The browser re-fetches sw.js,
+        // which embeds the precache manifest, so a new build installs in the
+        // background and is offered via the reload prompt. The cost is that a
+        // user can run the previous build for one launch.
+        navigateFallback: 'index.html',
+        // Server-rendered routes under /api are real navigations too — the
+        // Google Sheets OAuth flow returns to /api/export/google/callback — and
+        // must reach the server rather than the app shell.
+        navigateFallbackDenylist: [/^\/api\//],
+        // 'autoUpdate' used to set this implicitly. Without it the very first
+        // visit runs uncontrolled until the next navigation. Safe alongside the
+        // reload prompt: a new worker only activates once the user accepts it,
+        // so it can never claim a page that loaded a different build's assets.
+        clientsClaim: true,
         runtimeCaching: [
-          {
-            // Navigations always go to the network, so a deploy is picked up on
-            // the next page load. Only when the network fails do we fall back to
-            // the precached app shell. (No networkTimeoutSeconds here: workbox
-            // only accepts it on NetworkFirst, and NetworkFirst would mean
-            // serving stale HTML from a runtime cache.)
-            urlPattern: ({ request }) => request.mode === 'navigate',
-            handler: 'NetworkOnly',
-            options: {
-              plugins: [
-                {
-                  // The precache stores index.html under a revisioned cache key
-                  // (`/index.html?__WB_REVISION__=...`), hence ignoreSearch.
-                  handlerDidError: async () =>
-                    caches.match('/index.html', { ignoreSearch: true }),
-                },
-              ],
-            },
-          },
-          {
-            urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
-            handler: 'CacheFirst',
-            options: {
-              cacheName: 'google-fonts-stylesheets',
-              expiration: { maxEntries: 10, maxAgeSeconds: 60 * 60 * 24 * 365 },
-            },
-          },
-          {
-            urlPattern: /^https:\/\/fonts\.gstatic\.com\/.*/i,
-            handler: 'CacheFirst',
-            options: {
-              cacheName: 'google-fonts-webfonts',
-              expiration: { maxEntries: 30, maxAgeSeconds: 60 * 60 * 24 * 365 },
-              cacheableResponse: { statuses: [0, 200] },
-            },
-          },
           {
             // User-uploaded observation images. They are immutable (content-addressed
             // by id), so cache them so once-viewed photos render offline.

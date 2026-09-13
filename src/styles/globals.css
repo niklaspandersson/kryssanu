@@ -105,6 +105,20 @@ select {
 }
 
 /* Material Icons */
+/*
+ * Self-hosted so the icons are precached with the rest of the shell. Loading
+ * this from fonts.googleapis.com put a render-blocking cross-origin stylesheet
+ * on the critical path, which on a stalled connection delays first paint and on
+ * a first visit offline leaves every icon as its ligature text.
+ */
+@font-face {
+  font-family: "Material Icons";
+  font-style: normal;
+  font-weight: 400;
+  font-display: block;
+  src: url("/fonts/material-icons.woff2") format("woff2");
+}
+
 .md-icon {
   user-select: none;
   font-family: "Material Icons";

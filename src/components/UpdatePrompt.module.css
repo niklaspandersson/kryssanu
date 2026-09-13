@@ -1,0 +1,58 @@
+.prompt {
+  position: fixed;
+  bottom: var(--space-xl);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--color-text);
+  color: #fff;
+  border-radius: var(--radius-full);
+  padding: var(--space-sm) var(--space-md) var(--space-sm) var(--space-lg);
+  font-size: var(--font-size-sm);
+  box-shadow: var(--shadow-lg);
+  z-index: 400;
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  max-width: calc(100vw - 2 * var(--space-lg));
+  animation: promptUp 0.2s ease-out;
+}
+
+.prompt :global(.md-icon) {
+  color: var(--color-primary-light);
+}
+
+.text {
+  white-space: nowrap;
+}
+
+.reload {
+  background: var(--color-primary);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-full);
+  padding: var(--space-xs) var(--space-md);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.close {
+  background: none;
+  border: none;
+  color: inherit;
+  display: flex;
+  align-items: center;
+  padding: 0;
+  cursor: pointer;
+}
+
+@keyframes promptUp {
+  from {
+    transform: translate(-50%, 30%);
+    opacity: 0;
+  }
+  to {
+    transform: translate(-50%, 0);
+    opacity: 1;
+  }
+}
