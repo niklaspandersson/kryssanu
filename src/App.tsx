@@ -1,6 +1,6 @@
 import { Router, Route } from "@solidjs/router";
 import type { RouteSectionProps } from "@solidjs/router";
-import { Show, onMount, type JSX } from "solid-js";
+import { Show, createSignal, onMount, type JSX } from "solid-js";
 import { AuthProvider, useAuth } from "./lib/auth";
 import { isOnline } from "./lib/useOnlineStatus";
 import EmptyState from "./components/EmptyState";
@@ -30,13 +30,13 @@ function RootLayout(props: RouteSectionProps) {
 
 function LoginFallback() {
   const { showOneTap, renderGoogleButton } = useAuth();
+  const [buttonFailed, setButtonFailed] = createSignal(false);
   let loginRef!: HTMLDivElement;
 
   onMount(() => {
-    if (isOnline()) {
-      showOneTap();
-      renderGoogleButton(loginRef);
-    }
+    if (!isOnline()) return;
+    showOneTap();
+    renderGoogleButton(loginRef).then((rendered) => setButtonFailed(!rendered));
   });
 
   return (
@@ -48,6 +48,12 @@ function LoginFallback() {
       <div style={{ display: "flex", "justify-content": "center", "margin-top": "1rem" }}>
         <div ref={loginRef} />
       </div>
+      <Show when={buttonFailed()}>
+        <EmptyState
+          icon="cloud_off"
+          message="Inloggningen kunde inte laddas. Kontrollera din anslutning och försök igen."
+        />
+      </Show>
     </Show>
   );
 }
@@ -55,13 +61,14 @@ function LoginFallback() {
 function Protected(props: { children: JSX.Element }) {
   const { isLoggedIn, loading } = useAuth();
 
+  // Both branches render something. Rendering null while loading meant a single
+  // request that never answered blanked the page with no explanation, which is
+  // indistinguishable from a broken app.
   return (
-    <Show when={!loading() && isLoggedIn()} fallback={
-      <Show when={!loading()}>
-        <LoginFallback />
+    <Show when={!loading()} fallback={<EmptyState icon="hourglass_empty" message="Laddar..." />}>
+      <Show when={isLoggedIn()} fallback={<LoginFallback />}>
+        {props.children}
       </Show>
-    }>
-      {props.children}
     </Show>
   );
 }
