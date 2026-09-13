@@ -52,3 +52,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 tools/data-import/sverigelista.xlsx
+
+# vite writes these while resolving the config; never source
+vite.config.ts.timestamp-*
