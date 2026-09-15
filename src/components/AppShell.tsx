@@ -17,7 +17,6 @@ import SearchSheet from "./search/SearchSheet";
 import QuickAddSheet from "./search/QuickAddSheet";
 import SideDrawer from "./SideDrawer";
 import OfflineBanner from "./OfflineBanner";
-import UpdatePrompt from "./UpdatePrompt";
 import styles from "./AppShell.module.css";
 
 const [searchOpen, setSearchOpen] = createSignal(false);
@@ -169,7 +168,6 @@ export default function AppShell(props: RouteSectionProps) {
         onAdd={handleAdd}
         onNavigate={handleSearchClose}
       />
-      <UpdatePrompt />
       <QuickAddSheet
         bird={selectedBird()}
         open={sheetOpen()}

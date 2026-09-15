@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const DIST = path.resolve(fileURLToPath(new URL('../../dist', import.meta.url)));
+const DEFAULT_DIST = path.resolve(fileURLToPath(new URL('../../dist', import.meta.url)));
 
 const TYPES = {
   '.html': 'text/html',
@@ -33,6 +33,8 @@ export const STUB_USER = {
  * rewrite rule — anything that is not a file falls through to index.html.
  */
 export function startServer(port = 4173) {
+  // Mutable so a test can swap in a second build, the way a deploy does.
+  let dist = DEFAULT_DIST;
   const routes = {
     '/api/health': { ok: true },
     '/api/me': STUB_USER,
@@ -67,15 +69,23 @@ export function startServer(port = 4173) {
       return res.end(JSON.stringify(body));
     }
 
-    let file = path.join(DIST, pathname);
+    let file = path.join(dist, pathname);
     if (!fs.existsSync(file) || fs.statSync(file).isDirectory()) {
-      file = path.join(DIST, 'index.html');
+      file = path.join(dist, 'index.html');
     }
     res.writeHead(200, { 'Content-Type': TYPES[path.extname(file)] ?? 'application/octet-stream' });
     fs.createReadStream(file).pipe(res);
   });
 
   return new Promise((resolve) => {
-    server.listen(port, () => resolve(server));
+    server.listen(port, () =>
+      resolve({
+        close: () => server.close(),
+        /** Point the server at a different build directory. */
+        serve(dir) {
+          dist = path.resolve(dir);
+        },
+      })
+    );
   });
 }

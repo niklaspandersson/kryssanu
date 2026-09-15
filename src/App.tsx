@@ -1,7 +1,8 @@
-import { Router, Route } from "@solidjs/router";
+import { Router, Route, useBeforeLeave } from "@solidjs/router";
 import type { RouteSectionProps } from "@solidjs/router";
 import { Show, createSignal, onMount, type JSX } from "solid-js";
 import { AuthProvider, useAuth } from "./lib/auth";
+import { updateReady, applyUpdateAndNavigate } from "./lib/swUpdate";
 import { isOnline } from "./lib/useOnlineStatus";
 import EmptyState from "./components/EmptyState";
 import AppShell from "./components/AppShell";
@@ -20,7 +21,24 @@ import AboutPage from "./pages/AboutPage";
 import HelpPage from "./pages/HelpPage";
 import TermsPage from "./pages/TermsPage";
 
+/**
+ * Turns the first in-app navigation after a new build is staged into a real
+ * page load, so the update is applied at a moment the user was leaving the
+ * current view anyway. Costs one shell boot, which is served from the precache.
+ */
+function useUpdateOnNavigate() {
+  useBeforeLeave((e) => {
+    if (!updateReady() || e.defaultPrevented) return;
+    // Back/forward passes a history delta rather than a path; there is no URL
+    // to hand to a full load, so let the router handle those normally.
+    if (typeof e.to !== "string") return;
+    if (applyUpdateAndNavigate(e.to)) e.preventDefault();
+  });
+}
+
 function RootLayout(props: RouteSectionProps) {
+  useUpdateOnNavigate();
+
   return (
     <AuthProvider>
       <AppShell {...props} />

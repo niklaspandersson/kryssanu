@@ -8,6 +8,9 @@
  *   offline — airplane mode, the case `navigator.onLine` actually reports
  *   lie-fi  — a live radio passing no traffic, which is what a bad cell
  *             connection looks like and what used to hang the app forever
+ *   update  — a deploy lands while the app is open; the new build must take
+ *             over on the next navigation and, separately, on the next launch,
+ *             with nothing to tap in either case
  *
  * Playwright is deliberately not a dependency of this project: the repository
  * has no test runner, and the Docker build installs devDependencies. Install it
@@ -19,6 +22,7 @@
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import { execFileSync } from 'node:child_process';
 import { startServer } from './server.mjs';
 
 let chromium;
@@ -41,6 +45,39 @@ const SHELL_BUDGET_MS = 5_000;
 const BANNER_BUDGET_MS = 15_000;
 
 const results = [];
+
+/**
+ * Builds a copy of the app carrying `markerId` in its shell, standing in for a
+ * deploy. Two of these let each update path be tested against a build only it
+ * could have produced. Restores index.html whether or not the build succeeds.
+ */
+function buildVariant(outDir, markerId) {
+  const indexHtml = path.resolve('index.html');
+  const original = fs.readFileSync(indexHtml, 'utf8');
+  try {
+    fs.writeFileSync(
+      indexHtml,
+      original.replace('<div id="root"></div>', `<div id="root"></div><div id="${markerId}"></div>`)
+    );
+    execFileSync('npx', ['vite', 'build', '--outDir', outDir, '--emptyOutDir'], { stdio: 'pipe' });
+  } finally {
+    fs.writeFileSync(indexHtml, original);
+  }
+}
+
+/** Deploys `dir` and waits for the worker it contains to finish staging. */
+async function stageDeploy(page, server, dir, budgetMs) {
+  server.serve(dir);
+  // What the hourly timer and the foreground check would do on their own.
+  await page.evaluate(
+    `navigator.serviceWorker.getRegistration().then((r) => r && r.update())`
+  );
+  return waitFor(
+    page,
+    `navigator.serviceWorker.getRegistration().then((r) => !!r?.waiting)`,
+    budgetMs
+  );
+}
 
 function record(name, ok, detail) {
   results.push({ name, ok, detail });
@@ -66,6 +103,10 @@ async function rootText(page) {
   return `rendered instead: ${text.replace(/\s+/g, ' ').trim().slice(0, 120)}`;
 }
 
+/** Marks the two stand-in deploys, so each path is proven against its own build. */
+const MARKER_A = 'pwa-check-build-a';
+const MARKER_B = 'pwa-check-build-b';
+
 const HAS_CONTENT = `!!document.getElementById('root')?.textContent?.includes('Hej,')`;
 const HAS_BANNER = `!!document.body?.textContent?.includes('Du är offline')`;
 
@@ -75,8 +116,13 @@ async function main() {
     process.exit(1);
   }
 
-  const server = await startServer();
   const profile = fs.mkdtempSync(path.join(os.tmpdir(), 'kryssanu-pwa-'));
+  const buildA = path.join(profile, 'dist-a');
+  const buildB = path.join(profile, 'dist-b');
+  buildVariant(buildA, MARKER_A);
+  buildVariant(buildB, MARKER_B);
+
+  const server = await startServer();
   // channel: 'chromium' picks the full browser rather than the headless shell,
   // which does not run service workers.
   const ctx = await chromium.launchPersistentContext(profile, {
@@ -126,6 +172,45 @@ async function main() {
     );
     const liefiBanner = await waitFor(page, HAS_BANNER, BANNER_BUDGET_MS);
     record('offline banner shows', liefiBanner !== null, liefiBanner && `${liefiBanner}ms`);
+    await ctx.unroute(`${ORIGIN}/api/**`);
+
+    // ── update via navigation ─────────────────────────────────────────
+    console.log('\nupdate (deploy while the app is open)');
+    await page.goto(START_URL, { waitUntil: 'load' });
+    const staged = await stageDeploy(page, server, buildA, SHELL_BUDGET_MS);
+    record('new build stages in the background', staged !== null, staged && `${staged}ms`);
+    record(
+      'nothing asks the user to reload',
+      !(await page.evaluate(`(document.body?.textContent ?? '').includes('Ny version')`))
+    );
+
+    // An ordinary in-app navigation is what applies it.
+    await page.click('a[href="/about"]');
+    await page.waitForURL(`${ORIGIN}/about`, { timeout: SHELL_BUDGET_MS }).catch(() => {});
+    const swapped = await waitFor(page, `!!document.getElementById('${MARKER_A}')`, SHELL_BUDGET_MS);
+    record('navigation lands on the new build', swapped !== null, swapped && `${swapped}ms`);
+    record('navigation reached the requested page', new URL(page.url()).pathname === '/about');
+
+    // ── update via next launch ────────────────────────────────────────
+    console.log('\nupdate (deploy picked up on next launch)');
+    const stagedB = await stageDeploy(page, server, buildB, SHELL_BUDGET_MS);
+    record('next build stages in the background', stagedB !== null, stagedB && `${stagedB}ms`);
+
+    // Closing the last page leaves the waiting worker free to activate, which
+    // is what swiping the app away on a phone does.
+    await page.close();
+    const relaunched = await ctx.newPage();
+    await relaunched.goto(START_URL, { waitUntil: 'load' });
+    const launchSwapped = await waitFor(
+      relaunched,
+      `!!document.getElementById('${MARKER_B}')`,
+      SHELL_BUDGET_MS
+    );
+    record('next launch runs the new build', launchSwapped !== null, launchSwapped && `${launchSwapped}ms`);
+    record(
+      'content still renders on the new build',
+      (await waitFor(relaunched, HAS_CONTENT, SHELL_BUDGET_MS)) !== null
+    );
   } finally {
     await ctx.close();
     server.close();
