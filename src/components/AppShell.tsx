@@ -9,8 +9,7 @@ import { selectableTaxa } from "../lib/birds";
 import { readSettings } from "../lib/settings";
 import { userLists, refreshLists } from "../lib/listStore";
 import { isOnline } from "../lib/useOnlineStatus";
-import { pendingObs } from "../lib/offlineDb";
-import { refreshPendingCount, syncPendingObservations } from "../lib/offlineSync";
+import { queueObservation, type NewObservation } from "../lib/offlineSync";
 import TopNav from "./TopNav";
 import SearchSheet from "./search/SearchSheet";
 import QuickAddSheet from "./search/QuickAddSheet";
@@ -91,34 +90,15 @@ export default function AppShell(props: RouteSectionProps) {
     setSheetOpen(true);
   }
 
-  // Every observation goes through the offline queue, online or not. Posting
-  // directly while "online" left nothing to fall back on: on a link that had
-  // just died the sheet hung for the full write timeout, and the observation
-  // was then dropped. Once queued it is safe, and the sync delivers it now or
-  // on reconnect.
-  async function handleConfirm(data: { note?: string; location?: string; latitude?: number; longitude?: number; listIds?: string[]; image?: File }) {
+  async function handleConfirm(data: NewObservation) {
     const bird = selectedBird();
     if (!bird) return;
 
-    await pendingObs.add({
-      id: crypto.randomUUID(),
-      birdId: bird.id,
-      birdName: bird.swedish,
-      note: data.note,
-      location: data.location,
-      latitude: data.latitude,
-      longitude: data.longitude,
-      listIds: data.listIds,
-      image: data.image,
-      createdAt: new Date().toISOString(),
-    });
-    await refreshPendingCount();
+    await queueObservation(bird, data);
 
     setObserved((prev) => ({ ...prev, [bird.id]: true }));
     setSheetOpen(false);
     setSelectedBird(null);
-
-    if (isOnline()) void syncPendingObservations();
   }
 
   function handleSearchClose() {

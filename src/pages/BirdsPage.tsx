@@ -4,10 +4,8 @@ import { me as meApi } from "../lib/api";
 import { userLists } from "../lib/listStore";
 import { useAuth } from "../lib/auth";
 import { allBirds, birdsReady } from "../lib/birdStore";
-import { isOnline } from "../lib/useOnlineStatus";
-import { pendingObs } from "../lib/offlineDb";
-import { refreshPendingCount } from "../lib/offlineSync";
-import { notifyObservationCreated } from "../lib/observationStore";
+import { pendingObservations, queueObservation, type NewObservation } from "../lib/offlineSync";
+import { observationsRevision } from "../lib/observationStore";
 import Icon from "../components/Icon";
 import ObserveButton from "../components/ObserveButton";
 import EmptyState from "../components/EmptyState";
@@ -65,8 +63,11 @@ export default function BirdsPage() {
   function updateIncludeVisitors(v: boolean) { setIncludeVisitors(v); persistFilters(); }
   function updateOfficialOnly(v: boolean) { setOfficialOnly(v); persistFilters(); }
   const [quickAddBird, setQuickAddBird] = createSignal<Bird | null>(null);
-  const [observed, { refetch }] = createResource(() => isLoggedIn(), (loggedIn) =>
-    loggedIn ? meApi.checklist() : undefined
+  // Refetched whenever the sync delivers observations, which is when the
+  // server's checklist first includes them.
+  const [observed] = createResource(
+    () => (isLoggedIn() ? { rev: observationsRevision() } : false),
+    () => meApi.checklist()
   );
 
   // Only used for the filter labels. The year boundary that decides which
@@ -74,14 +75,15 @@ export default function BirdsPage() {
   const currentYear = new Date().getFullYear();
 
   const observedSet = createMemo(() => {
-    const d = observed();
-    if (!d) return new Set<string>();
     const set = new Set<string>();
-    for (const [birdId, entry] of Object.entries(d.observed)) {
+    for (const [birdId, entry] of Object.entries(observed()?.observed ?? {})) {
       // "I år" hides a species seen only in earlier years.
       if (timeFilter() === "year" && entry.lastThisYear === null) continue;
       set.add(birdId);
     }
+    // Queued observations are this year's and not on the server yet; tick them
+    // now rather than once the sync gets through.
+    for (const p of pendingObservations()) set.add(p.birdId);
     return set;
   });
 
@@ -169,42 +171,12 @@ export default function BirdsPage() {
     ).length;
   });
 
-  async function handleQuickAdd(addData: { note?: string; location?: string; latitude?: number; longitude?: number; listIds?: string[]; image?: File }) {
+  async function handleQuickAdd(addData: NewObservation) {
     const bird = quickAddBird();
     if (!bird) return;
 
-    if (isOnline()) {
-      const created = await meApi.createObservation({
-        birdId: bird.id,
-        note: addData.note,
-        location: addData.location,
-        latitude: addData.latitude,
-        longitude: addData.longitude,
-        listIds: addData.listIds,
-      });
-      // Non-fatal: the observation is already saved if the image upload fails.
-      if (addData.image) {
-        try {
-          await meApi.uploadObservationImage(created.id, addData.image);
-        } catch (e) {
-          console.error("Bilduppladdning misslyckades", e);
-        }
-      }
-      notifyObservationCreated();
-    } else {
-      await pendingObs.add({
-        id: crypto.randomUUID(),
-        birdId: bird.id,
-        birdName: bird.swedish,
-        note: addData.note,
-        location: addData.location,
-        createdAt: new Date().toISOString(),
-      });
-      await refreshPendingCount();
-    }
-
+    await queueObservation(bird, addData);
     setQuickAddBird(null);
-    refetch();
   }
 
   // Chronological sorting reads as "most recently seen", every other mode as

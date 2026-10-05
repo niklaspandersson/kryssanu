@@ -1,5 +1,5 @@
 import { createSignal } from 'solid-js';
-import type { PendingObservation } from './types';
+import type { Bird, PendingObservation } from './types';
 import { pendingObs } from './offlineDb';
 import { me as meApi, HttpError } from './api';
 import { isOnline, onReconnect } from './useOnlineStatus';
@@ -9,6 +9,42 @@ export const [pendingCount, setPendingCount] = createSignal(0);
 export const [pendingObservations, setPendingObservations] = createSignal<
   PendingObservation[]
 >([]);
+
+/** What the quick-add sheets collect for a new observation. */
+export type NewObservation = {
+  note?: string;
+  location?: string;
+  latitude?: number;
+  longitude?: number;
+  listIds?: string[];
+  image?: File;
+};
+
+/**
+ * Every observation goes through the queue, online or not. Posting directly
+ * while "online" left nothing to fall back on: on a link that had just died the
+ * write hung for its full timeout, and the observation was then dropped. Once
+ * queued it is safe, and the sync delivers it now or on reconnect.
+ */
+export async function queueObservation(
+  bird: Pick<Bird, 'id' | 'swedish'>,
+  data: NewObservation,
+): Promise<void> {
+  await pendingObs.add({
+    id: crypto.randomUUID(),
+    birdId: bird.id,
+    birdName: bird.swedish,
+    note: data.note,
+    location: data.location,
+    latitude: data.latitude,
+    longitude: data.longitude,
+    listIds: data.listIds,
+    image: data.image,
+    createdAt: new Date().toISOString(),
+  });
+  await refreshPendingCount();
+  if (isOnline()) void syncPendingObservations();
+}
 
 let syncing = false;
 /** Set when a sync is requested mid-run, so items queued meanwhile are not left
