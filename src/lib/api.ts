@@ -234,7 +234,7 @@ export const me = {
   // boundary, so we must NOT force a Content-Type header here.
   uploadObservationImage: async (
     observationId: string,
-    file: File,
+    file: Blob,
   ): Promise<ObservationImage> => {
     const fd = new FormData();
     fd.append('image', file);

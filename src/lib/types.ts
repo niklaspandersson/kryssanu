@@ -285,6 +285,12 @@ export type PendingObservation = {
   latitude?: number;
   longitude?: number;
   listIds?: string[];
+  /** Downscaled photo from the quick-add sheet, uploaded once the observation
+   *  exists on the server. */
+  image?: Blob;
+  /** Set once the observation has been created, so a retry after a failed
+   *  image upload does not create it a second time. */
+  serverId?: string;
   createdAt: string;
 };
 

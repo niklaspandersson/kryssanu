@@ -96,7 +96,7 @@ export default function AppShell(props: RouteSectionProps) {
   // just died the sheet hung for the full write timeout, and the observation
   // was then dropped. Once queued it is safe, and the sync delivers it now or
   // on reconnect.
-  async function handleConfirm(data: { note?: string; location?: string; latitude?: number; longitude?: number; listIds?: string[] }) {
+  async function handleConfirm(data: { note?: string; location?: string; latitude?: number; longitude?: number; listIds?: string[]; image?: File }) {
     const bird = selectedBird();
     if (!bird) return;
 
@@ -109,6 +109,7 @@ export default function AppShell(props: RouteSectionProps) {
       latitude: data.latitude,
       longitude: data.longitude,
       listIds: data.listIds,
+      image: data.image,
       createdAt: new Date().toISOString(),
     });
     await refreshPendingCount();

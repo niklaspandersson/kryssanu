@@ -46,6 +46,11 @@ export const pendingObs = {
     await wrap(tx(db, 'pendingObservations', 'readwrite').add(obs));
   },
 
+  async put(obs: PendingObservation): Promise<void> {
+    const db = await openDb();
+    await wrap(tx(db, 'pendingObservations', 'readwrite').put(obs));
+  },
+
   async getAll(): Promise<PendingObservation[]> {
     const db = await openDb();
     return wrap(tx(db, 'pendingObservations', 'readonly').getAll());

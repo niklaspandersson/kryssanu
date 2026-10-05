@@ -1,7 +1,7 @@
 import { createSignal } from 'solid-js';
 import type { PendingObservation } from './types';
 import { pendingObs } from './offlineDb';
-import { me as meApi } from './api';
+import { me as meApi, HttpError } from './api';
 import { isOnline, onReconnect } from './useOnlineStatus';
 import { notifyObservationCreated } from './observationStore';
 
@@ -37,14 +37,31 @@ export async function syncPendingObservations(): Promise<{
 
     for (const obs of pending) {
       try {
-        await meApi.createObservation({
-          birdId: obs.birdId,
-          note: obs.note,
-          location: obs.location,
-          latitude: obs.latitude,
-          longitude: obs.longitude,
-          listIds: obs.listIds,
-        });
+        let serverId = obs.serverId;
+        if (!serverId) {
+          const created = await meApi.createObservation({
+            birdId: obs.birdId,
+            note: obs.note,
+            location: obs.location,
+            latitude: obs.latitude,
+            longitude: obs.longitude,
+            listIds: obs.listIds,
+          });
+          serverId = created.id;
+          // Recorded before the upload, so a failed upload is retried on its
+          // own instead of by creating the observation again.
+          if (obs.image) await pendingObs.put({ ...obs, serverId });
+        }
+        if (obs.image) {
+          try {
+            await meApi.uploadObservationImage(serverId, obs.image);
+          } catch (e) {
+            // The server read the photo and refused it; retrying will not
+            // change that. Keep the observation, drop the photo.
+            if (!(e instanceof HttpError) || e.status === 401) throw e;
+            console.error('Bilduppladdning misslyckades', e);
+          }
+        }
         await pendingObs.remove(obs.id);
         synced++;
       } catch {
@@ -67,16 +84,22 @@ export async function syncPendingObservations(): Promise<{
   return { synced, failed };
 }
 
-export async function refreshPendingCount(): Promise<void> {
+/** Resolves to the size of the whole queue, including photos still waiting
+ *  for an observation that has already been created. */
+export async function refreshPendingCount(): Promise<number> {
   const pending = await pendingObs.getAll();
-  setPendingObservations(pending);
-  setPendingCount(pending.length);
+  // An observation with a serverId is already on the server and shows up in
+  // server data; listing it here too would show it twice.
+  const unsynced = pending.filter((p) => !p.serverId);
+  setPendingObservations(unsynced);
+  setPendingCount(unsynced.length);
+  return pending.length;
 }
 
 export function startAutoSync(): void {
   // Sync any leftover pending observations on startup
-  refreshPendingCount().then(() => {
-    if (pendingCount() > 0 && isOnline()) {
+  refreshPendingCount().then((queued) => {
+    if (queued > 0 && isOnline()) {
       syncPendingObservations();
     }
   });
