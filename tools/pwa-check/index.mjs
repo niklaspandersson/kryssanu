@@ -107,7 +107,9 @@ async function rootText(page) {
 const MARKER_A = 'pwa-check-build-a';
 const MARKER_B = 'pwa-check-build-b';
 
-const HAS_CONTENT = `!!document.getElementById('root')?.textContent?.includes('Hej,')`;
+// The stat cards, not the greeting: the greeting comes from the user cached in
+// localStorage and renders even when no data has arrived at all.
+const HAS_CONTENT = `!!document.getElementById('root')?.textContent?.includes('Arter totalt')`;
 const HAS_BANNER = `!!document.body?.textContent?.includes('Du är offline')`;
 
 async function main() {

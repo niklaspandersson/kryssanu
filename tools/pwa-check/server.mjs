@@ -39,8 +39,23 @@ export function startServer(port = 4173) {
     '/api/health': { ok: true },
     '/api/me': STUB_USER,
     '/api/birds/version': { version: 1 },
+    // Every Bird field matters: search drops anything isSubspecies() accepts,
+    // and a missing parentId is not null.
     '/api/birds': [
-      { id: 'Parus major', swedish: 'Talgoxe', english: 'Great Tit', family: 'Mesar', sortOrder: 1 },
+      {
+        id: 'Parus major',
+        swedish: 'Talgoxe',
+        english: 'Great Tit',
+        family: 'Mesar',
+        familyLatin: 'Paridae',
+        orderLatin: 'Passeriformes',
+        orderSwedish: 'Tättingar',
+        parentId: null,
+        kategori: 'A',
+        status: null,
+        extinct: false,
+        delisted: false,
+      },
     ],
     '/api/me/stats': {
       uniqueSpeciesLifetime: 1,
