@@ -11,12 +11,18 @@ export const [pendingObservations, setPendingObservations] = createSignal<
 >([]);
 
 let syncing = false;
+/** Set when a sync is requested mid-run, so items queued meanwhile are not left
+ *  waiting for the next reconnect. */
+let syncAgain = false;
 
 export async function syncPendingObservations(): Promise<{
   synced: number;
   failed: number;
 }> {
-  if (syncing) return { synced: 0, failed: 0 };
+  if (syncing) {
+    syncAgain = true;
+    return { synced: 0, failed: 0 };
+  }
   syncing = true;
 
   let synced = 0;
@@ -37,6 +43,7 @@ export async function syncPendingObservations(): Promise<{
           location: obs.location,
           latitude: obs.latitude,
           longitude: obs.longitude,
+          listIds: obs.listIds,
         });
         await pendingObs.remove(obs.id);
         synced++;
@@ -51,6 +58,11 @@ export async function syncPendingObservations(): Promise<{
 
   // Server-backed activity feeds can now include the synced observations.
   if (synced > 0) notifyObservationCreated();
+
+  if (syncAgain) {
+    syncAgain = false;
+    if (isOnline()) void syncPendingObservations();
+  }
 
   return { synced, failed };
 }

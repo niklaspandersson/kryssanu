@@ -284,6 +284,7 @@ export type PendingObservation = {
   location?: string;
   latitude?: number;
   longitude?: number;
+  listIds?: string[];
   createdAt: string;
 };
 
