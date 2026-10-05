@@ -45,6 +45,13 @@ const READ_TIMEOUT_MS = 8_000;
 const WRITE_TIMEOUT_MS = 25_000;
 /** Uploads carry a downscaled photo, so they need real headroom. */
 const UPLOAD_TIMEOUT_MS = 60_000;
+/**
+ * How long a read with a cached copy waits for the network before answering
+ * from the cache. Until a request times out the app still believes it is
+ * online, so without this every launch on a stalled link showed nothing for the
+ * full READ_TIMEOUT_MS while the answer sat in IndexedDB.
+ */
+const CACHE_GRACE_MS = 1_500;
 
 let unauthorizedHandler: (() => void) | null = null;
 
@@ -95,6 +102,31 @@ async function fetchJson<T>(url: string, init?: RequestInit): Promise<T> {
     throw new Error('Offline och ingen cachad data tillgänglig');
   }
 
+  const network = requestJson<T>(url, init, isGet);
+  if (!isGet) return network;
+
+  const cached = await apiCache.get<T>(url).catch(() => null);
+  if (!cached) return network;
+
+  // The request keeps running after the cache answers: a late response still
+  // refreshes the cache for the next read, and a late timeout still flips the
+  // app to offline. Nobody is waiting on its outcome any more.
+  network.catch(() => {});
+  const first = await Promise.race([
+    network.then(
+      (data) => ({ data }),
+      (error: unknown) => ({ error }),
+    ),
+    new Promise<null>((resolve) => setTimeout(() => resolve(null), CACHE_GRACE_MS)),
+  ]);
+  if (first === null) return cached.data;
+  if ('data' in first) return first.data;
+  if (first.error instanceof HttpError && first.error.status === 401) throw first.error;
+  return cached.data;
+}
+
+/** One request to the API, reporting reachability and caching GET responses. */
+async function requestJson<T>(url: string, init: RequestInit | undefined, isGet: boolean): Promise<T> {
   let reachedServer = false;
 
   try {
@@ -123,11 +155,6 @@ async function fetchJson<T>(url: string, init?: RequestInit): Promise<T> {
     // Timed out or never left the device: that says something about the
     // network. A response, even an error response, does not.
     if (!reachedServer) reportUnreachable();
-    if (e instanceof HttpError && e.status === 401) throw e;
-    if (isGet) {
-      const cached = await apiCache.get<T>(url);
-      if (cached) return cached.data;
-    }
     throw e;
   }
 }
