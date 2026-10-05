@@ -11,6 +11,11 @@
  *   update  — a deploy lands while the app is open; the new build must take
  *             over on the next navigation and, separately, on the next launch,
  *             with nothing to tap in either case
+ *   lie-fi after regular use — the realistic case: a few sessions on a good
+ *             connection, then a launch where the whole link stalls (shell,
+ *             sw.js and API). Saved data, bird search and logging a bird with
+ *             a photo must all work at once, and the observation must reach
+ *             the server when the link recovers
  *
  * Playwright is deliberately not a dependency of this project: the repository
  * has no test runner, and the Docker build installs devDependencies. Install it
@@ -43,6 +48,11 @@ const START_URL = `${ORIGIN}/summary`;
 const SHELL_BUDGET_MS = 5_000;
 /** The offline banner waits out the API read timeout, so it is allowed longer. */
 const BANNER_BUDGET_MS = 15_000;
+/**
+ * A sync started before the app noticed the link was dead waits out the 25 s
+ * write timeout, then the next reachability probe, before it is retried.
+ */
+const SYNC_BUDGET_MS = 45_000;
 
 const results = [];
 
@@ -111,6 +121,16 @@ const MARKER_B = 'pwa-check-build-b';
 // localStorage and renders even when no data has arrived at all.
 const HAS_CONTENT = `!!document.getElementById('root')?.textContent?.includes('Arter totalt')`;
 const HAS_BANNER = `!!document.body?.textContent?.includes('Du är offline')`;
+const QUEUED_COUNT = `new Promise((resolve) => {
+  const open = indexedDB.open('kryssanu-offline');
+  open.onsuccess = () => {
+    const req = open.result.transaction('pendingObservations').objectStore('pendingObservations').count();
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => resolve(-1);
+  };
+  open.onerror = () => resolve(-1);
+})`;
+const PHOTO = path.resolve('public/pwa-192x192.png');
 
 async function main() {
   if (!fs.existsSync(path.resolve('dist/sw.js'))) {
@@ -213,6 +233,75 @@ async function main() {
       'content still renders on the new build',
       (await waitFor(relaunched, HAS_CONTENT, SHELL_BUDGET_MS)) !== null
     );
+    await relaunched.close();
+
+    // ── lie-fi after regular use ──────────────────────────────────────
+    // Last, because requests made while the server is stalled are never
+    // answered and would otherwise hang an update check in the scenarios above.
+    console.log('\nlie-fi after regular use (whole link stalls)');
+    for (const session of [
+      ['/summary', '/birds', '/observations', '/events', '/lists', '/profile'],
+      ['/summary', '/observations', '/birds'],
+    ]) {
+      const visit = await ctx.newPage();
+      for (const route of session) {
+        await visit.goto(`${ORIGIN}${route}`, { waitUntil: 'load' });
+        await visit.waitForTimeout(500);
+      }
+      await visit.close();
+    }
+
+    server.stall(true);
+    const launch = await ctx.newPage();
+    // Never fires 'load' while the link is stalled; the checks below decide.
+    launch.goto(START_URL).catch(() => {});
+    const stalledContent = await waitFor(launch, HAS_CONTENT, SHELL_BUDGET_MS);
+    record(
+      'cached content renders',
+      stalledContent !== null,
+      stalledContent !== null ? `${stalledContent}ms` : await rootText(launch),
+    );
+
+    const searchStart = Date.now();
+    await launch.getByLabel('Sök', { exact: true }).click({ timeout: SHELL_BUDGET_MS });
+    await launch.getByPlaceholder('Sök efter fågel...').fill('Talg');
+    const found = await launch
+      .getByLabel('Kryssa Talgoxe')
+      .waitFor({ timeout: SHELL_BUDGET_MS })
+      .then(() => Date.now() - searchStart)
+      .catch(() => null);
+    record('bird search answers from the cached list', found !== null, found && `${found}ms`);
+
+    if (found !== null) {
+      await launch.getByLabel('Kryssa Talgoxe').click();
+      await launch.locator('#quickadd-image-input').setInputFiles(PHOTO);
+      await launch.getByAltText('Förhandsvisning').waitFor({ timeout: SHELL_BUDGET_MS });
+      // The sheet hands the downscaled file over asynchronously after the preview.
+      await launch.waitForTimeout(500);
+      const confirm = launch.getByRole('button', { name: 'Kryssa!' });
+      const tapped = Date.now();
+      await confirm.click();
+      const closed = await confirm
+        .waitFor({ state: 'hidden', timeout: SHELL_BUDGET_MS })
+        .then(() => Date.now() - tapped)
+        .catch(() => null);
+      record('logging a bird closes the sheet at once', closed !== null, closed && `${closed}ms`);
+      record('the observation is queued on the device', (await launch.evaluate(QUEUED_COUNT)) === 1);
+
+      server.stall(false);
+      const delivered = await waitFor(
+        launch,
+        `(${QUEUED_COUNT}).then((n) => n === 0)`,
+        SYNC_BUDGET_MS,
+      );
+      record('it syncs once the link recovers', delivered !== null, delivered && `${delivered}ms`);
+      const posted = server.writes.filter((w) => w === 'POST /api/me/observations').length;
+      const uploaded = server.writes.filter((w) => /^POST \/api\/me\/observations\/[^/]+\/images$/.test(w)).length;
+      record('the observation reached the server once', posted === 1, `${posted} received`);
+      record('its photo reached the server', uploaded === 1, `${uploaded} received`);
+    }
+    server.stall(false);
+    await launch.close();
   } finally {
     await ctx.close();
     server.close();

@@ -35,6 +35,11 @@ export const STUB_USER = {
 export function startServer(port = 4173) {
   // Mutable so a test can swap in a second build, the way a deploy does.
   let dist = DEFAULT_DIST;
+  /** While set, every request is accepted and never answered. */
+  let stalled = false;
+  /** Writes that reached the server, as "METHOD /path". */
+  const writes = [];
+  let nextId = 1;
   const routes = {
     '/api/health': { ok: true },
     '/api/me': STUB_USER,
@@ -76,7 +81,21 @@ export function startServer(port = 4173) {
   };
 
   const server = http.createServer((req, res) => {
+    // A live link that passes no traffic: shell, sw.js and API alike.
+    if (stalled) return;
+
     const { pathname } = new URL(req.url, 'http://localhost');
+
+    if (req.method !== 'GET') writes.push(`${req.method} ${pathname}`);
+
+    if (req.method === 'POST' && pathname === '/api/me/observations') {
+      res.writeHead(201, { 'Content-Type': 'application/json' });
+      return res.end(JSON.stringify({ id: `obs-${nextId++}` }));
+    }
+    if (req.method === 'POST' && /^\/api\/me\/observations\/[^/]+\/images$/.test(pathname)) {
+      res.writeHead(201, { 'Content-Type': 'application/json' });
+      return res.end(JSON.stringify({ id: `img-${nextId++}`, url: '', thumbUrl: '' }));
+    }
 
     if (pathname.startsWith('/api/')) {
       const body = routes[pathname] ?? [];
@@ -95,7 +114,16 @@ export function startServer(port = 4173) {
   return new Promise((resolve) => {
     server.listen(port, () =>
       resolve({
-        close: () => server.close(),
+        close: () => {
+          // Requests held open by stall() would otherwise keep it alive.
+          server.closeAllConnections();
+          server.close();
+        },
+        /** Start or stop answering. Requests made while stalled stay unanswered. */
+        stall(on) {
+          stalled = on;
+        },
+        writes,
         /** Point the server at a different build directory. */
         serve(dir) {
           dist = path.resolve(dir);
